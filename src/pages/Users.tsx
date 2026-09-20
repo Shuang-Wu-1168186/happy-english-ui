@@ -252,6 +252,12 @@ export function Users() {
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h3 className="mb-0">Users</h3>
           <div className="d-flex gap-2">
+            <Link
+              className="btn btn-outline-primary btn-sm"
+              to="/login-monitor"
+            >
+              登录监控
+            </Link>
             <Link className="btn btn-primary btn-sm" to="/users?create=1">
               Add User
             </Link>

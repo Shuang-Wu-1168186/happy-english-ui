@@ -82,6 +82,18 @@ test("creating a study note opens its card creation form", async ({ page }) => {
       ).toBeTruthy();
   }
 });
+test("administrators can review login monitoring", async ({ page }) => {
+  await login(page);
+  await page.goto("/login-monitor");
+  await expect(
+    page.getByRole("heading", { name: "登录监控", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("columnheader", { name: "登录 IP", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("tbody")).toContainText("admin_test");
+  await expect(page.locator("tbody")).toContainText("成功");
+});
 test("signup, profile and password retain API flows", async ({ page }) => {
   await page.goto("/signup");
   await page.getByLabel("Full name", { exact: true }).fill("New Learner");

@@ -64,6 +64,24 @@ summary:focus-visible {
 .study-home .home-admin-link {
   line-height: normal;
 }
+@media (max-width: 700px) {
+  .study-home .home-navbar-inner {
+    gap: 8px;
+  }
+  .study-home .home-navbar-actions {
+    min-width: 0;
+    max-width: calc(100% - 112px);
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .study-home .logout-link {
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+}
 .card-content {
   display: contents;
 }

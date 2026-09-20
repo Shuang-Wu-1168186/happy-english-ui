@@ -39,10 +39,10 @@ sh scripts/dev.sh
 - 学习笔记、听写检查及提示；翻页自动保存进度，通过原有 Continue Study 入口恢复位置。
 - 浏览器朗读；后端启用音频服务后可调用 Kokoro 朗读、录音并提交跟读评估。
 - 登录、注册、个人资料和密码修改。
-- 管理员内容编辑、图片上传、用户创建、角色和状态管理。
+- 管理员内容编辑、图片上传、用户创建、角色和状态管理，以及登录监控。
 - 桌面与移动端布局。
 
-管理员登录后，点击首页右上角 Logout 旁的 **管理菜单** 进入后台。后台导航中的 **Manage Cards** 管理卡片，**Manage Interview Questions** 管理面试题，**Manage Users** 管理用户；也可以直接访问 `/manage`、`/manage?resource=interviews`、`/users`。普通学习账号不显示管理入口，管理页面及接口仍校验管理员权限。
+管理员登录后，点击首页右上角 Logout 旁的 **管理菜单** 进入后台。后台导航中的 **Manage Cards** 管理卡片，**Manage Interview Questions** 管理面试题，**Manage Users** 管理用户，**登录监控** 查看登录来源与时间；也可以直接访问 `/manage`、`/manage?resource=interviews`、`/users`、`/login-monitor`。普通学习账号不显示管理入口，管理页面及接口仍校验管理员权限。
 
 学习页面按原 Jinja 模板的结构重写为 React，原 CSS 仅添加页面作用域，避免不同模块之间互相覆盖。原背景图、教材人物图片、Bootstrap 5.3.3 和 StPageFlip 2.0.7 已放到本项目前端资源中。儿童卡片、笔记、数学卡片保留原翻书效果；日常英语、词汇与面试保留横向卡片。
 

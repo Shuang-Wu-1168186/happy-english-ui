@@ -16,6 +16,7 @@ import { Learning, Detail } from "./pages/Learning";
 import { Profile } from "./pages/Profile";
 import { Manage } from "./pages/Manage";
 import { Users } from "./pages/Users";
+import { LoginMonitor } from "./pages/LoginMonitor";
 function Protected({ admin = false }: { admin?: boolean }) {
   const { user, loading, error } = useAuth();
   if (loading) return <div className="empty">正在打开学习空间…</div>;
@@ -51,6 +52,7 @@ export default function App() {
               <Route element={<Protected admin />}>
                 <Route path="manage" element={<Manage />} />
                 <Route path="users" element={<Users />} />
+                <Route path="login-monitor" element={<LoginMonitor />} />
               </Route>
               <Route
                 path="*"

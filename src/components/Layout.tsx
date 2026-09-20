@@ -13,9 +13,17 @@ export function HomeNavigation() {
           </Link>
           <div className="home-navbar-actions">
             {user?.role === "admin" && (
-              <Link className="logout-link home-admin-link" to="/manage">
-                管理菜单
-              </Link>
+              <>
+                <Link className="logout-link home-admin-link" to="/manage">
+                  管理菜单
+                </Link>
+                <Link
+                  className="logout-link home-admin-link"
+                  to="/login-monitor"
+                >
+                  登录监控
+                </Link>
+              </>
             )}
             <button
               className="logout-link"
@@ -83,6 +91,11 @@ export function AccountNavigation() {
                   <li className="nav-item">
                     <NavLink className="nav-link" to="/users">
                       Manage Users
+                    </NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/login-monitor">
+                      登录监控
                     </NavLink>
                   </li>
                 </>
