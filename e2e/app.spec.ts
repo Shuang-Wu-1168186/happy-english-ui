@@ -24,7 +24,7 @@ test("original homepage groups, role visibility and login", async ({
   await login(page, "learner_test");
   await expect(page.locator(".module-card")).toHaveCount(6);
   await expect(
-    page.getByRole("link", { name: "管理菜单", exact: true }),
+    page.getByRole("link", { name: "后台管理", exact: true }),
   ).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
@@ -37,14 +37,14 @@ test("original homepage groups, role visibility and login", async ({
     ),
   ).toBeTruthy();
 });
-test("homepage management shortcut reaches all admin pages on desktop and mobile", async ({
+test("homepage management shortcut opens the separate admin workspace on desktop and mobile", async ({
   page,
 }) => {
   await login(page);
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
-    const entry = page.getByRole("link", { name: "管理菜单", exact: true });
+    const entry = page.getByRole("link", { name: "后台管理", exact: true });
     await expect(entry).toBeVisible();
     expect(
       await page.evaluate(
@@ -52,26 +52,48 @@ test("homepage management shortcut reaches all admin pages on desktop and mobile
       ),
     ).toBeTruthy();
     await entry.click();
-    await expect(page).toHaveURL(/\/manage$/);
-    await expect(page.getByLabel("Module", { exact: true })).toBeVisible();
-    if (width < 992)
-      await page.getByRole("button", { name: "Toggle navigation" }).click();
-    await page
-      .getByRole("link", { name: "Manage Interview Questions", exact: true })
-      .click();
+    await expect(page).toHaveURL(/\/admin$/);
+    await expect(page.locator(".admin-shell")).toBeVisible();
     await expect(
-      page.getByRole("heading", {
-        name: "Create Interview Question",
-        exact: true,
-      }),
+      page.getByRole("heading", { name: "管理工作台", exact: true }),
     ).toBeVisible();
-    await page.getByRole("link", { name: "Manage Users", exact: true }).click();
+    if (width < 981)
+      await page
+        .getByRole("button", { name: "Toggle admin navigation" })
+        .click();
+    const adminNav = page.getByRole("navigation", { name: "后台菜单" });
+    await adminNav.getByRole("link", { name: "内容管理", exact: true }).click();
+    await expect(page.getByLabel("Module", { exact: true })).toBeVisible();
+    if (width < 981)
+      await page
+        .getByRole("button", { name: "Toggle admin navigation" })
+        .click();
+    await adminNav.getByRole("link", { name: "用户管理", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "Users", exact: true }),
     ).toBeVisible();
-    await page.getByRole("link", { name: "Manage Cards", exact: true }).click();
-    await expect(page.getByLabel("Module", { exact: true })).toBeVisible();
+    if (width < 981)
+      await page
+        .getByRole("button", { name: "Toggle admin navigation" })
+        .click();
+    await adminNav.getByRole("link", { name: "登录监控", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "登录监控", exact: true }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBeTruthy();
   }
+  await page.goto("/manage?resource=interviews");
+  await expect(page).toHaveURL(/\/admin\/content\?resource=interviews$/);
+  await expect(
+    page.getByRole("heading", {
+      name: "Create Interview Question",
+      exact: true,
+    }),
+  ).toBeVisible();
 });
 test("daily card blur, search, jump and automatic study progress", async ({
   page,

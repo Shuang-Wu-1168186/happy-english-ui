@@ -149,7 +149,7 @@ export function Users() {
                 : `Editing user ID #${id}. Update account details, role, and status. The password is unchanged.`}
             </p>
           </div>
-          <Link className="btn btn-outline-secondary btn-sm" to="/users">
+          <Link className="btn btn-outline-secondary btn-sm" to="/admin/users">
             Back to Users
           </Link>
         </div>
@@ -231,7 +231,7 @@ export function Users() {
                   <button className="btn btn-primary" disabled={busy}>
                     {creating ? "Create User" : "Save Changes"}
                   </button>
-                  <Link className="btn btn-outline-secondary" to="/users">
+                  <Link className="btn btn-outline-secondary" to="/admin/users">
                     Cancel
                   </Link>
                 </div>
@@ -254,14 +254,14 @@ export function Users() {
           <div className="d-flex gap-2">
             <Link
               className="btn btn-outline-primary btn-sm"
-              to="/login-monitor"
+              to="/admin/login-monitor"
             >
               登录监控
             </Link>
-            <Link className="btn btn-primary btn-sm" to="/users?create=1">
+            <Link className="btn btn-primary btn-sm" to="/admin/users?create=1">
               Add User
             </Link>
-            <Link className="btn btn-outline-secondary btn-sm" to="/">
+            <Link className="btn btn-outline-secondary btn-sm" to="/admin">
               Back
             </Link>
           </div>
@@ -327,7 +327,7 @@ export function Users() {
                 <button className="btn btn-success w-100">Go</button>
               </div>
               <div className="col-12 d-flex gap-2">
-                <Link className="btn btn-outline-secondary" to="/users">
+                <Link className="btn btn-outline-secondary" to="/admin/users">
                   Reset
                 </Link>
               </div>

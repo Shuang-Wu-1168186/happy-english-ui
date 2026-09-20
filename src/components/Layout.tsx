@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useLayoutEffect, useState } from "react";
 import { useAuth } from "../lib/auth-context";
 export function HomeNavigation() {
@@ -13,17 +13,9 @@ export function HomeNavigation() {
           </Link>
           <div className="home-navbar-actions">
             {user?.role === "admin" && (
-              <>
-                <Link className="logout-link home-admin-link" to="/manage">
-                  管理菜单
-                </Link>
-                <Link
-                  className="logout-link home-admin-link"
-                  to="/login-monitor"
-                >
-                  登录监控
-                </Link>
-              </>
+              <Link className="logout-link home-admin-link" to="/admin">
+                后台管理
+              </Link>
             )}
             <button
               className="logout-link"
@@ -76,30 +68,6 @@ export function AccountNavigation() {
                   English
                 </Link>
               </li>
-              {user?.role === "admin" && (
-                <>
-                  <li className="nav-item">
-                    <NavLink className="nav-link" to="/manage">
-                      Manage Cards
-                    </NavLink>
-                  </li>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/manage?resource=interviews">
-                      Manage Interview Questions
-                    </Link>
-                  </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link" to="/users">
-                      Manage Users
-                    </NavLink>
-                  </li>
-                  <li className="nav-item">
-                    <NavLink className="nav-link" to="/login-monitor">
-                      登录监控
-                    </NavLink>
-                  </li>
-                </>
-              )}
             </ul>
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
               <li className="nav-item dropdown">
@@ -166,7 +134,7 @@ export function AccountNavigation() {
   );
 }
 export function Layout() {
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   useLayoutEffect(() => {
     const resource = pathname.split("/")[2];
     const kind =
@@ -192,11 +160,11 @@ export function Layout() {
         ? "study-home"
         : pathname.startsWith("/learn/")
           ? `study-${kind}`
-          : `account-ui study-userbase${pathname === "/manage" ? (new URLSearchParams(search).get("resource") === "interviews" ? " study-interview-editor" : " study-editor") : ""}`;
+          : "account-ui study-userbase";
     return () => {
       document.body.className = "";
     };
-  }, [pathname, search]);
+  }, [pathname]);
   if (pathname === "/" || pathname.startsWith("/learn/")) return <Outlet />;
   return (
     <div className="account-ui study-userbase">

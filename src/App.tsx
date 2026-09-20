@@ -5,6 +5,8 @@ import {
   Outlet,
   Route,
   Routes,
+  useLocation,
+  useParams,
 } from "react-router-dom";
 import { AuthProvider } from "./lib/auth";
 import { useAuth } from "./lib/auth-context";
@@ -17,6 +19,9 @@ import { Profile } from "./pages/Profile";
 import { Manage } from "./pages/Manage";
 import { Users } from "./pages/Users";
 import { LoginMonitor } from "./pages/LoginMonitor";
+import { AdminLayout } from "./components/AdminLayout";
+import { AdminDashboard } from "./pages/AdminDashboard";
+
 function Protected({ admin = false }: { admin?: boolean }) {
   const { user, loading, error } = useAuth();
   if (loading) return <div className="empty">正在打开学习空间…</div>;
@@ -33,6 +38,20 @@ function Protected({ admin = false }: { admin?: boolean }) {
   if (admin && user.role !== "admin") return <Navigate to="/" replace />;
   return <Outlet />;
 }
+
+function RedirectWithSearch({ to }: { to: string }) {
+  const { search } = useLocation();
+  return <Navigate replace to={`${to}${search}`} />;
+}
+
+function UserEditRedirect() {
+  const { id } = useParams();
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  if (id) params.set("id", id);
+  return <Navigate replace to={`/admin/users?${params.toString()}`} />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -42,7 +61,6 @@ export default function App() {
           <Route path="/signup" element={<Login />} />
           <Route element={<Protected />}>
             <Route path="english/*" element={<LegacyRoute />} />
-            <Route path="admin/users/*" element={<LegacyRoute />} />
             <Route element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="learn/:resource" element={<Learning />} />
@@ -50,9 +68,18 @@ export default function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="change-password" element={<Profile />} />
               <Route element={<Protected admin />}>
-                <Route path="manage" element={<Manage />} />
-                <Route path="users" element={<Users />} />
-                <Route path="login-monitor" element={<LoginMonitor />} />
+                <Route
+                  path="manage"
+                  element={<RedirectWithSearch to="/admin/content" />}
+                />
+                <Route
+                  path="users"
+                  element={<RedirectWithSearch to="/admin/users" />}
+                />
+                <Route
+                  path="login-monitor"
+                  element={<RedirectWithSearch to="/admin/login-monitor" />}
+                />
               </Route>
               <Route
                 path="*"
@@ -63,6 +90,19 @@ export default function App() {
                   </div>
                 }
               />
+            </Route>
+            <Route element={<Protected admin />}>
+              <Route path="admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="content" element={<Manage />} />
+                <Route path="users" element={<Users />} />
+                <Route
+                  path="users/create"
+                  element={<Navigate replace to="/admin/users?create=1" />}
+                />
+                <Route path="users/:id/edit" element={<UserEditRedirect />} />
+                <Route path="login-monitor" element={<LoginMonitor />} />
+              </Route>
             </Route>
           </Route>
         </Routes>

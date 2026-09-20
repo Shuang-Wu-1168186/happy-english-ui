@@ -7,44 +7,6 @@ import { useStudyItem } from "../../lib/study";
 import { Speak } from "./Speech";
 import { FlipBook } from "./FlipBook";
 
-function DeleteCard({
-  resource,
-  item,
-  onDelete,
-}: {
-  resource: string;
-  item: Entry;
-  onDelete: () => void;
-}) {
-  const { user } = useAuth(),
-    [error, setError] = useState("");
-  if (user?.role !== "admin") return null;
-  return (
-    <>
-      <button
-        type="button"
-        className={
-          resource === "interviews" ? "delete-btn" : "admin-delete-btn"
-        }
-        onClick={async () => {
-          if (
-            !window.confirm("Delete this card? This action cannot be undone.")
-          )
-            return;
-          try {
-            await api(`/content/${resource}/${item.id}`, "DELETE");
-            onDelete();
-          } catch (e) {
-            setError((e as Error).message);
-          }
-        }}
-      >
-        Delete
-      </button>
-      {error && <p role="alert">{error}</p>}
-    </>
-  );
-}
 function Dictation({
   text,
   onComplete,
@@ -184,12 +146,10 @@ function NoteImage({ item }: { item: Entry }) {
 function SentenceBody({
   item,
   resource,
-  onDelete,
   onComplete,
 }: {
   item: Entry;
   resource: string;
-  onDelete: () => void;
   onComplete?: () => Promise<unknown>;
 }) {
   const [english, setEnglish] = useState(false);
@@ -213,7 +173,6 @@ function SentenceBody({
             value(item, "item_type") ||
             "note"}
         </span>
-        <DeleteCard resource={resource} item={item} onDelete={onDelete} />
       </div>
       {knowledge ? (
         <>
@@ -353,17 +312,14 @@ function SentenceBody({
 }
 function InterviewCard({
   item,
-  onDelete,
   active,
   categories,
 }: {
   item: Entry;
-  onDelete: () => void;
   active: boolean;
   categories: Entry[];
 }) {
-  const [expanded, setExpanded] = useState(false),
-    { user } = useAuth();
+  const [expanded, setExpanded] = useState(false);
   const detail = useStudyItem(
     "interviews",
     active || expanded ? item.id : undefined,
@@ -382,15 +338,6 @@ function InterviewCard({
             Level {value(item, "difficulty_level")}
           </span>
         </div>
-        {user?.role === "admin" && (
-          <Link
-            className="edit-btn"
-            to={`/manage?resource=interviews&id=${item.id}`}
-          >
-            Edit
-          </Link>
-        )}
-        <DeleteCard resource="interviews" item={item} onDelete={onDelete} />
       </div>
       <h2 className="question-title">{value(item, "question")}</h2>
       {value(item, "question_cn") && (
@@ -452,14 +399,12 @@ export function OriginalCards({
   categories?: Entry[];
 }) {
   const [params, setParams] = useSearchParams(),
-    [removed, setRemoved] = useState<number[]>([]),
     [jump, setJump] = useState(false),
     [jumpIndex, setJumpIndex] = useState<number | null>(null);
   const q = (params.get("keyword") || params.get("q") || "").toLowerCase(),
     category = params.get("category") || "";
   const visible = items.filter(
     (i) =>
-      !removed.includes(i.id) &&
       (!category || value(i, "category") === category) &&
       (!q ||
         Object.values(i).some(
@@ -708,7 +653,7 @@ export function OriginalCards({
         {visible.length ? (
           noteMode ? (
             <FlipBook
-              key={`${q}-${removed.join()}-${bookGeneration}`}
+              key={`${q}-${bookGeneration}`}
               kind="note"
               items={visible}
               initial={jumpIndex ?? first}
@@ -720,10 +665,6 @@ export function OriginalCards({
                   onComplete={() => {
                     clearTimeout(progressTimer.current);
                     return saveProgress(item, true);
-                  }}
-                  onDelete={() => {
-                    setRemoved([...removed, item.id]);
-                    setIndex(0);
                   }}
                 />
               )}
@@ -759,10 +700,6 @@ export function OriginalCards({
                       item={item}
                       categories={categories}
                       active={Math.abs(i - index) < 2}
-                      onDelete={() => {
-                        setRemoved([...removed, item.id]);
-                        setIndex(0);
-                      }}
                     />
                   ) : (
                     <article
@@ -770,14 +707,7 @@ export function OriginalCards({
                       data-card-id={item.id}
                       key={item.id}
                     >
-                      <SentenceBody
-                        item={item}
-                        resource={resource}
-                        onDelete={() => {
-                          setRemoved([...removed, item.id]);
-                          setIndex(0);
-                        }}
-                      />
+                      <SentenceBody item={item} resource={resource} />
                     </article>
                   ),
                 )}

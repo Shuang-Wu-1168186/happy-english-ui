@@ -92,11 +92,14 @@ export function LoginMonitor() {
             </p>
           </div>
           <div className="d-flex gap-2">
-            <Link className="btn btn-outline-secondary btn-sm" to="/users">
+            <Link
+              className="btn btn-outline-secondary btn-sm"
+              to="/admin/users"
+            >
               用户管理
             </Link>
-            <Link className="btn btn-outline-secondary btn-sm" to="/">
-              返回首页
+            <Link className="btn btn-outline-secondary btn-sm" to="/admin">
+              后台首页
             </Link>
           </div>
         </div>
@@ -161,7 +164,10 @@ export function LoginMonitor() {
               </div>
               <div className="col-md-3 d-flex align-items-end gap-2">
                 <button className="btn btn-primary flex-grow-1">查询</button>
-                <Link className="btn btn-outline-secondary" to="/login-monitor">
+                <Link
+                  className="btn btn-outline-secondary"
+                  to="/admin/login-monitor"
+                >
                   重置
                 </Link>
               </div>

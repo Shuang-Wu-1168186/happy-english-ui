@@ -153,6 +153,24 @@ function Editor({
       setBusy(false);
     }
   }
+  async function remove() {
+    if (
+      !initial ||
+      !window.confirm("Delete this item? This action cannot be undone.")
+    )
+      return;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      await api(`/content/${resource}/${initial.id}`, "DELETE");
+      navigate(`/admin/content?resource=${resource}`);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
@@ -263,8 +281,8 @@ function Editor({
           example_image_alt: "",
         }));
       } else if (!initial && resource === "notes") {
-        navigate(`/manage?resource=note-items&parent_id=${saved.id}`);
-      } else navigate(`/learn/${resource}/${saved.id}`);
+        navigate(`/admin/content?resource=note-items&parent_id=${saved.id}`);
+      } else navigate(`/admin/content?resource=${resource}&id=${saved.id}`);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -303,8 +321,11 @@ function Editor({
             </div>
             {interview && (
               <div className="head-actions">
-                <Link className="btn-secondary" to="/learn/interviews">
-                  Back to List
+                <Link
+                  className="btn-secondary"
+                  to="/admin/content?resource=interviews"
+                >
+                  内容管理
                 </Link>
               </div>
             )}
@@ -552,9 +573,22 @@ function Editor({
                 </button>
               )}
               {interview && initial && (
-                <Link className="btn-light" to="/manage?resource=interviews">
+                <Link
+                  className="btn-light"
+                  to="/admin/content?resource=interviews"
+                >
                   Create New
                 </Link>
+              )}
+              {initial && (
+                <button
+                  className="btn-danger"
+                  disabled={busy}
+                  onClick={remove}
+                  type="button"
+                >
+                  Delete
+                </button>
               )}
             </div>
           </form>

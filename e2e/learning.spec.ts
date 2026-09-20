@@ -11,7 +11,7 @@ test("original content editor preview and API create, edit, delete", async ({
   page,
 }) => {
   await login(page);
-  await page.goto("/manage");
+  await page.goto("/admin/content");
   await page.getByLabel("Module", { exact: true }).selectOption("sentences");
   await page
     .getByLabel("English Text", { exact: true })
@@ -23,17 +23,19 @@ test("original content editor preview and API create, edit, delete", async ({
     "浏览器测试句子。",
   );
   await page.getByRole("button", { name: "Save Card", exact: true }).click();
-  await expect(page).toHaveURL(/\/learn\/sentences\/\d+/);
-  const id = page.url().split("/").at(-1);
-  await page.goto(`/manage?resource=sentences&id=${id}`);
+  await expect(page).toHaveURL(/\/admin\/content\?resource=sentences&id=\d+/);
+  const id = new URL(page.url()).searchParams.get("id");
+  expect(id).not.toBeNull();
   await page.getByLabel("Chinese Text", { exact: true }).fill("更新后的中文。");
   await page.getByRole("button", { name: "Save Card", exact: true }).click();
-  const card = page.locator(".card").filter({ hasText: "更新后的中文。" });
-  await expect(card).toBeVisible();
+  await expect(page).toHaveURL(
+    new RegExp(`/admin/content\\?resource=sentences&id=${id}`),
+  );
+  await expect(page.locator(".preview-panel .cn")).toHaveText("更新后的中文。");
   page.once("dialog", (d) => d.accept());
-  await card.getByRole("button", { name: "Delete", exact: true }).click();
-  await expect(card).toHaveCount(0);
-  await page.goto("/users");
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/content\?resource=sentences$/);
+  await page.goto("/admin/users");
   await expect(
     page.getByRole("heading", { name: "Users", exact: true }),
   ).toBeVisible();
@@ -51,7 +53,7 @@ test("original content editor preview and API create, edit, delete", async ({
   await expect(page.getByLabel("Username", { exact: true })).toHaveValue(
     "learner_test",
   );
-  await page.goto("/users?id=999999");
+  await page.goto("/admin/users?id=999999");
   await expect(
     page.getByText("User not found.", { exact: true }),
   ).toBeVisible();
@@ -62,12 +64,14 @@ test("creating a study note opens its card creation form", async ({ page }) => {
   const headers = { "X-CSRF-Token": session.csrf_token };
   let noteId: string | null = null;
   try {
-    await page.goto("/manage?resource=notes");
+    await page.goto("/admin/content?resource=notes");
     await page
       .getByLabel("Title", { exact: true })
       .fill(`Browser study note ${Date.now()}`);
     await page.getByRole("button", { name: "Save Card", exact: true }).click();
-    await expect(page).toHaveURL(/\/manage\?resource=note-items&parent_id=\d+/);
+    await expect(page).toHaveURL(
+      /\/admin\/content\?resource=note-items&parent_id=\d+/,
+    );
     noteId = new URL(page.url()).searchParams.get("parent_id");
     expect(noteId).not.toBeNull();
     await expect(
@@ -84,7 +88,7 @@ test("creating a study note opens its card creation form", async ({ page }) => {
 });
 test("administrators can review login monitoring", async ({ page }) => {
   await login(page);
-  await page.goto("/login-monitor");
+  await page.goto("/admin/login-monitor");
   await expect(
     page.getByRole("heading", { name: "登录监控", exact: true }),
   ).toBeVisible();

@@ -14,9 +14,7 @@ export function LegacyRoute() {
     "/english/math-cards": "/learn/math-cards",
     "/english/vocabulary-cards": "/learn/vocabulary",
     "/english/interview-cards": "/learn/interviews",
-    "/english/content/create": "/manage",
-    "/admin/users": "/users",
-    "/admin/users/create": "/users?create=1",
+    "/english/content/create": "/admin/content",
   };
   let to = routes[pathname];
   if (pathname === "/english/note-cards")
@@ -26,14 +24,9 @@ export function LegacyRoute() {
         ? `/learn/notes/${params.get("note_id")}`
         : "/learn/notes";
   if (pathname === "/english/interview-question/manage") {
-    to = "/manage";
+    to = "/admin/content";
     params.set("resource", "interviews");
     if (params.has("question_id")) params.set("id", params.get("question_id")!);
-  }
-  const edit = pathname.match(/^\/admin\/users\/(\d+)\/edit$/);
-  if (edit) {
-    to = "/users";
-    params.set("id", edit[1]);
   }
   if (!to) return <Navigate to="/" replace />;
   return (
