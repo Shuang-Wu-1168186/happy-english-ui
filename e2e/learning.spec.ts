@@ -37,15 +37,13 @@ test("original content editor preview and API create, edit, delete", async ({
   await expect(page).toHaveURL(/\/admin\/content\?resource=sentences$/);
   await page.goto("/admin/users");
   await expect(
-    page.getByRole("heading", { name: "Users", exact: true }),
+    page.getByRole("heading", { name: "用户管理", exact: true }),
   ).toBeVisible();
   await expect(page.locator("tbody tr")).toHaveCount(2);
-  await page
-    .getByLabel("Search (name / username / email)")
-    .fill("learner_test");
-  await page.getByRole("button", { name: "Go", exact: true }).click();
+  await page.getByLabel("搜索姓名、用户名或邮箱").fill("learner_test");
+  await page.getByRole("button", { name: "查询", exact: true }).click();
   await expect(page.locator("tbody tr")).toHaveCount(1);
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await page.getByRole("button", { name: "编辑", exact: true }).click();
   await page.getByLabel("Full name", { exact: true }).fill("Updated learner");
   await page.getByRole("button", { name: "Save Changes", exact: true }).click();
   await expect(page.locator("tbody")).toContainText("Updated learner");

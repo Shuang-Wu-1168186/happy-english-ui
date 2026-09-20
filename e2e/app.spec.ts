@@ -70,8 +70,25 @@ test("homepage management shortcut opens the separate admin workspace on desktop
         .click();
     await adminNav.getByRole("link", { name: "用户管理", exact: true }).click();
     await expect(
-      page.getByRole("heading", { name: "Users", exact: true }),
+      page.getByRole("heading", { name: "用户管理", exact: true }),
     ).toBeVisible();
+    await expect(
+      page.locator(".admin-users-table tbody tr").first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "编辑", exact: true }).first(),
+    ).toBeVisible();
+    expect(
+      await page.locator(".admin-users-table").evaluate((table) => {
+        const container = table.parentElement;
+        return Boolean(container && table.scrollWidth <= container.clientWidth);
+      }),
+    ).toBeTruthy();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBeTruthy();
     if (width < 981)
       await page
         .getByRole("button", { name: "Toggle admin navigation" })
@@ -80,6 +97,15 @@ test("homepage management shortcut opens the separate admin workspace on desktop
     await expect(
       page.getByRole("heading", { name: "登录监控", exact: true }),
     ).toBeVisible();
+    await expect(
+      page.locator(".admin-login-table tbody tr").first(),
+    ).toBeVisible();
+    expect(
+      await page.locator(".admin-login-table").evaluate((table) => {
+        const container = table.parentElement;
+        return Boolean(container && table.scrollWidth <= container.clientWidth);
+      }),
+    ).toBeTruthy();
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,

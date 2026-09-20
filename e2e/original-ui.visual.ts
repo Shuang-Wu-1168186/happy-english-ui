@@ -36,8 +36,8 @@ for (const [name, [path, ready]] of Object.entries({
     await expect(page).toHaveScreenshot(`${name}.png`, {
       fullPage: true,
       maxDiffPixelRatio: 0.001,
-      // The requested admin shortcut is an intentional addition to the original
-      // home header. Compare the rest against the unchanged Jinja baseline.
+      // The admin shortcut and administration actions intentionally moved out of
+      // learner screens. Keep the learner baseline aligned with that separation.
       style: ".home-admin-link { visibility: hidden !important; }",
     });
   });

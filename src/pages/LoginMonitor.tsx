@@ -27,6 +27,10 @@ function displayTime(value: string) {
     : date.toLocaleString();
 }
 
+function initial(value: string | null) {
+  return (value || "访").trim().slice(0, 1).toUpperCase();
+}
+
 export function LoginMonitor() {
   const [params, setParams] = useSearchParams();
   const requestedPage = Number(params.get("page"));
@@ -41,6 +45,16 @@ export function LoginMonitor() {
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
+  const outcomeLabel =
+    outcome === "success"
+      ? "仅成功登录"
+      : outcome === "failed"
+        ? "仅失败登录"
+        : "全部登录结果";
+  const dateRange =
+    startDate || endDate
+      ? `${startDate || "最早记录"} 至 ${endDate || "今天"}`
+      : "全部时间";
 
   useEffect(() => {
     let active = true;
@@ -62,10 +76,9 @@ export function LoginMonitor() {
         setError("");
       })
       .catch((e) => {
-        if (active) {
-          setError((e as Error).message);
-          setRecords([]);
-        }
+        if (!active) return;
+        setError((e as Error).message);
+        setRecords([]);
       });
     return () => {
       active = false;
@@ -77,37 +90,64 @@ export function LoginMonitor() {
   }
 
   return (
-    <section className="container py-5">
-      <div className="container py-4">
+    <section className="container py-5 admin-list-page admin-login-page">
+      <div className="container py-4 admin-list-content">
         {error && (
           <div className="alert alert-danger" role="alert">
             {error}
           </div>
         )}
-        <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-          <div>
-            <h3 className="mb-1">登录监控</h3>
-            <p className="text-muted mb-0">
-              查看成功和失败的登录尝试，包括来源 IP、登录时间和浏览器信息。
-            </p>
+
+        <header className="admin-list-header">
+          <div className="admin-list-copy">
+            <p className="admin-list-eyebrow">安全审计</p>
+            <h1>登录监控</h1>
+            <p>查看成功和失败的登录尝试，追踪来源 IP、时间和浏览器信息。</p>
           </div>
-          <div className="d-flex gap-2">
+          <div className="admin-list-actions">
             <Link
-              className="btn btn-outline-secondary btn-sm"
+              className="admin-action-button admin-action-secondary"
               to="/admin/users"
             >
               用户管理
             </Link>
-            <Link className="btn btn-outline-secondary btn-sm" to="/admin">
-              后台首页
+            <Link
+              className="admin-action-button admin-action-quiet"
+              to="/admin"
+            >
+              后台概览
             </Link>
           </div>
-        </div>
+        </header>
 
-        <div className="card shadow-sm mb-3">
+        <section className="admin-list-metrics" aria-label="登录审计统计">
+          <div className="admin-list-metric">
+            <span>匹配记录</span>
+            <strong>{total}</strong>
+            <small>条登录审计</small>
+          </div>
+          <div className="admin-list-metric">
+            <span>登录结果</span>
+            <strong className="admin-metric-text">{outcomeLabel}</strong>
+            <small>当前筛选条件</small>
+          </div>
+          <div className="admin-list-metric">
+            <span>查询时间</span>
+            <strong className="admin-metric-text">{dateRange}</strong>
+            <small>按登录时间筛选</small>
+          </div>
+        </section>
+
+        <div className="card shadow-sm admin-filter-panel">
           <div className="card-body">
+            <div className="admin-filter-panel-title">
+              <div>
+                <p>筛选登录记录</p>
+                <span>组合账号、IP、登录结果和日期范围进行查询。</span>
+              </div>
+            </div>
             <form
-              className="row g-3"
+              className="row g-3 admin-filter-form"
               key={params.toString()}
               onSubmit={(e) => {
                 e.preventDefault();
@@ -163,11 +203,10 @@ export function LoginMonitor() {
                 </select>
               </div>
               <div className="col-md-3 d-flex align-items-end gap-2">
-                <button className="btn btn-primary flex-grow-1">查询</button>
-                <Link
-                  className="btn btn-outline-secondary"
-                  to="/admin/login-monitor"
-                >
+                <button className="admin-filter-submit flex-grow-1">
+                  查询
+                </button>
+                <Link className="admin-filter-reset" to="/admin/login-monitor">
                   重置
                 </Link>
               </div>
@@ -202,56 +241,81 @@ export function LoginMonitor() {
           </div>
         </div>
 
-        <div className="card shadow-sm">
-          <div className="card-header bg-white d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <span className="fw-semibold">登录记录</span>
-            <span className="text-muted small">共 {total} 条</span>
+        <div className="card shadow-sm admin-data-card">
+          <div className="card-header admin-data-card-head">
+            <div>
+              <p>安全事件</p>
+              <h2>登录记录</h2>
+            </div>
+            <div className="admin-data-card-meta">
+              <strong>{total}</strong>
+              <span>
+                共 {total} 条 · 第 {page} / {pages} 页
+              </span>
+            </div>
           </div>
           <div className="card-body p-0">
             {records === null ? (
-              <p className="p-4 mb-0" role="status">
-                正在加载登录记录…
-              </p>
+              <div className="admin-table-loading" role="status">
+                正在读取登录记录…
+              </div>
             ) : records.length ? (
               <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                  <thead className="table-light">
+                <table className="table admin-data-table admin-login-table mb-0">
+                  <thead>
                     <tr>
-                      <th style={{ minWidth: 80 }}>ID</th>
-                      <th style={{ minWidth: 180 }}>账号</th>
-                      <th style={{ minWidth: 100 }}>结果</th>
-                      <th style={{ minWidth: 160 }}>登录 IP</th>
-                      <th style={{ minWidth: 210 }}>登录时间</th>
-                      <th style={{ minWidth: 300 }}>浏览器信息</th>
+                      <th>编号</th>
+                      <th>账号</th>
+                      <th>结果</th>
+                      <th>登录 IP</th>
+                      <th>登录时间</th>
+                      <th>浏览器信息</th>
                     </tr>
                   </thead>
                   <tbody>
                     {records.map((record) => (
-                      <tr key={record.id}>
-                        <td className="text-muted">{record.id}</td>
-                        <td>
-                          <div className="fw-semibold">{record.username}</div>
-                          {record.full_name && (
-                            <div className="text-muted small">
-                              {record.full_name}
-                            </div>
-                          )}
+                      <tr
+                        className={record.success ? "is-success" : "is-failed"}
+                        key={record.id}
+                      >
+                        <td className="admin-table-id" data-label="编号">
+                          #{record.id}
                         </td>
-                        <td>
+                        <td
+                          className="admin-table-person-cell"
+                          data-label="账号"
+                        >
+                          <div className="admin-person">
+                            <span
+                              className={`admin-list-avatar ${record.success ? "is-success" : "is-failed"}`}
+                              aria-hidden="true"
+                            >
+                              {initial(record.full_name || record.username)}
+                            </span>
+                            <span>
+                              <strong>{record.username}</strong>
+                              <small>{record.full_name || "未识别用户"}</small>
+                            </span>
+                          </div>
+                        </td>
+                        <td data-label="结果">
                           <span
-                            className={`badge text-bg-${record.success ? "success" : "danger"}`}
+                            className={`admin-result-pill ${record.success ? "is-success" : "is-failed"}`}
                           >
                             {record.success ? "成功" : "失败"}
                           </span>
                         </td>
-                        <td className="font-monospace">
+                        <td className="admin-table-ip" data-label="登录 IP">
                           {record.login_ip || "—"}
                         </td>
-                        <td>{displayTime(record.logged_in_at)}</td>
-                        <td>
+                        <td className="admin-table-time" data-label="登录时间">
+                          <time dateTime={record.logged_in_at}>
+                            {displayTime(record.logged_in_at)}
+                          </time>
+                        </td>
+                        <td data-label="浏览器信息">
                           <span
-                            className="d-inline-block text-truncate"
-                            style={{ maxWidth: 360 }}
+                            className="admin-user-agent"
                             title={record.user_agent || ""}
                           >
                             {record.user_agent || "—"}
@@ -263,32 +327,28 @@ export function LoginMonitor() {
                 </table>
               </div>
             ) : (
-              <div className="p-4">
-                <div className="alert alert-info mb-0">
-                  没有匹配的登录记录。
-                </div>
+              <div className="admin-empty-state">
+                <strong>没有匹配的登录记录</strong>
+                <span>调整筛选条件，或重置后查看全部登录审计。</span>
               </div>
             )}
           </div>
         </div>
 
         {pages > 1 && (
-          <nav
-            className="d-flex justify-content-center gap-2 mt-4"
-            aria-label="登录记录分页"
-          >
+          <nav className="admin-pagination" aria-label="登录记录分页">
             <button
-              className="btn btn-outline-secondary"
+              className="admin-page-button"
               disabled={page === 1}
               onClick={() => changePage(page - 1)}
             >
               上一页
             </button>
-            <span className="align-self-center text-muted">
+            <span>
               第 {page} / {pages} 页
             </span>
             <button
-              className="btn btn-outline-secondary"
+              className="admin-page-button"
               disabled={page >= pages}
               onClick={() => changePage(page + 1)}
             >
