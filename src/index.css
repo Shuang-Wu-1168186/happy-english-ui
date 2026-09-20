@@ -1,0 +1,132 @@
+@import "./styles/bootstrap.css";
+@import "./styles/userbase.css";
+@import "./styles/login.css";
+@import "./styles/note-detail.css";
+@import "./styles/home.css";
+@import "./styles/cards.css";
+@import "./styles/notes.css";
+@import "./styles/kids.css";
+@import "./styles/phonics.css";
+@import "./styles/textbook.css";
+@import "./styles/dialogue.css";
+@import "./styles/math.css";
+@import "./styles/interview.css";
+
+@import "./styles/editor.css";
+@import "./styles/interview-editor.css";
+
+:root {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  font-size: 16px;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.study-home .logout-link {
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+.study-home .home-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.study-home .home-admin-link {
+  line-height: normal;
+}
+.card-content {
+  display: contents;
+}
+.study-cards .carousel-wrap {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 20px;
+  margin-bottom: -20px;
+}
+.study-cards .continue-wrap {
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+.study-cards .continue-btn {
+  border: none;
+  background: #fff;
+  color: #2563eb;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px #0f172a1a;
+}
+.audio-feedback {
+  display: block;
+  color: #a33;
+  font-size: 12px;
+}
+.error {
+  padding: 14px;
+  color: #a32424;
+  background: #fff0ec;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: #6b7280;
+}
+.study-interview .full-answer[hidden] {
+  display: none;
+}
+.study-cards .note-carousel-shell .carousel-wrap {
+  overflow: visible;
+}
+.study-cards .note-book-page-content > .knowledge-card-hero {
+  margin-top: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Preserve the original mobile phonics breakpoint after its later desktop rule. */
+@media (max-width: 800px) {
+  .study-phonics .lesson-layout {
+    grid-template-columns: 1fr;
+  }
+}

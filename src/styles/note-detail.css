@@ -1,0 +1,188 @@
+/* Ported verbatim, with selector scoping, from HappyEnglish/loginapp/templates/english/note_cards.html. */
+
+.study-note-detail .search-form {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+.study-note-detail .search-btn {
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+  white-space: nowrap;
+}
+
+.study-note-detail .search-btn:hover {
+  opacity: 0.94;
+}
+
+.study-note-detail .example-image-wrap {
+  margin-top: 14px;
+}
+
+.study-note-detail .example-image-box {
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  padding: 10px;
+  cursor: zoom-in;
+}
+
+.study-note-detail .example-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 12px;
+  background: #fff;
+  transition: transform 0.18s ease;
+}
+
+.study-note-detail .example-image.is-loaded {
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+}
+
+.study-note-detail .example-image-box:hover .example-image {
+  transform: scale(1.02);
+}
+
+.study-note-detail .example-image-alt {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.study-note-detail .continue-wrap {
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.study-note-detail .continue-btn {
+  border: none;
+  background: #ffffff;
+  color: #2563eb;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+}
+
+.study-note-detail .continue-btn:hover {
+  opacity: 0.95;
+}
+
+.study-note-detail .card-page-status {
+  margin: 16px 0 4px;
+  color: #6b7280;
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.study-note-detail .container.is-page-loading {
+  opacity: 0.58;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.study-note-detail .image-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+.study-note-detail .image-preview-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.study-note-detail .image-preview-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(94vw, 1100px);
+  max-height: 92vh;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 14px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.study-note-detail .image-preview-panel img {
+  display: block;
+  width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.study-note-detail .image-preview-close {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.study-note-detail .image-preview-close:hover {
+  background: rgba(15, 23, 42, 0.92);
+}
+
+.study-note-detail .image-preview-caption {
+  margin-top: 10px;
+  color: #475467;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-line;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .study-note-detail .search-form {
+    gap: 8px;
+  }
+
+  .study-note-detail .search-btn {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .study-note-detail .image-preview-panel {
+    width: 94vw;
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  .study-note-detail .image-preview-close {
+    width: 38px;
+    height: 38px;
+    font-size: 24px;
+  }
+}

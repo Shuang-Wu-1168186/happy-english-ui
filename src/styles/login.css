@@ -1,0 +1,124 @@
+/* Ported verbatim, with selector scoping, from HappyEnglish/loginapp/templates/auth/login.html. */
+
+.study-login {
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(20, 40, 90, 0.2), rgba(20, 40, 90, 0.2)),
+    url("/original/login_bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.study-login .happy-card {
+  border-radius: 24px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 14px 38px rgba(31, 41, 55, 0.16);
+}
+
+.study-login .happy-hero {
+  background: linear-gradient(135deg, #4f8cff 0%, #7c4dff 100%);
+  color: #fff;
+  padding: 32px 30px 24px 30px;
+  position: relative;
+}
+
+.study-login .happy-hero::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.study-login .happy-title {
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.study-login .happy-sub {
+  margin-top: 8px;
+  margin-bottom: 0;
+  font-size: 0.98rem;
+  opacity: 0.95;
+}
+
+.study-login .happy-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.study-login .happy-body {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(6px);
+}
+
+.study-login .welcome-text {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.study-login .login-heading {
+  color: #1f2937;
+  font-weight: 800;
+}
+
+.study-login .happy-input .form-label {
+  color: #374151;
+}
+
+.study-login .happy-input .input-group-text {
+  background: #f4f8ff;
+  border-color: #dbe7ff;
+  color: #4f46e5;
+  font-size: 1.05rem;
+}
+
+.study-login .happy-input .form-control {
+  border-color: #dbe7ff;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.study-login .happy-input .form-control:focus {
+  border-color: #7c4dff;
+  box-shadow: 0 0 0 0.2rem rgba(124, 77, 255, 0.15);
+}
+
+.study-login .happy-btn {
+  background: linear-gradient(135deg, #ffb703 0%, #ffcb3d 100%);
+  border: none;
+  color: #1f2937;
+  font-weight: 700;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+}
+
+.study-login .happy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(255, 183, 3, 0.28);
+  color: #111827;
+}
+
+.study-login .happy-tip {
+  color: #6b7280;
+  font-size: 0.88rem;
+}
+
+.study-login .happy-alert {
+  border-radius: 14px;
+}

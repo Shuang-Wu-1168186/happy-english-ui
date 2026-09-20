@@ -1,0 +1,320 @@
+/* Ported verbatim, with selector scoping, from HappyEnglish/loginapp/templates/interview_cards/manage_form.html. */
+
+.study-interview-editor .manage-page {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  padding: 24px;
+  background: #f5f7fb;
+}
+
+.study-interview-editor .editor-panel,
+.study-interview-editor .preview-panel {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+.study-interview-editor .page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.study-interview-editor .page-head h1 {
+  margin: 0 0 8px;
+  color: #1f2a44;
+}
+
+.study-interview-editor .page-head p {
+  margin: 0;
+  color: #667085;
+  line-height: 1.6;
+}
+
+.study-interview-editor .edit-info {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: #eef4ff;
+  color: #2f4db8;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.study-interview-editor .head-actions {
+  flex-shrink: 0;
+}
+
+.study-interview-editor .flash-wrap {
+  margin-bottom: 16px;
+}
+
+.study-interview-editor .flash-message {
+  padding: 12px 14px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.study-interview-editor .flash-success {
+  background: #ecfdf3;
+  color: #027a48;
+  border: 1px solid #abefc6;
+}
+
+.study-interview-editor .flash-danger,
+.study-interview-editor .flash-error {
+  background: #fef3f2;
+  color: #b42318;
+  border: 1px solid #fecdca;
+}
+
+.study-interview-editor .flash-warning {
+  background: #fffaeb;
+  color: #b54708;
+  border: 1px solid #fedf89;
+}
+
+.study-interview-editor .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.study-interview-editor .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.study-interview-editor .form-group.full {
+  grid-column: 1 / -1;
+}
+
+.study-interview-editor .form-group label {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #344054;
+}
+
+.study-interview-editor .form-group input,
+.study-interview-editor .form-group select,
+.study-interview-editor .form-group textarea {
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #fff;
+  font-size: 15px;
+  resize: vertical;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.study-interview-editor .form-group input:focus,
+.study-interview-editor .form-group select:focus,
+.study-interview-editor .form-group textarea:focus {
+  border-color: #2f4db8;
+  box-shadow: 0 0 0 3px rgba(47, 77, 184, 0.12);
+}
+
+.study-interview-editor .form-group textarea + textarea {
+  margin-top: 10px;
+  background: #fcfcfd;
+}
+
+.study-interview-editor .error {
+  margin-top: 6px;
+  color: #d92d20;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.study-interview-editor .star-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e7ec;
+}
+
+.study-interview-editor .star-section h3 {
+  margin: 0 0 14px;
+  color: #1f2a44;
+}
+
+.study-interview-editor .form-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.study-interview-editor .btn-primary,
+.study-interview-editor .btn-secondary,
+.study-interview-editor .btn-light {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.study-interview-editor .btn-primary {
+  background: #2f4db8;
+  color: #fff;
+}
+
+.study-interview-editor .btn-primary:hover {
+  background: #243c96;
+}
+
+.study-interview-editor .btn-secondary {
+  background: #eef4ff;
+  color: #2f4db8;
+  border: 1px solid #c7d7fe;
+}
+
+.study-interview-editor .btn-secondary:hover {
+  background: #dbe7ff;
+}
+
+.study-interview-editor .btn-light {
+  background: #f2f4f7;
+  color: #344054;
+  border: 1px solid #d0d5dd;
+}
+
+.study-interview-editor .btn-light:hover {
+  background: #e4e7ec;
+}
+
+.study-interview-editor .preview-panel {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.study-interview-editor .preview-card {
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.study-interview-editor .card-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.study-interview-editor .badge {
+  background: #e9efff;
+  color: #2f4db8;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.study-interview-editor .difficulty {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.study-interview-editor .question-title {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: #101828;
+  line-height: 1.5;
+}
+
+.study-interview-editor .question-cn {
+  color: #667085;
+  margin-bottom: 16px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.study-interview-editor .label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #667085;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.study-interview-editor .answer-block {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f2f5;
+}
+
+.study-interview-editor .answer-block p,
+.study-interview-editor .star-box p {
+  margin: 0;
+  line-height: 1.7;
+  white-space: pre-line;
+  color: #344054;
+}
+
+.study-interview-editor .star-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.study-interview-editor .star-box {
+  background: #f8faff;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.study-interview-editor .star-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2f4db8;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1200px) {
+  .study-interview-editor .manage-page {
+    grid-template-columns: 1fr;
+  }
+
+  .study-interview-editor .preview-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .study-interview-editor .manage-page {
+    padding: 14px;
+  }
+
+  .study-interview-editor .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .study-interview-editor .page-head {
+    flex-direction: column;
+  }
+
+  .study-interview-editor .star-grid {
+    grid-template-columns: 1fr;
+  }
+}

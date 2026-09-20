@@ -1,0 +1,426 @@
+/* Ported verbatim, with selector scoping, from HappyEnglish/loginapp/static/css/daily_spoken_dialogue.css. */
+.study-dialogue {
+  --ink: #26364d;
+  --muted: #718096;
+  --line: #dce5ee;
+  --blue: #3569d7;
+  --blue-soft: #edf3ff;
+  --orange: #e88353;
+  --cream: #fffaf4;
+}
+.study-dialogue * {
+  box-sizing: border-box;
+}
+.study-dialogue {
+  margin: 0;
+  background: #f4f7fb;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.study-dialogue .dialogue-page {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 20px 18px 48px;
+}
+.study-dialogue .dialogue-topbar {
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+  margin-bottom: 18px;
+  text-align: center;
+}
+.study-dialogue .dialogue-topbar a {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 1.35rem;
+}
+.study-dialogue .dialogue-topbar strong {
+  color: var(--blue);
+  font-size: 0.95rem;
+}
+.study-dialogue .dialogue-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 42px 48px;
+  border-radius: 29px;
+  background: linear-gradient(115deg, #315dcc, #598deb 57%, #70baa7);
+  box-shadow: 0 18px 38px #2d58a438;
+  color: #fff;
+}
+.study-dialogue .dialogue-hero p {
+  margin: 0 0 8px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+.study-dialogue .dialogue-hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.35rem);
+  letter-spacing: -0.045em;
+}
+.study-dialogue .dialogue-hero div {
+  margin-top: 12px;
+  color: #eff6ff;
+  font-weight: 700;
+}
+.study-dialogue .dialogue-hero i {
+  position: absolute;
+  right: 48px;
+  bottom: -15px;
+  font-size: 9rem;
+  font-style: normal;
+  filter: drop-shadow(0 12px 8px #18327535);
+}
+.study-dialogue .dialogue-layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+.study-dialogue .dialogue-nav,
+.study-dialogue .lesson-content {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: #ffffffdc;
+  box-shadow: 0 8px 24px #27364c0a;
+}
+.study-dialogue .dialogue-nav {
+  align-self: start;
+  padding: 18px;
+}
+.study-dialogue .dialogue-nav label,
+.study-dialogue .dialogue-nav > p {
+  display: block;
+  margin: 2px 0 10px;
+  color: var(--muted);
+  font-size: 0.69rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.study-dialogue .lesson-picker input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.study-dialogue .lesson-picker input:focus {
+  outline: 0;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px #3569d722;
+}
+.study-dialogue .lesson-picker > small {
+  display: block;
+  margin: 8px 2px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.study-dialogue .lesson-results {
+  display: grid;
+  gap: 5px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+.study-dialogue .lesson-option {
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+  border-radius: 11px;
+  color: #4d607b;
+}
+.study-dialogue .lesson-option:hover,
+.study-dialogue .lesson-option.active {
+  background: var(--blue-soft);
+  color: #244d9e;
+}
+.study-dialogue .lesson-option.active {
+  box-shadow: inset 3px 0 0 var(--blue);
+}
+.study-dialogue .lesson-option span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.67rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.study-dialogue .lesson-option strong {
+  overflow: hidden;
+  font-size: 0.81rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.study-dialogue .lesson-no-results {
+  margin: 6px 2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.study-dialogue .dialogue-nav > p {
+  margin-top: 22px;
+}
+.study-dialogue .dialogue-nav nav {
+  display: grid;
+  gap: 5px;
+}
+.study-dialogue .dialogue-nav nav a {
+  padding: 10px;
+  border-radius: 11px;
+  color: #4d607b;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+.study-dialogue .dialogue-nav nav a:hover {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.study-dialogue .lesson-content {
+  padding: 30px;
+}
+.study-dialogue .learning-section + .learning-section {
+  margin-top: 38px;
+  padding-top: 35px;
+  border-top: 1px solid var(--line);
+}
+.study-dialogue .section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+  margin-bottom: 17px;
+}
+.study-dialogue .section-title span {
+  color: var(--orange);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+.study-dialogue .section-title h2 {
+  margin: 0;
+  font-size: 1.48rem;
+}
+.study-dialogue .vocabulary-grid,
+.study-dialogue .prompt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+.study-dialogue .vocabulary-card,
+.study-dialogue .prompt-card {
+  position: relative;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+.study-dialogue .vocabulary-card h3,
+.study-dialogue .prompt-card h3 {
+  margin: 0;
+  color: #244d9e;
+  font-size: 1.2rem;
+}
+.study-dialogue .vocabulary-card em {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+.study-dialogue .vocabulary-card > button,
+.study-dialogue .dialogue-line > button {
+  position: absolute;
+  right: 13px;
+  top: 13px;
+  border: 1px solid #cfdcf9;
+  border-radius: 9px;
+  background: #f3f6ff;
+  cursor: pointer;
+  padding: 7px;
+}
+.study-dialogue .vocabulary-card p {
+  margin: 11px 0 0;
+  color: #5c6d80;
+  line-height: 1.6;
+  font-size: 0.88rem;
+}
+.study-dialogue .vocabulary-card .meaning {
+  color: var(--ink);
+  font-weight: 800;
+}
+.study-dialogue .vocabulary-card blockquote {
+  margin: 13px 0 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--cream);
+  color: #6b574e;
+  font-size: 0.83rem;
+  line-height: 1.55;
+}
+.study-dialogue .dialogue-list {
+  display: grid;
+  gap: 9px;
+}
+.study-dialogue .dialogue-line {
+  position: relative;
+  display: grid;
+  grid-template-columns: 63px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 52px 14px 14px;
+  border: 1px solid #d6e2f2;
+  border-radius: 16px;
+  background: #fbfdff;
+}
+.study-dialogue .practice-list .dialogue-line {
+  border-color: #f0dfce;
+  background: #fffaf5;
+}
+.study-dialogue .speaker {
+  display: grid;
+  min-height: 31px;
+  place-items: center;
+  border-radius: 9px;
+  background: #e6eeff;
+  color: #315cb5;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+.study-dialogue .practice-list .speaker {
+  background: #ffeadb;
+  color: #b8633b;
+}
+.study-dialogue .line-copy p {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.study-dialogue .line-copy small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.study-dialogue .prompt-card {
+  padding-left: 52px;
+}
+.study-dialogue .prompt-card > span {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+.study-dialogue .prompt-card p {
+  margin: 9px 0 0;
+  line-height: 1.6;
+}
+.study-dialogue .prompt-card .translation {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.study-dialogue .hints {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 11px;
+  background: var(--cream);
+  color: #6d584d;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.study-dialogue .hints b {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--orange);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.study-dialogue .prompt-card button {
+  margin-top: 14px;
+  padding: 8px 11px;
+  border: 1px solid #cfdcf9;
+  border-radius: 9px;
+  background: #f3f6ff;
+  color: #315cb5;
+  cursor: pointer;
+  font-weight: 800;
+}
+@media (max-width: 800px) {
+  .study-dialogue .dialogue-page {
+    padding: 14px 12px 32px;
+  }
+  .study-dialogue .dialogue-hero {
+    padding: 32px 25px;
+  }
+  .study-dialogue .dialogue-hero i {
+    right: 15px;
+    font-size: 6rem;
+  }
+  .study-dialogue .dialogue-layout {
+    grid-template-columns: 1fr;
+  }
+  .study-dialogue .dialogue-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .study-dialogue .dialogue-nav > p {
+    margin: 0;
+  }
+  .study-dialogue .dialogue-nav nav {
+    grid-column: 1/-1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .study-dialogue .lesson-content {
+    padding: 22px 16px;
+  }
+}
+@media (max-width: 560px) {
+  .study-dialogue .vocabulary-grid,
+  .study-dialogue .prompt-grid {
+    grid-template-columns: 1fr;
+  }
+  .study-dialogue .dialogue-nav {
+    display: block;
+  }
+  .study-dialogue .dialogue-nav > p {
+    margin-top: 20px;
+  }
+  .study-dialogue .dialogue-nav nav {
+    grid-template-columns: 1fr;
+  }
+  .study-dialogue .dialogue-line {
+    grid-template-columns: 50px minmax(0, 1fr);
+    gap: 9px;
+    padding-left: 10px;
+  }
+  .study-dialogue .lesson-content {
+    border-radius: 20px;
+  }
+  .study-dialogue .dialogue-hero h1 {
+    font-size: 2rem;
+  }
+}

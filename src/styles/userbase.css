@@ -1,0 +1,120 @@
+/* Ported verbatim, with selector scoping, from HappyEnglish/loginapp/templates/userbase.html. */
+
+.study-userbase .nav-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.study-userbase .nav-avatar-fallback {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 700;
+}
+
+.study-userbase .reminder-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f8f9fa;
+  font-size: 22px;
+}
+
+.study-userbase .reminder-item {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: #fff;
+}
+
+.study-userbase .reminder-meta {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.study-userbase .reminder-badge-date {
+  min-width: 92px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #f8f9fa;
+}
+
+.study-userbase .happy-navbar {
+  background: linear-gradient(135deg, #4f8cff 0%, #7c4dff 100%);
+  box-shadow: 0 6px 18px rgba(79, 140, 255, 0.18);
+}
+
+.study-userbase .happy-navbar .navbar-brand,
+.study-userbase .happy-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+.study-userbase .happy-navbar .nav-link:hover {
+  color: #ffffff !important;
+}
+
+.study-userbase .happy-navbar .nav-link.active {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-decoration: none;
+  position: relative;
+}
+
+.study-userbase .happy-navbar .nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.25rem;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+}
+
+.study-userbase .happy-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+.study-userbase .happy-navbar .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+.study-userbase .happy-navbar .dropdown-menu {
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 0.75rem 1.25rem rgba(0, 0, 0, 0.14);
+}
+
+.study-userbase .happy-btn-outline {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.68) !important;
+  border-radius: 10px;
+  font-weight: 600;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+}
+
+.study-userbase .happy-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+.study-userbase .happy-role-badge {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}

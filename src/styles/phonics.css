@@ -1,0 +1,553 @@
+/* Ported verbatim, with selector scoping, from HappyEnglish/loginapp/static/css/phonics.css. */
+.study-phonics {
+  --ink: #29264a;
+  --muted: #716e87;
+  --purple: #7162d5;
+  --purple-dark: #5547af;
+  --yellow: #ffd568;
+  --teal: #38c5b3;
+  --line: #e7e2f1;
+  --cream: #fffcf4;
+}
+.study-phonics * {
+  box-sizing: border-box;
+}
+.study-phonics {
+  margin: 0;
+  color: var(--ink);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  background:
+    radial-gradient(
+      circle at 8% 10%,
+      rgba(255, 213, 104, 0.3),
+      transparent 24rem
+    ),
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(113, 98, 213, 0.15),
+      transparent 28rem
+    ),
+    var(--cream);
+}
+.study-phonics button,
+.study-phonics a {
+  font: inherit;
+}
+.study-phonics a {
+  color: inherit;
+  text-decoration: none;
+}
+.study-phonics .phonics-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 18px 46px;
+}
+.study-phonics .phonics-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.study-phonics .back-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(48, 42, 90, 0.08);
+  font-size: 1.45rem;
+}
+.study-phonics .brand-mark {
+  color: var(--purple);
+  font-weight: 850;
+}
+.study-phonics .brand-mark span {
+  color: #ef9953;
+  font-size: 1.2rem;
+}
+.study-phonics .topbar-spacer {
+  width: 46px;
+}
+.study-phonics .phonics-hero {
+  position: relative;
+  display: flex;
+  min-height: 254px;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 36px 54px;
+  border-radius: 32px;
+  background: linear-gradient(115deg, #6251c6, #8876e8 59%, #edaa75);
+  box-shadow: 0 18px 42px rgba(63, 51, 142, 0.2);
+  color: #fff;
+}
+.study-phonics .eyebrow {
+  margin: 0 0 12px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+.study-phonics .phonics-hero h1 {
+  margin: 0;
+  font-size: clamp(2.3rem, 5vw, 4rem);
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+.study-phonics .phonics-hero h1 span {
+  color: #fff1ab;
+}
+.study-phonics .hero-copy {
+  max-width: 480px;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.03rem;
+  line-height: 1.55;
+}
+.study-phonics .hero-art {
+  position: relative;
+  z-index: 1;
+  width: 280px;
+  height: 180px;
+}
+.study-phonics .hero-art span {
+  position: absolute;
+  display: grid;
+  width: 78px;
+  height: 78px;
+  place-items: center;
+  border-radius: 24px;
+  background: #fff;
+  color: var(--purple);
+  box-shadow: 0 12px 18px rgba(61, 47, 120, 0.17);
+  font-size: 2.3rem;
+  font-weight: 900;
+  transform: rotate(-8deg);
+}
+.study-phonics .hero-art span:nth-child(1) {
+  left: 8px;
+  top: 60px;
+}
+.study-phonics .hero-art span:nth-child(2) {
+  left: 94px;
+  top: 14px;
+  color: #e77c58;
+  transform: rotate(8deg);
+}
+.study-phonics .hero-art span:nth-child(3) {
+  right: 4px;
+  bottom: 2px;
+  color: #1caa9c;
+  transform: rotate(-4deg);
+}
+.study-phonics .hero-art i {
+  position: absolute;
+  top: 78px;
+  right: 83px;
+  color: #fff4b6;
+  font-size: 2.4rem;
+  font-style: normal;
+}
+.study-phonics .lesson-layout {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+.study-phonics .lesson-menu,
+.study-phonics .lesson-card {
+  border: 1px solid var(--line);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 25px rgba(52, 43, 99, 0.06);
+}
+.study-phonics .lesson-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  height: fit-content;
+  padding: 14px;
+}
+.study-phonics .menu-label {
+  grid-column: 1 / -1;
+  margin: 3px 8px 10px;
+  color: var(--muted);
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+.study-phonics .lesson-link {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px 8px;
+  border-radius: 13px;
+}
+.study-phonics .lesson-link:hover {
+  background: #f6f3ff;
+}
+.study-phonics .lesson-link.active {
+  background: #eeeaff;
+  color: var(--purple-dark);
+}
+.study-phonics .lesson-link > span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #f3f0fb;
+  color: var(--purple);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+.study-phonics .lesson-link.active > span {
+  background: var(--purple);
+  color: #fff;
+}
+.study-phonics .lesson-link div {
+  min-width: 0;
+}
+.study-phonics .lesson-link strong,
+.study-phonics .lesson-link small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.study-phonics .lesson-link strong {
+  font-size: 0.76rem;
+}
+.study-phonics .lesson-link small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+.study-phonics .lesson-card {
+  padding: 30px;
+}
+.study-phonics .lesson-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.study-phonics .lesson-kicker,
+.study-phonics .section-heading p,
+.study-phonics .quick-check > p {
+  margin: 0;
+  color: #df8255;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+.study-phonics .lesson-heading h2 {
+  margin: 6px 0 0;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  letter-spacing: -0.035em;
+}
+.study-phonics .listen-pattern {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border: 1px solid #d8d1f5;
+  border-radius: 12px;
+  background: #f5f2ff;
+  color: var(--purple-dark);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+.study-phonics .listen-pattern:hover,
+.study-phonics .word-card:hover {
+  border-color: var(--purple);
+  background: #eeeaff;
+}
+.study-phonics .pattern-panel {
+  display: flex;
+  align-items: baseline;
+  gap: 13px;
+  flex-wrap: wrap;
+  margin-top: 25px;
+  padding: 22px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f2efff, #edfaff);
+}
+.study-phonics .pattern-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+.study-phonics .pattern-panel strong {
+  color: var(--purple-dark);
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  letter-spacing: 0.06em;
+}
+.study-phonics .pattern-panel span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+.study-phonics .lesson-tip {
+  margin: 18px 0 27px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--teal);
+  border-radius: 0 12px 12px 0;
+  background: #effbf8;
+  color: #4f5c68;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.study-phonics .lesson-tip b {
+  margin-right: 10px;
+  color: #198c7d;
+}
+.study-phonics .section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.study-phonics .section-heading h3,
+.study-phonics .quick-check h3 {
+  margin: 5px 0 0;
+  font-size: 1.22rem;
+}
+.study-phonics .section-heading small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.study-phonics .review-section {
+  margin-bottom: 27px;
+}
+.study-phonics .word-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+.study-phonics .review-grid .word-card {
+  min-height: 82px;
+  background: #f9fbff;
+}
+.study-phonics .word-card {
+  position: relative;
+  min-height: 96px;
+  padding: 14px;
+  border: 1px solid #e1ddee;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.study-phonics .word-card strong {
+  display: block;
+  font-size: 1.2rem;
+}
+.study-phonics .word-card span {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.study-phonics .word-card span b {
+  color: var(--purple);
+}
+.study-phonics .word-card i {
+  position: absolute;
+  top: 12px;
+  right: 11px;
+  font-style: normal;
+  font-size: 0.8rem;
+}
+.study-phonics .quick-check {
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid #f1dfab;
+  border-radius: 20px;
+  background: #fffaf0;
+}
+.study-phonics .quick-check h3 {
+  max-width: 650px;
+}
+.study-phonics .quiz-choices {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.study-phonics .quiz-choices button {
+  min-width: 86px;
+  padding: 9px 13px;
+  border: 1px solid #eadba8;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
+.study-phonics .quiz-choices button:hover {
+  border-color: #d4a842;
+}
+.study-phonics .quiz-choices button.correct {
+  border-color: #20a18d;
+  background: #e7fbf6;
+  color: #167969;
+}
+.study-phonics .quiz-choices button.wrong {
+  border-color: #e58b7a;
+  background: #fff0ed;
+  color: #b55b4c;
+}
+.study-phonics .quiz-feedback {
+  min-height: 1.3em;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+@media (max-width: 800px) {
+  .study-phonics .phonics-page {
+    padding: 14px 12px 32px;
+  }
+  .study-phonics .phonics-hero {
+    min-height: 285px;
+    padding: 29px 26px;
+  }
+  .study-phonics .hero-art {
+    position: absolute;
+    right: -44px;
+    bottom: -15px;
+    transform: scale(0.72);
+    transform-origin: bottom right;
+    opacity: 0.85;
+  }
+  .study-phonics .hero-copy {
+    max-width: 300px;
+  }
+  .study-phonics .lesson-layout {
+    grid-template-columns: 1fr;
+  }
+  .study-phonics .lesson-menu {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 12px;
+  }
+  .study-phonics .menu-label {
+    display: none;
+  }
+  .study-phonics .lesson-link {
+    min-width: max-content;
+    padding: 9px 10px;
+  }
+  .study-phonics .lesson-link small {
+    display: none;
+  }
+  .study-phonics .lesson-card {
+    padding: 22px 17px;
+  }
+}
+@media (max-width: 520px) {
+  .study-phonics .lesson-heading {
+    flex-direction: column;
+  }
+  .study-phonics .listen-pattern {
+    width: 100%;
+  }
+  .study-phonics .pattern-panel {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .study-phonics .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .study-phonics .word-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .study-phonics .phonics-hero h1 {
+    font-size: 2.35rem;
+  }
+}
+.study-phonics .lesson-menu {
+  display: block;
+}
+.study-phonics .menu-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 3px 8px 10px;
+}
+.study-phonics .menu-title .menu-label {
+  margin: 0;
+}
+.study-phonics .menu-title > small {
+  color: var(--muted);
+  font-size: 0.69rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.study-phonics .lesson-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+.study-phonics .lesson-pagination {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.study-phonics .lesson-pagination a {
+  padding: 8px;
+  border-radius: 10px;
+  background: #f5f2ff;
+  color: var(--purple-dark);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-align: center;
+}
+.study-phonics .lesson-pagination a:last-child {
+  grid-column: 2;
+}
+.study-phonics .lesson-pagination a:hover {
+  background: #eeeaff;
+}
+@media (max-width: 800px) {
+  .study-phonics .lesson-menu {
+    display: block;
+    overflow: visible;
+    padding: 12px;
+  }
+  .study-phonics .menu-title .menu-label {
+    display: block;
+  }
+  .study-phonics .lesson-link {
+    min-width: 0;
+  }
+  .study-phonics .lesson-link small {
+    display: block;
+  }
+}
+.study-phonics .lesson-layout {
+  grid-template-columns: 340px minmax(0, 1fr);
+}
+.study-phonics .lesson-links {
+  grid-template-columns: 1fr;
+}
+.study-phonics .lesson-link strong {
+  font-size: 0.82rem;
+}
+.study-phonics .lesson-link small {
+  font-size: 0.7rem;
+}

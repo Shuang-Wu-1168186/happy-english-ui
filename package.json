@@ -1,0 +1,34 @@
+{
+  "name": "happy-english-ui",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "format": "prettier --write src e2e *.ts *.json *.html *.md",
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "import:styles": "node scripts/import-original-styles.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^1.47.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "postcss": "^8.5.28",
+    "prettier": "^3.9.8",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  }
+}
