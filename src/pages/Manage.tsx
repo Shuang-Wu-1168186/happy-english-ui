@@ -262,6 +262,8 @@ function Editor({
           example_image_url: "",
           example_image_alt: "",
         }));
+      } else if (!initial && resource === "notes") {
+        navigate(`/manage?resource=note-items&parent_id=${saved.id}`);
       } else navigate(`/learn/${resource}/${saved.id}`);
     } catch (e) {
       setError((e as Error).message);

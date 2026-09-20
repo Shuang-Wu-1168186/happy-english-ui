@@ -56,6 +56,32 @@ test("original content editor preview and API create, edit, delete", async ({
     page.getByText("User not found.", { exact: true }),
   ).toBeVisible();
 });
+test("creating a study note opens its card creation form", async ({ page }) => {
+  await login(page);
+  const session = await (await page.request.get("/api/auth/session")).json();
+  const headers = { "X-CSRF-Token": session.csrf_token };
+  let noteId: string | null = null;
+  try {
+    await page.goto("/manage?resource=notes");
+    await page
+      .getByLabel("Title", { exact: true })
+      .fill(`Browser study note ${Date.now()}`);
+    await page.getByRole("button", { name: "Save Card", exact: true }).click();
+    await expect(page).toHaveURL(/\/manage\?resource=note-items&parent_id=\d+/);
+    noteId = new URL(page.url()).searchParams.get("parent_id");
+    expect(noteId).not.toBeNull();
+    await expect(
+      page.getByLabel("Note (for MODULE02)", { exact: true }),
+    ).toHaveValue(noteId!);
+  } finally {
+    if (noteId)
+      expect(
+        (
+          await page.request.delete(`/api/content/notes/${noteId}`, { headers })
+        ).ok(),
+      ).toBeTruthy();
+  }
+});
 test("signup, profile and password retain API flows", async ({ page }) => {
   await page.goto("/signup");
   await page.getByLabel("Full name", { exact: true }).fill("New Learner");
