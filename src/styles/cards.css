@@ -518,6 +518,124 @@
   color: #7152b8;
 }
 
+.study-cards .example-image-wrap {
+  margin-top: 14px;
+}
+
+.study-cards .example-image-box {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  overflow: hidden;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  appearance: none;
+  background: #f8fafc;
+  cursor: zoom-in;
+  text-align: initial;
+}
+
+.study-cards .example-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 12px;
+  background: #fff;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  transition: transform 0.18s ease;
+}
+
+.study-cards .example-image-box:hover .example-image {
+  transform: scale(1.02);
+}
+
+.study-cards .example-image-alt {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+body.image-preview-open {
+  overflow: hidden;
+}
+
+.image-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  isolation: isolate;
+}
+
+.image-preview-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.82);
+}
+
+.image-preview-panel {
+  width: min(94vw, 1200px);
+  max-height: calc(100dvh - 32px);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.image-preview-panel img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: calc(100dvh - 116px);
+  display: block;
+  border-radius: 18px;
+  background: #fff;
+  object-fit: contain;
+}
+
+.image-preview-close {
+  width: 42px;
+  height: 42px;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.image-preview-close:hover {
+  background: rgba(15, 23, 42, 0.92);
+}
+
+.image-preview-caption {
+  max-width: 100%;
+  max-height: 64px;
+  margin-top: 10px;
+  overflow: auto;
+  color: #475467;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
+  white-space: pre-line;
+}
+
 @media (max-width: 640px) {
   .study-cards .knowledge-card-hero {
     padding: 16px;
@@ -527,6 +645,30 @@
   }
   .study-cards .knowledge-card-panel {
     padding: 14px;
+  }
+
+  .image-preview-modal {
+    padding: 12px;
+  }
+
+  .image-preview-panel {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  .image-preview-panel img {
+    max-height: calc(100dvh - 94px);
+    border-radius: 14px;
+  }
+
+  .image-preview-close {
+    width: 38px;
+    height: 38px;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
   }
 }
 

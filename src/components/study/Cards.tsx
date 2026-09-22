@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
 import { api, asset, entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
@@ -90,56 +91,79 @@ function Dictation({
 }
 function NoteImage({ item }: { item: Entry }) {
   const [open, setOpen] = useState(false);
+  const closeButton = useRef<HTMLButtonElement>(null);
   const src = asset(value(item, "example_image_url")),
     alt = value(item, "example_image_alt") || "Example image";
+  const close = useCallback(() => setOpen(false), []);
+
   useEffect(() => {
     if (!open) return;
-    const close = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const closeOnEscape = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      close();
     };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [open]);
+    document.body.classList.add("image-preview-open");
+    window.addEventListener("keydown", closeOnEscape);
+    const frame = window.requestAnimationFrame(() =>
+      closeButton.current?.focus(),
+    );
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.body.classList.remove("image-preview-open");
+      window.removeEventListener("keydown", closeOnEscape);
+      if (previousFocus && document.contains(previousFocus))
+        previousFocus.focus();
+    };
+  }, [close, open]);
+
   if (!src) return null;
   return (
     <>
       <div className="example-image-wrap">
-        <div className="example-image-box">
-          <img
-            className="example-image"
-            src={src}
-            alt={alt}
-            loading="lazy"
-            onClick={() => setOpen(true)}
-          />
-        </div>
+        <button
+          aria-haspopup="dialog"
+          aria-label={`全屏查看图片：${alt}`}
+          className="example-image-box"
+          onClick={() => setOpen(true)}
+          type="button"
+        >
+          <img className="example-image" src={src} alt={alt} loading="lazy" />
+        </button>
         {value(item, "example_image_alt") && (
           <div className="example-image-alt">{alt}</div>
         )}
       </div>
-      {open && (
-        <div
-          className="image-preview-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Preview image"
-        >
+      {open &&
+        createPortal(
           <div
-            className="image-preview-backdrop"
-            onClick={() => setOpen(false)}
-          />
-          <div className="image-preview-panel">
-            <button
-              className="image-preview-close"
-              onClick={() => setOpen(false)}
-            >
-              ×
-            </button>
-            <img src={src} alt={alt} />
-            <div className="image-preview-caption">{alt}</div>
-          </div>
-        </div>
-      )}
+            className="image-preview-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="图片预览"
+          >
+            <div
+              aria-hidden="true"
+              className="image-preview-backdrop"
+              onClick={close}
+            />
+            <div className="image-preview-panel">
+              <button
+                aria-label="关闭图片预览"
+                className="image-preview-close"
+                onClick={close}
+                ref={closeButton}
+                type="button"
+              >
+                ×
+              </button>
+              <img src={src} alt={alt} />
+              <div className="image-preview-caption">{alt}</div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

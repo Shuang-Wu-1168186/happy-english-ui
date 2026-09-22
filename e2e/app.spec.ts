@@ -218,6 +218,13 @@ test("old note links retain forward and backward page flips", async ({
   await login(page);
   const session = await (await page.request.get("/api/auth/session")).json();
   const headers = { "X-CSRF-Token": session.csrf_token };
+  const previewImage = "/static/uploads/english_note_item/lightbox-test.png";
+  await page.route(`**${previewImage}`, (route) =>
+    route.fulfill({
+      body: `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"><rect width="1280" height="720" fill="#2563eb"/><text x="640" y="360" fill="white" font-family="Arial" font-size="72" font-weight="700" text-anchor="middle">Image preview</text></svg>`,
+      contentType: "image/svg+xml",
+    }),
+  );
   const created = await page.request.post("/api/content/note-items", {
     headers,
     data: {
@@ -227,6 +234,8 @@ test("old note links retain forward and backward page flips", async ({
       raw_text: "Second note",
       english_text: "A second page",
       chinese_text: "第二页",
+      example_image_url: previewImage,
+      example_image_alt: "Preview test image",
       priority_order: 100,
     },
   });
@@ -245,6 +254,28 @@ test("old note links retain forward and backward page flips", async ({
     await expect(page.locator(".counter-btn")).toHaveText("2 / 2");
     await expect(next).toBeDisabled();
     await expect(page.locator(".knowledge-card-hero h3")).toBeVisible();
+    const previewTrigger = page.getByRole("button", {
+      name: "全屏查看图片：Preview test image",
+    });
+    await expect(previewTrigger).toBeVisible();
+    await previewTrigger.click();
+    const preview = page.getByRole("dialog", { name: "图片预览" });
+    await expect(preview).toBeVisible();
+    await expect(preview).toHaveCSS("position", "fixed");
+    await expect
+      .poll(() =>
+        preview.locator("img").evaluate((image) => {
+          return (image as HTMLImageElement).naturalWidth;
+        }),
+      )
+      .toBeGreaterThan(0);
+    expect(
+      await preview.evaluate(
+        (element) => element.parentElement === document.body,
+      ),
+    ).toBeTruthy();
+    await page.keyboard.press("Escape");
+    await expect(preview).toHaveCount(0);
     await previous.click();
     await expect(page.locator(".counter-btn")).toHaveText("1 / 2");
     await expect(previous).toBeDisabled();
