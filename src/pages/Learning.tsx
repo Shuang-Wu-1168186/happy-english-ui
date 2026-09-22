@@ -1,7 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useStudyCatalog, useStudyItem } from "../lib/study";
 import { entries } from "../lib/api";
-import { visibleStudyNoteCards } from "../lib/study-notes";
 import { Kids } from "../components/study/Kids";
 import { Phonics } from "../components/study/Phonics";
 import { Textbook } from "../components/study/Textbook";
@@ -49,7 +48,7 @@ function NoteDetail({ id, initialId }: { id: string; initialId?: number }) {
   if (!result?.item) return <Message error={result?.error} />;
   return (
     <OriginalCards
-      items={visibleStudyNoteCards(entries(result.item, "items"))}
+      items={entries(result.item, "items")}
       resource="note-items"
       note={result.item}
       initialId={initialId}

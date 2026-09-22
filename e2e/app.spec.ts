@@ -262,7 +262,7 @@ test("old note links retain forward and backward page flips", async ({
       page
         .locator(".note-card")
         .filter({ hasText: "Daily practice" })
-        .getByText("2 cards", { exact: true }),
+        .getByText("3 cards", { exact: true }),
     ).toBeVisible();
     await page.goto("/english/note-cards?note_id=1");
     await expect(page).toHaveURL(/\/learn\/notes\/1/);
@@ -273,9 +273,13 @@ test("old note links retain forward and backward page flips", async ({
     });
     await expect(previous).toBeDisabled();
     await next.click();
-    await expect(page.locator(".counter-btn")).toHaveText("2 / 2");
+    await expect(page.locator(".counter-btn")).toHaveText("2 / 3");
+    await next.click();
+    await expect(page.locator(".counter-btn")).toHaveText("3 / 3");
     await expect(next).toBeDisabled();
-    await expect(page.locator(".knowledge-card-hero h3")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Second note", exact: true }),
+    ).toBeVisible();
     const previewTrigger = page.getByRole("button", {
       name: "全屏查看图片：Preview test image",
     });
@@ -299,7 +303,9 @@ test("old note links retain forward and backward page flips", async ({
     await page.keyboard.press("Escape");
     await expect(preview).toHaveCount(0);
     await previous.click();
-    await expect(page.locator(".counter-btn")).toHaveText("1 / 2");
+    await expect(page.locator(".counter-btn")).toHaveText("2 / 3");
+    await previous.click();
+    await expect(page.locator(".counter-btn")).toHaveText("1 / 3");
     await expect(previous).toBeDisabled();
     await expect(page.locator(".dictation-input")).toBeVisible();
   } finally {
