@@ -218,13 +218,23 @@ test("old note links retain forward and backward page flips", async ({
   await login(page);
   const session = await (await page.request.get("/api/auth/session")).json();
   const headers = { "X-CSRF-Token": session.csrf_token };
-  const previewImage = "/static/uploads/english_note_item/lightbox-test.png";
-  await page.route(`**${previewImage}`, (route) =>
-    route.fulfill({
-      body: `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"><rect width="1280" height="720" fill="#2563eb"/><text x="640" y="360" fill="white" font-family="Arial" font-size="72" font-weight="700" text-anchor="middle">Image preview</text></svg>`,
-      contentType: "image/svg+xml",
-    }),
-  );
+  const missingPreviewImage =
+    "/static/uploads/english_note_item/2aa518bbeadf42d4bf3a698a48968064.png";
+  const template = await page.request.post("/api/content/note-items", {
+    headers,
+    data: {
+      note_id: 1,
+      item_type: "knowledge",
+      item_title: "Study Notes",
+      raw_text: "Keep useful English in one place and review it regularly.",
+      english_text: "New words · useful phrases · example sentences",
+      chinese_text: "把新单词、实用短语和例句集中记录，并定期复习。",
+      explanation: "Use this note as a starting point for your English learning records.",
+      examples: "Vocabulary\nPhrases\nExample sentences",
+    },
+  });
+  expect(template.ok()).toBeTruthy();
+  const templateItem = await template.json();
   const created = await page.request.post("/api/content/note-items", {
     headers,
     data: {
@@ -234,7 +244,7 @@ test("old note links retain forward and backward page flips", async ({
       raw_text: "Second note",
       english_text: "A second page",
       chinese_text: "第二页",
-      example_image_url: previewImage,
+      example_image_url: missingPreviewImage,
       example_image_alt: "Preview test image",
       priority_order: 100,
     },
@@ -262,6 +272,10 @@ test("old note links retain forward and backward page flips", async ({
     const preview = page.getByRole("dialog", { name: "图片预览" });
     await expect(preview).toBeVisible();
     await expect(preview).toHaveCSS("position", "fixed");
+    await expect(preview.locator("img")).toHaveAttribute(
+      "src",
+      /\/note-images\/designed-to-do\.png$/,
+    );
     await expect
       .poll(() =>
         preview.locator("img").evaluate((image) => {
@@ -286,6 +300,14 @@ test("old note links retain forward and backward page flips", async ({
         await page.request.delete(`/api/content/note-items/${item.id}`, {
           headers,
         })
+      ).ok(),
+    ).toBeTruthy();
+    expect(
+      (
+        await page.request.delete(
+          `/api/content/note-items/${templateItem.id}`,
+          { headers },
+        )
       ).ok(),
     ).toBeTruthy();
   }

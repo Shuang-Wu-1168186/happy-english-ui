@@ -8,6 +8,14 @@ import { useStudyItem } from "../../lib/study";
 import { Speak } from "./Speech";
 import { FlipBook } from "./FlipBook";
 
+// Some earlier note records reference an upload that was not persisted. Keep
+// the replacement in the UI bundle so those cards remain usable after a data
+// restore or when an old backup is opened.
+const noteImageFallbacks: Record<string, string> = {
+  "/static/uploads/english_note_item/2aa518bbeadf42d4bf3a698a48968064.png":
+    "/note-images/designed-to-do.png",
+};
+
 function Dictation({
   text,
   onComplete,
@@ -91,8 +99,12 @@ function Dictation({
 }
 function NoteImage({ item }: { item: Entry }) {
   const [open, setOpen] = useState(false);
+  const [fallbackFor, setFallbackFor] = useState("");
   const closeButton = useRef<HTMLButtonElement>(null);
-  const src = asset(value(item, "example_image_url")),
+  const imagePath = value(item, "example_image_url"),
+    src = asset(imagePath),
+    fallbackSrc = noteImageFallbacks[imagePath],
+    displayedSrc = fallbackFor === imagePath && fallbackSrc ? fallbackSrc : src,
     alt = value(item, "example_image_alt") || "Example image";
   const close = useCallback(() => setOpen(false), []);
 
@@ -119,6 +131,9 @@ function NoteImage({ item }: { item: Entry }) {
   }, [close, open]);
 
   if (!src) return null;
+  const showFallback = () => {
+    if (fallbackSrc && displayedSrc !== fallbackSrc) setFallbackFor(imagePath);
+  };
   return (
     <>
       <div className="example-image-wrap">
@@ -129,7 +144,13 @@ function NoteImage({ item }: { item: Entry }) {
           onClick={() => setOpen(true)}
           type="button"
         >
-          <img className="example-image" src={src} alt={alt} loading="lazy" />
+          <img
+            className="example-image"
+            src={displayedSrc}
+            alt={alt}
+            loading="lazy"
+            onError={showFallback}
+          />
         </button>
         {value(item, "example_image_alt") && (
           <div className="example-image-alt">{alt}</div>
@@ -158,7 +179,7 @@ function NoteImage({ item }: { item: Entry }) {
               >
                 ×
               </button>
-              <img src={src} alt={alt} />
+              <img src={displayedSrc} alt={alt} onError={showFallback} />
               <div className="image-preview-caption">{alt}</div>
             </div>
           </div>,
