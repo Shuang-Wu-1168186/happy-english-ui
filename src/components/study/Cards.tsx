@@ -5,6 +5,7 @@ import { api, asset, entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
 import { useStudyItem } from "../../lib/study";
+import { visibleStudyNoteCards } from "../../lib/study-notes";
 import { Speak } from "./Speech";
 import { FlipBook } from "./FlipBook";
 
@@ -893,7 +894,9 @@ function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
       <div className="note-footer">
         <div className="note-meta-group">
           <span className="note-meta">
-            {detail?.item ? entries(detail.item, "items").length : "…"} cards
+            {detail?.item
+              ? visibleStudyNoteCards(entries(detail.item, "items")).length
+              : "…"} cards
           </span>
           {progress && (
             <span className="study-meta">

@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useStudyCatalog, useStudyItem } from "../lib/study";
-import { entries, value } from "../lib/api";
-import type { Entry } from "../lib/api";
+import { entries } from "../lib/api";
+import { visibleStudyNoteCards } from "../lib/study-notes";
 import { Kids } from "../components/study/Kids";
 import { Phonics } from "../components/study/Phonics";
 import { Textbook } from "../components/study/Textbook";
@@ -44,23 +44,12 @@ function Message({ error }: { error?: string }) {
   );
 }
 
-function isStarterNoteCard(item: Entry) {
-  return (
-    value(item, "item_type") === "knowledge" &&
-    value(item, "item_title") === "Study Notes" &&
-    value(item, "raw_text") ===
-      "Keep useful English in one place and review it regularly."
-  );
-}
-
 function NoteDetail({ id, initialId }: { id: string; initialId?: number }) {
   const result = useStudyItem("notes", id);
   if (!result?.item) return <Message error={result?.error} />;
   return (
     <OriginalCards
-      items={entries(result.item, "items").filter(
-        (item) => !isStarterNoteCard(item),
-      )}
+      items={visibleStudyNoteCards(entries(result.item, "items"))}
       resource="note-items"
       note={result.item}
       initialId={initialId}

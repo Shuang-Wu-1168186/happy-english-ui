@@ -257,6 +257,13 @@ test("old note links retain forward and backward page flips", async ({
   expect(created.ok()).toBeTruthy();
   const item = await created.json();
   try {
+    await page.goto("/learn/notes");
+    await expect(
+      page
+        .locator(".note-card")
+        .filter({ hasText: "Daily practice" })
+        .getByText("2 cards", { exact: true }),
+    ).toBeVisible();
     await page.goto("/english/note-cards?note_id=1");
     await expect(page).toHaveURL(/\/learn\/notes\/1/);
     const next = page.getByRole("button", { name: "Next card", exact: true });
