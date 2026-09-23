@@ -98,3 +98,24 @@ Vite 模板与代理配置参考 [Vite 文档](https://vite.dev/guide/)。前端
 `npm run build` 生成 `dist/`，可独立放到静态服务器上。配置 History API 回退到 `index.html`，并代理 `/api` 与 `/static` 到后端。
 
 提供 `Dockerfile` 和 Nginx 配置。默认上游主机为 `happy-english:8000`，需要在容器网络中提供同名后端服务，或按实际地址修改 `deploy/nginx.conf`。上线时在入口配置 HTTPS。
+
+
+前端部署完成。
+
+已完成操作：
+
+安装 Node.js 20.20.2（通过 nvm）
+构建前端项目 happy-english-ui，产物位于 /home/admin/happy_english_server/happy-english-ui/dist/
+更新 Nginx 配置：静态文件服务 + /api/ 反代到后端 8000 端口 + SPA fallback
+修复 /home/admin 目录权限使 nginx 用户可访问
+验证结果：
+
+检查项	状态
+前端页面 (http://IP/)	✅ 200 OK
+API 健康检查 (/api/health)	✅ {"status":"ok"}
+静态资源缓存头	✅ 1年过期
+注意事项：
+
+当前 Nginx 有 conflicting server name 警告，建议清理 /etc/nginx/conf.d/ 下多余的配置文件
+前端重新构建命令：export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm use 20 && cd /home/admin/happy_english_server/happy-english-ui && npm run build
+如需 HTTPS，需额外配置 SSL 证书
