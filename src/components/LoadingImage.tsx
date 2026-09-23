@@ -7,7 +7,7 @@ type LoadingImageProps = Omit<ComponentPropsWithoutRef<"img">, "src"> & {
   fallbackSrc?: string;
 };
 
-/** Shows the deployed static loading illustration until the requested image is ready. */
+/** Uses the loading illustration as the image background without changing layout. */
 export function LoadingImage({
   src,
   ...props
@@ -18,47 +18,30 @@ export function LoadingImage({
 function LoadingImageSource({
   src,
   fallbackSrc,
-  className,
   onError,
-  onLoad,
+  style,
   ...props
 }: LoadingImageProps) {
   const [activeSrc, setActiveSrc] = useState(src);
-  const [state, setState] = useState<"loading" | "loaded" | "failed">(
-    "loading",
-  );
 
   return (
-    <span
-      className={`loading-image loading-image--${state}`}
-      aria-busy={state === "loading"}
-    >
-      {state !== "loaded" && (
-        <img
-          className="loading-image__placeholder"
-          src={asset("/static/images/image-loading.svg")}
-          alt=""
-          aria-hidden="true"
-        />
-      )}
-      <img
-        {...props}
-        className={`loading-image__content${className ? ` ${className}` : ""}`}
-        src={activeSrc}
-        onLoad={(event) => {
-          setState("loaded");
-          onLoad?.(event);
-        }}
-        onError={(event) => {
-          onError?.(event);
-          if (fallbackSrc && activeSrc !== fallbackSrc) {
-            setActiveSrc(fallbackSrc);
-            setState("loading");
-            return;
-          }
-          setState("failed");
-        }}
-      />
-    </span>
+    <img
+      {...props}
+      src={activeSrc}
+      style={{
+        backgroundColor: "#f1edff",
+        backgroundImage: `url("${asset("/static/images/image-loading.svg")}")`,
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "contain",
+        ...style,
+      }}
+      onError={(event) => {
+        onError?.(event);
+        if (fallbackSrc && activeSrc !== fallbackSrc) {
+          setActiveSrc(fallbackSrc);
+        }
+      }}
+    />
   );
 }
