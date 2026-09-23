@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { LoadingImage } from "../LoadingImage";
 import { asset, entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useStudyItem } from "../../lib/study";
@@ -102,13 +103,9 @@ function KidsCard({
       </div>
       <div className={`word-picture${image ? " has-image" : ""}`}>
         {image ? (
-          <img
+          <LoadingImage
             src={asset(image)}
-            onError={(e) => {
-              const fallback = asset(value(item, "image_url"));
-              if (e.currentTarget.getAttribute("src") !== fallback)
-                e.currentTarget.src = fallback;
-            }}
+            fallbackSrc={asset(value(item, "image_url"))}
             alt={`${word} illustration`}
             loading="lazy"
           />

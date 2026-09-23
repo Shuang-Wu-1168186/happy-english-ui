@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { LoadingImage } from "../components/LoadingImage";
 import { api, asset, entries, request, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 import { useStudyCatalog, useStudyItem } from "../lib/study";
@@ -717,7 +718,7 @@ function Editor({
                         <div className="preview-image-wrap">
                           <div className="label">Example Image</div>
                           <div className="preview-image-box">
-                            <img
+                            <LoadingImage
                               className="preview-image"
                               src={asset(form.example_image_url)}
                               alt={form.example_image_alt || "Example image"}

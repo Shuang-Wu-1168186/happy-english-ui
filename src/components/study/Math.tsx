@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { LoadingImage } from "../LoadingImage";
 import { asset, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { mathVisuals } from "../../lib/math-visuals";
@@ -125,7 +126,7 @@ export function MathCards({
                 ) : (
                   value(item, "example_image_url") && (
                     <figure className="math-figure">
-                      <img
+                      <LoadingImage
                         src={asset(value(item, "example_image_url"))}
                         alt={`${value(item, "title")} 示意图`}
                       />

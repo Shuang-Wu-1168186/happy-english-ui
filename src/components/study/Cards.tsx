@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
+import { LoadingImage } from "../LoadingImage";
 import { api, asset, entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
@@ -129,7 +130,12 @@ function NoteImage({ item }: { item: Entry }) {
           onClick={() => setOpen(true)}
           type="button"
         >
-          <img className="example-image" src={src} alt={alt} loading="lazy" />
+          <LoadingImage
+            className="example-image"
+            src={src}
+            alt={alt}
+            loading="lazy"
+          />
         </button>
         {value(item, "example_image_alt") && (
           <div className="example-image-alt">{alt}</div>
