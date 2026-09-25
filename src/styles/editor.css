@@ -192,6 +192,7 @@
 }
 
 .study-editor .preview-image-box {
+  position: relative;
   margin-top: 8px;
   border-radius: 16px;
   overflow: hidden;

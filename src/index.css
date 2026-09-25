@@ -133,6 +133,17 @@ summary:focus-visible {
 .study-cards .note-book-page-content > .knowledge-card-hero {
   margin-top: 0;
 }
+.loading-image__placeholder {
+  position: absolute !important;
+  z-index: 2 !important;
+  inset: var(--loading-image-inset, 0);
+  width: calc(100% - var(--loading-image-inset, 0) - var(--loading-image-inset, 0)) !important;
+  height: calc(100% - var(--loading-image-inset, 0) - var(--loading-image-inset, 0)) !important;
+  object-fit: contain !important;
+  border-radius: inherit;
+  background: #f1edff;
+  pointer-events: none;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

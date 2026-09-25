@@ -523,6 +523,8 @@
 }
 
 .study-cards .example-image-box {
+  --loading-image-inset: 10px;
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   display: block;

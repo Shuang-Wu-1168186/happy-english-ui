@@ -7,7 +7,7 @@ type LoadingImageProps = Omit<ComponentPropsWithoutRef<"img">, "src"> & {
   fallbackSrc?: string;
 };
 
-/** Uses the loading illustration as the image background without changing layout. */
+/** Covers progressive image decoding until the complete image is ready to paint. */
 export function LoadingImage({
   src,
   ...props
@@ -19,29 +19,44 @@ function LoadingImageSource({
   src,
   fallbackSrc,
   onError,
-  style,
+  onLoad,
   ...props
 }: LoadingImageProps) {
   const [activeSrc, setActiveSrc] = useState(src);
+  const [loaded, setLoaded] = useState(false);
 
   return (
-    <img
-      {...props}
-      src={activeSrc}
-      style={{
-        backgroundColor: "#f1edff",
-        backgroundImage: `url("${asset("/static/images/image-loading.svg")}")`,
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "contain",
-        ...style,
-      }}
-      onError={(event) => {
-        onError?.(event);
-        if (fallbackSrc && activeSrc !== fallbackSrc) {
-          setActiveSrc(fallbackSrc);
-        }
-      }}
-    />
+    <>
+      <img
+        {...props}
+        src={activeSrc}
+        onLoad={(event) => {
+          const image = event.currentTarget;
+          const imageSrc = image.currentSrc;
+          void image
+            .decode()
+            .catch(() => undefined)
+            .then(() => {
+              if (image.currentSrc === imageSrc) setLoaded(true);
+            });
+          onLoad?.(event);
+        }}
+        onError={(event) => {
+          onError?.(event);
+          if (fallbackSrc && activeSrc !== fallbackSrc) {
+            setLoaded(false);
+            setActiveSrc(fallbackSrc);
+          }
+        }}
+      />
+      {!loaded && (
+        <img
+          className="loading-image__placeholder"
+          src={asset("/static/images/image-loading.svg")}
+          alt=""
+          aria-hidden="true"
+        />
+      )}
+    </>
   );
 }

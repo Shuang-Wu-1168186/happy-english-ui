@@ -425,6 +425,7 @@
   color: var(--kids-orange);
 }
 .study-kids .word-picture {
+  position: relative;
   display: grid;
   place-items: center;
   height: 102px;
