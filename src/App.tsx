@@ -14,6 +14,11 @@ import { Layout } from "./components/Layout";
 import { LegacyRoute } from "./components/LegacyRoute";
 import { Login } from "./pages/Login";
 import { Home } from "./pages/Home";
+import { Foundation } from "./pages/Foundation";
+import { DailySpeaking } from "./pages/DailySpeaking";
+import { CourseClassroom } from "./pages/CourseClassroom";
+import { CourseModuleCatalog, CourseTopicCatalog } from "./pages/CourseCatalog";
+import { CourseResourceLanding } from "./pages/CourseResourceLanding";
 import { Learning, Detail } from "./pages/Learning";
 import { Profile } from "./pages/Profile";
 import { Manage } from "./pages/Manage";
@@ -21,6 +26,15 @@ import { Users } from "./pages/Users";
 import { LoginMonitor } from "./pages/LoginMonitor";
 import { AdminLayout } from "./components/AdminLayout";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import { NoteCoursePreview } from "./pages/NoteCoursePreview";
+import { PutAsideCourseware } from "./pages/PutAsideCourseware";
+import { PutAsideMiniProgramPreview } from "./pages/PutAsideMiniProgramPreview";
+import { NoteToCourseware } from "./pages/NoteToCourseware";
+import { TopicManagement } from "./pages/TopicManagement";
+import { MaterialDevelopment, MembershipManagement } from "./pages/MembershipManagement";
+import { CourseDevelopment } from "./pages/CourseDevelopment";
+import { MaterialLessons } from "./pages/MaterialLessons";
+import { TemplateManagement } from "./pages/TemplateManagement";
 
 function Protected({ admin = false }: { admin?: boolean }) {
   const { user, loading, error } = useAuth();
@@ -63,6 +77,26 @@ export default function App() {
             <Route path="english/*" element={<LegacyRoute />} />
             <Route element={<Layout />}>
               <Route index element={<Home />} />
+              <Route path="foundation" element={<Foundation />} />
+              <Route path="daily-speaking" element={<DailySpeaking />} />
+              <Route path="workplace" element={<Navigate replace to="/" />} />
+              <Route path="courses/:courseId" element={<CourseClassroom />} />
+              <Route
+                path="learning-materials/:materialId"
+                element={<MaterialLessons />}
+              />
+              <Route
+                path="course-resources/:resource"
+                element={<CourseResourceLanding />}
+              />
+              <Route
+                path="course-modules/:moduleId"
+                element={<CourseModuleCatalog />}
+              />
+              <Route
+                path="course-topics/:topicId"
+                element={<CourseTopicCatalog />}
+              />
               <Route path="learn/:resource" element={<Learning />} />
               <Route path="learn/:resource/:id" element={<Detail />} />
               <Route path="profile" element={<Profile />} />
@@ -70,7 +104,7 @@ export default function App() {
               <Route element={<Protected admin />}>
                 <Route
                   path="manage"
-                  element={<RedirectWithSearch to="/admin/content" />}
+                  element={<RedirectWithSearch to="/admin/content/notes" />}
                 />
                 <Route
                   path="users"
@@ -94,7 +128,32 @@ export default function App() {
             <Route element={<Protected admin />}>
               <Route path="admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
-                <Route path="content" element={<Manage />} />
+                <Route
+                  path="content"
+                  element={<RedirectWithSearch to="/admin/content/notes" />}
+                />
+                <Route path="content/notes" element={<Manage />} />
+                <Route path="content/topics" element={<TopicManagement />} />
+                <Route path="content/materials" element={<MaterialDevelopment />} />
+                <Route path="content/templates" element={<TemplateManagement />} />
+                <Route path="content/courses" element={<CourseDevelopment />} />
+                <Route path="learning/topics" element={<TopicManagement />} />
+                <Route path="learning/materials" element={<MaterialDevelopment />} />
+                <Route path="learning/templates" element={<TemplateManagement />} />
+                <Route path="learning/courses" element={<CourseDevelopment />} />
+                <Route
+                  path="content/course-preview"
+                  element={<NoteCoursePreview />}
+                />
+                <Route
+                  path="content/put-aside-courseware"
+                  element={<PutAsideCourseware />}
+                />
+                <Route
+                  path="content/put-aside-mini-program"
+                  element={<PutAsideMiniProgramPreview />}
+                />
+                <Route path="content/note-to-courseware" element={<NoteToCourseware />} />
                 <Route path="users" element={<Users />} />
                 <Route
                   path="users/create"
@@ -102,6 +161,7 @@ export default function App() {
                 />
                 <Route path="users/:id/edit" element={<UserEditRedirect />} />
                 <Route path="login-monitor" element={<LoginMonitor />} />
+                <Route path="membership" element={<MembershipManagement />} />
               </Route>
             </Route>
           </Route>

@@ -191,7 +191,7 @@ export function Users() {
             {!creating && !selected ? (
               <p>
                 {editUser?.id === id && !editUser.user
-                  ? "User not found."
+                  ? "该用户不存在。"
                   : "Loading…"}
               </p>
             ) : (

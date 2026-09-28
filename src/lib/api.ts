@@ -24,10 +24,33 @@ const base = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 let csrf = "";
 export const asset = (path: string) =>
   path.startsWith("/static/") ? `${base}${path}` : path;
-export const value = (entry: Entry, key: string) =>
-  entry[key] == null ? "" : String(entry[key]);
+export const value = (entry: Entry | null | undefined, key: string) =>
+  entry?.[key] == null ? "" : String(entry[key]);
 export const entries = (entry: Entry, key: string): Entry[] =>
   Array.isArray(entry[key]) ? (entry[key] as Entry[]) : [];
+
+function errorMessage(detail: unknown, status: number) {
+  if (typeof detail === "string") {
+    const message = detail.trim();
+    if (status === 404 && /^not found$/i.test(message)) {
+      return "当前服务尚未更新，请启动最新后端后重试。";
+    }
+    if (/\bnot found\.?$/i.test(message)) {
+      return "该记录已不存在，请刷新列表后重试。";
+    }
+    return message || "请求失败，请稍后重试。";
+  }
+  if (Array.isArray(detail)) {
+    return detail
+      .map(
+        (entry: { loc?: string[]; msg: string }) =>
+          `${entry.loc?.join(".") || ""}: ${entry.msg}`,
+      )
+      .join("\n");
+  }
+  return "请求失败，请稍后重试。";
+}
+
 export async function request(path: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers);
   if (options.body && !(options.body instanceof FormData))
@@ -48,18 +71,7 @@ export async function request(path: string, options: RequestInit = {}) {
     const data = await response
       .json()
       .catch(() => ({ detail: "请求失败，请稍后重试。" }));
-    const message =
-      typeof data.detail === "string"
-        ? data.detail
-        : Array.isArray(data.detail)
-          ? data.detail
-              .map(
-                (e: { loc?: string[]; msg: string }) =>
-                  `${e.loc?.join(".") || ""}: ${e.msg}`,
-              )
-              .join("\n")
-          : "请求失败";
-    throw new Error(message);
+    throw new Error(errorMessage(data.detail, response.status));
   }
   return response;
 }

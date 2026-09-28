@@ -156,7 +156,13 @@ export function Layout() {
       ? "zh-CN"
       : "en";
     document.body.className =
-      pathname === "/"
+      ["/", "/foundation", "/daily-speaking", "/workplace"].includes(
+        pathname,
+      ) ||
+      pathname.startsWith("/courses/") ||
+      pathname.startsWith("/course-modules/") ||
+      pathname.startsWith("/course-topics/") ||
+      pathname.startsWith("/learning-materials/")
         ? "study-home"
         : pathname.startsWith("/learn/")
           ? `study-${kind}`
@@ -165,7 +171,18 @@ export function Layout() {
       document.body.className = "";
     };
   }, [pathname]);
-  if (pathname === "/" || pathname.startsWith("/learn/")) return <Outlet />;
+  if (
+    pathname === "/" ||
+    pathname === "/foundation" ||
+    pathname === "/daily-speaking" ||
+    pathname === "/workplace" ||
+    pathname.startsWith("/courses/") ||
+    pathname.startsWith("/course-modules/") ||
+    pathname.startsWith("/course-topics/") ||
+    pathname.startsWith("/learning-materials/") ||
+    pathname.startsWith("/learn/")
+  )
+    return <Outlet />;
   return (
     <div className="account-ui study-userbase">
       <AccountNavigation />

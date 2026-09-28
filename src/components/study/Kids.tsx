@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingImage } from "../LoadingImage";
 import { asset, entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useStudyItem } from "../../lib/study";
+import { CourseLockedContent, isCourseLocked } from "./CourseLock";
 import { FlipBook } from "./FlipBook";
 import { Follow, Speak } from "./Speech";
 
@@ -44,14 +45,21 @@ function KidsCard({
   learned,
   toggleLearned,
   active,
+  embedded = false,
+  onLockedLesson,
 }: {
   item: Entry;
   learned: boolean;
   toggleLearned: () => void;
   active: boolean;
+  embedded?: boolean;
+  onLockedLesson?: (item: Entry) => void;
 }) {
-  const detail = useStudyItem("kids-cards", active ? item.id : undefined);
-  const full = detail?.item || item;
+  const detail = useStudyItem(
+    "kids-cards",
+    embedded || !active ? undefined : item.id,
+  );
+  const full = embedded ? item : detail?.item || item;
   const [visibility, setVisibility] = useState(
     () =>
       readStored<Record<string, { english: boolean; chinese: boolean }>>(
@@ -59,6 +67,18 @@ function KidsCard({
         {},
       )[item.id] || { english: false, chinese: true },
   );
+  if (isCourseLocked(item))
+    return (
+      <article
+        className="kids-card featured-card course-locked-card"
+        data-card-id={item.id}
+      >
+        <CourseLockedContent
+          item={item}
+          onUnlock={() => onLockedLesson?.(item)}
+        />
+      </article>
+    );
   function toggle(language: "english" | "chinese") {
     const next = { ...visibility, [language]: !visibility[language] };
     setVisibility(next);
@@ -191,8 +211,8 @@ function KidsCard({
             </p>
           </div>
         ))}
-        {detail?.error && <p role="alert">{detail.error}</p>}
-        {detail?.item && !entries(full, "examples").length && (
+        {!embedded && detail?.error && <p role="alert">{detail.error}</p>}
+        {full && !entries(full, "examples").length && (
           <p className="pending-text">Examples will be added soon.</p>
         )}
       </div>
@@ -205,10 +225,17 @@ function KidsCard({
 export function Kids({
   items,
   initialId,
+  backTo,
+  embedded = false,
+  onLockedLesson,
 }: {
   items: Entry[];
   initialId?: number;
+  backTo?: string;
+  embedded?: boolean;
+  onLockedLesson?: (item: Entry) => void;
 }) {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const unit = params.get("unit") || "",
     letter = params.get("letter") || "";
@@ -250,7 +277,16 @@ export function Kids({
     <div className="study-kids">
       <main className="kids-page">
         <header className="kids-topbar">
-          <Link className="back-button" to="/" aria-label="Back to modules">
+          <Link
+            className="back-button"
+            to={backTo || "/"}
+            aria-label="Back to modules"
+            onClick={(event) => {
+              event.preventDefault();
+              if (window.history.state?.idx > 0) navigate(-1);
+              else navigate(backTo || "/");
+            }}
+          >
             ←
           </Link>
           <div className="brand-mark" aria-label="Happy English">
@@ -262,15 +298,15 @@ export function Kids({
         <section className="kids-hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span>🌟</span> YOUNG WORD EXPLORERS
+              <span>📚</span> TEXTBOOK VOCABULARY
             </div>
             <h1>
-              Explore words
+              Build your word bank
               <br />
               <span>with confidence!</span>
             </h1>
             <p>
-              Meet useful English words with pictures, pronunciation, and real
+              Learn core textbook words with pictures, pronunciation, and real
               sentences.
             </p>
             <div className="hero-stats">
@@ -294,7 +330,7 @@ export function Kids({
         </section>
         <section
           className="learning-panel"
-          aria-label="Kids English card practice"
+          aria-label="Textbook vocabulary card practice"
         >
           <div className="panel-heading">
             <div>
@@ -388,7 +424,9 @@ export function Kids({
                 <KidsCard
                   item={item}
                   active={Math.abs(i - active) < 2}
+                  embedded={embedded}
                   learned={learned.includes(String(item.id))}
+                  onLockedLesson={onLockedLesson}
                   toggleLearned={() => {
                     const next = learned.includes(String(item.id))
                       ? learned.filter((id) => id !== String(item.id))

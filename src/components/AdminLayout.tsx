@@ -1,10 +1,15 @@
 import { useLayoutEffect, useState } from "react";
 import {
   BookOpen,
+  BookCopy,
+  Award,
+  Eye,
+  FilePenLine,
   LayoutDashboard,
   LogOut,
   Menu,
   ShieldCheck,
+  Smartphone,
   Users,
   X,
 } from "lucide-react";
@@ -13,9 +18,49 @@ import { useAuth } from "../lib/auth-context";
 
 const navigation = [
   { to: "/admin", label: "概览", icon: LayoutDashboard, end: true },
-  { to: "/admin/content", label: "内容管理", icon: BookOpen },
+  { to: "/admin/membership", label: "会员管理", icon: Award },
   { to: "/admin/users", label: "用户管理", icon: Users },
   { to: "/admin/login-monitor", label: "登录监控", icon: ShieldCheck },
+];
+
+const contentNavigation = [
+  { to: "/admin/content/notes", label: "学习笔记", icon: FilePenLine },
+  {
+    to: "/admin/content/topics",
+    aliases: ["/admin/learning/topics"],
+    label: "专题维护",
+    icon: BookOpen,
+  },
+  {
+    to: "/admin/content/materials",
+    aliases: ["/admin/learning/materials"],
+    label: "教材开发",
+    icon: BookCopy,
+  },
+  {
+    to: "/admin/content/templates",
+    aliases: ["/admin/learning/templates"],
+    label: "模板管理",
+    icon: BookCopy,
+  },
+  {
+    to: "/admin/content/courses",
+    aliases: ["/admin/learning/courses"],
+    label: "课程开发",
+    icon: BookCopy,
+  },
+  { to: "/admin/content/course-preview", label: "课程预览", icon: Eye },
+  { to: "/admin/content/note-to-courseware", label: "笔记转教材", icon: BookCopy },
+  {
+    to: "/admin/content/put-aside-courseware",
+    label: "put aside 样稿",
+    icon: BookCopy,
+  },
+  {
+    to: "/admin/content/put-aside-mini-program",
+    label: "小程序样稿",
+    icon: Smartphone,
+  },
 ];
 
 export function AdminLayout() {
@@ -23,12 +68,23 @@ export function AdminLayout() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
+  const contentPageTitle = contentNavigation.find((item) =>
+    [item.to, ...(item.aliases || [])].some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    ),
+  )?.label;
+  const contentIsActive =
+    pathname === "/admin/content" ||
+    pathname.startsWith("/admin/content/") ||
+    pathname.startsWith("/admin/learning/");
   const pageTitle =
+    contentPageTitle ||
     navigation.find(
       (item) =>
         pathname === item.to ||
         (item.to !== "/admin" && pathname.startsWith(`${item.to}/`)),
-    )?.label || "管理中心";
+    )?.label ||
+    "管理中心";
 
   useLayoutEffect(() => {
     const previousClassName = document.body.className;
@@ -79,6 +135,36 @@ export function AdminLayout() {
 
         <nav aria-label="后台菜单" className="admin-nav">
           <p className="admin-nav-label">工作空间</p>
+          <div
+            className={`admin-nav-group${contentIsActive ? " is-active" : ""}`}
+          >
+            <NavLink
+              className="admin-nav-parent"
+              onClick={() => setOpen(false)}
+              to="/admin/content/notes"
+            >
+              <BookOpen aria-hidden="true" size={18} strokeWidth={2.25} />
+              <span>内容管理</span>
+            </NavLink>
+            <div className="admin-nav-submenu">
+              {contentNavigation.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    className={({ isActive }) =>
+                      `admin-nav-sublink${isActive ? " is-active" : ""}`
+                    }
+                    key={item.to}
+                    onClick={() => setOpen(false)}
+                    to={item.to}
+                  >
+                    <Icon aria-hidden="true" size={16} strokeWidth={2.25} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
           {navigation.map((item) => {
             const Icon = item.icon;
             return (

@@ -53,7 +53,7 @@ test("original content editor preview and API create, edit, delete", async ({
   );
   await page.goto("/admin/users?id=999999");
   await expect(
-    page.getByText("User not found.", { exact: true }),
+    page.getByText("该用户不存在。", { exact: true }),
   ).toBeVisible();
 });
 test("creating a study note opens its card creation form", async ({ page }) => {

@@ -4,14 +4,27 @@ import type { Entry, Page } from "./api";
 
 // The original learning screens expose full lesson menus and unit filters.
 // Read all API pages so those menus are not limited to the first 20 records.
-export function useStudyCatalog(resource: string, parentId?: string) {
+export function useStudyCatalog(
+  resource: string,
+  parentId?: string,
+  q = "",
+  filters: Record<string, string> = {},
+) {
   const [items, setItems] = useState<Entry[] | null>(null);
   const [error, setError] = useState("");
+  const filtersKey = Object.entries(filters)
+    .filter(([, value]) => value)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&");
   useEffect(() => {
     let active = true;
     async function load() {
       const params = new URLSearchParams({ page_size: "100" });
       if (parentId) params.set("parent_id", parentId);
+      if (q) params.set("q", q);
+      for (const [key, value] of Object.entries(filters))
+        if (value) params.set(key, value);
       const collected: Entry[] = [];
       let page = 1;
       while (active) {
@@ -29,7 +42,7 @@ export function useStudyCatalog(resource: string, parentId?: string) {
     return () => {
       active = false;
     };
-  }, [resource, parentId]);
+  }, [resource, parentId, q, filtersKey]);
   return { items, error };
 }
 

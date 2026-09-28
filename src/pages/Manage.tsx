@@ -4,6 +4,11 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingImage } from "../components/LoadingImage";
 import { api, asset, entries, request, value } from "../lib/api";
 import type { Entry } from "../lib/api";
+import {
+  NOTE_REGISTER_OPTIONS,
+  NOTE_SCENARIO_OPTIONS,
+  noteScenarioCodes,
+} from "../lib/note-language";
 import { useStudyCatalog, useStudyItem } from "../lib/study";
 import { Speak } from "../components/study/Speech";
 export function Manage() {
@@ -63,6 +68,10 @@ function Editor({
         for (const [k, v] of Object.entries(initial))
           if (typeof v === "string" || typeof v === "number")
             data[k] = String(v);
+      if (initial)
+        data.usage_scenarios = noteScenarioCodes(
+          initial.usage_scenarios,
+        ).join(",");
       if (initialResource === "sentences") {
         data.english_text = data.en || "";
         data.chinese_text = data.cn || "";
@@ -165,7 +174,7 @@ function Editor({
     setMessage("");
     try {
       await api(`/content/${resource}/${initial.id}`, "DELETE");
-      navigate(`/admin/content?resource=${resource}`);
+      navigate(`/admin/content/notes?resource=${resource}`);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -218,6 +227,11 @@ function Editor({
       data.note_id = Number(form.note_id);
       data.priority_order = Number(form.priority_order || 0);
       data.share_status = Number(form.share_status || 0);
+      if (form.language_register)
+        data.language_register = form.language_register;
+      if (form.usage_scenarios !== undefined)
+        data.usage_scenarios = noteScenarioCodes(form.usage_scenarios);
+      if (form.register_reason) data.register_reason = form.register_reason;
     } else if (resource === "notes")
       data = {
         title: form.title,
@@ -282,8 +296,8 @@ function Editor({
           example_image_alt: "",
         }));
       } else if (!initial && resource === "notes") {
-        navigate(`/admin/content?resource=note-items&parent_id=${saved.id}`);
-      } else navigate(`/admin/content?resource=${resource}&id=${saved.id}`);
+        navigate(`/admin/content/notes?resource=note-items&parent_id=${saved.id}`);
+      } else navigate(`/admin/content/notes?resource=${resource}&id=${saved.id}`);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -324,7 +338,7 @@ function Editor({
               <div className="head-actions">
                 <Link
                   className="btn-secondary"
-                  to="/admin/content?resource=interviews"
+                  to="/admin/content/notes?resource=interviews"
                 >
                   内容管理
                 </Link>
@@ -500,6 +514,48 @@ function Editor({
                     field("examples", knowledge ? "例题与练习" : "Examples", 5)}
                   {noteMode && (
                     <>
+                      <div className="form-group">
+                        <label htmlFor="language_register">表达语体</label>
+                        <select
+                          id="language_register"
+                          value={form.language_register || ""}
+                          onChange={(e) => set("language_register", e.target.value)}
+                        >
+                          <option value="">自动判断（新卡片）</option>
+                          {NOTE_REGISTER_OPTIONS.map(([code, label]) => (
+                            <option key={code} value={code}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="usage_scenarios">适用场景</label>
+                        <select
+                          id="usage_scenarios"
+                          multiple
+                          value={noteScenarioCodes(form.usage_scenarios)}
+                          onChange={(e) =>
+                            set(
+                              "usage_scenarios",
+                              Array.from(
+                                e.target.selectedOptions,
+                                (option) => option.value,
+                              ).join(","),
+                            )
+                          }
+                        >
+                          {NOTE_SCENARIO_OPTIONS.map(([code, label]) => (
+                            <option key={code} value={code}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="field-help">
+                          最多选择 3 个；保存后会覆盖自动标注。
+                        </div>
+                      </div>
+                      {field("register_reason", "语体判断说明", 3)}
                       <div className="form-group full">
                         <label htmlFor="image-upload">
                           Example Image Upload
@@ -576,7 +632,7 @@ function Editor({
               {interview && initial && (
                 <Link
                   className="btn-light"
-                  to="/admin/content?resource=interviews"
+                  to="/admin/content/notes?resource=interviews"
                 >
                   Create New
                 </Link>

@@ -11,6 +11,13 @@
 @import "./styles/dialogue.css";
 @import "./styles/math.css";
 @import "./styles/interview.css";
+@import "./styles/course-access.css";
+@import "./styles/note-course-preview.css";
+@import "./styles/note-to-courseware.css";
+@import "./styles/topic-management.css";
+@import "./styles/course-development.css";
+@import "./styles/put-aside-courseware.css";
+@import "./styles/put-aside-mini-program-preview.css";
 
 @import "./styles/editor.css";
 @import "./styles/interview-editor.css";
@@ -137,8 +144,12 @@ summary:focus-visible {
   position: absolute !important;
   z-index: 2 !important;
   inset: var(--loading-image-inset, 0);
-  width: calc(100% - var(--loading-image-inset, 0) - var(--loading-image-inset, 0)) !important;
-  height: calc(100% - var(--loading-image-inset, 0) - var(--loading-image-inset, 0)) !important;
+  width: calc(
+    100% - var(--loading-image-inset, 0) - var(--loading-image-inset, 0)
+  ) !important;
+  height: calc(
+    100% - var(--loading-image-inset, 0) - var(--loading-image-inset, 0)
+  ) !important;
   object-fit: contain !important;
   border-radius: inherit;
   background: #f1edff;

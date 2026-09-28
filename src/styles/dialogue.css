@@ -139,6 +139,23 @@
   border-radius: 11px;
   color: #4d607b;
 }
+.study-dialogue.course-dialogue-classroom .lesson-option {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.study-dialogue.course-dialogue-classroom .lesson-option.is-locked {
+  opacity: 0.72;
+}
+.study-dialogue.course-dialogue-classroom .lesson-option em {
+  color: var(--orange);
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 800;
+}
 .study-dialogue .lesson-option:hover,
 .study-dialogue .lesson-option.active {
   background: var(--blue-soft);
@@ -168,6 +185,19 @@
   color: var(--muted);
   font-size: 0.8rem;
   line-height: 1.5;
+}
+.study-dialogue .course-dialogue-preview {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 0.79rem;
+  font-weight: 700;
 }
 .study-dialogue .dialogue-nav > p {
   margin-top: 22px;

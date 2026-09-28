@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingImage } from "../LoadingImage";
 import { api, asset, entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
+import {
+  NOTE_REGISTER_LABELS,
+  NOTE_REGISTER_OPTIONS,
+  NOTE_SCENARIO_LABELS,
+  noteScenarioCodes,
+} from "../../lib/note-language";
 import { useStudyItem } from "../../lib/study";
+import { CourseLockedContent, isCourseLocked } from "./CourseLock";
 import { Speak } from "./Speech";
 import { FlipBook } from "./FlipBook";
 
@@ -173,6 +180,26 @@ function NoteImage({ item }: { item: Entry }) {
     </>
   );
 }
+function NoteLanguageTags({ item }: { item: Entry }) {
+  const languageRegister = value(item, "language_register");
+  const registerLabel = NOTE_REGISTER_LABELS[languageRegister];
+  const scenarios = noteScenarioCodes(item.usage_scenarios)
+    .map((code) => NOTE_SCENARIO_LABELS[code])
+    .filter(Boolean);
+  if (!registerLabel || languageRegister === "unclassified") return null;
+  return (
+    <div className="note-language-tags" aria-label="表达语体与适用场景">
+      <span className={`note-language-register ${languageRegister}`}>
+        {registerLabel}
+      </span>
+      {scenarios.map((scenario) => (
+        <span className="note-language-scene" key={scenario}>
+          {scenario}
+        </span>
+      ))}
+    </div>
+  );
+}
 function SentenceBody({
   item,
   resource,
@@ -203,6 +230,7 @@ function SentenceBody({
             value(item, "item_type") ||
             "note"}
         </span>
+        {note && <NoteLanguageTags item={item} />}
       </div>
       {knowledge ? (
         <>
@@ -421,22 +449,35 @@ export function OriginalCards({
   initialId,
   note,
   categories = [],
+  searchResults = false,
+  backTo,
+  onLockedLesson,
+  courseEmbedded = false,
 }: {
   items: Entry[];
   resource: string;
   initialId?: number;
   note?: Entry;
   categories?: Entry[];
+  searchResults?: boolean;
+  backTo?: string;
+  onLockedLesson?: (item: Entry) => void;
+  courseEmbedded?: boolean;
 }) {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams(),
     [jump, setJump] = useState(false),
     [jumpIndex, setJumpIndex] = useState<number | null>(null);
-  const q = (params.get("keyword") || params.get("q") || "").toLowerCase(),
-    category = params.get("category") || "";
+  const query = params.get("keyword") || params.get("q") || "";
+  const q = query.toLowerCase(),
+    category = params.get("category") || "",
+    languageRegister = params.get("language_register") || "";
   const visible = items.filter(
     (i) =>
       (!category || value(i, "category") === category) &&
-      (!q ||
+      (!languageRegister || value(i, "language_register") === languageRegister) &&
+      (searchResults ||
+        !q ||
         Object.values(i).some(
           (v) => typeof v === "string" && v.toLowerCase().includes(q),
         )),
@@ -451,7 +492,12 @@ export function OriginalCards({
   const [bookGeneration, setBookGeneration] = useState(0);
   const wrap = useRef<HTMLDivElement>(null);
   const parent = note?.id || Number(items[0]?.note_id) || 0;
+  const parentFor = useCallback(
+    (item: Entry) => note?.id || Number(item.note_id) || 0,
+    [note],
+  );
   useEffect(() => {
+    if (courseEmbedded) return;
     let active = true;
     api<Entry[]>("/progress")
       .then((p) => {
@@ -461,13 +507,17 @@ export function OriginalCards({
     return () => {
       active = false;
     };
-  }, []);
-  const savedId = saved.find(
-    (p) =>
-      p.content_type ===
-        (resource === "sentences" ? "everyday_sentence" : "english_note") &&
-      Number(p.parent_id || 0) === parent,
-  )?.item_id;
+  }, [courseEmbedded]);
+  const savedId = visible.find((item) =>
+    saved.some(
+      (p) =>
+        p.content_type ===
+          (resource === "sentences" ? "everyday_sentence" : "english_note") &&
+        Number(p.item_id) === item.id &&
+        Number(p.parent_id || 0) ===
+          (resource === "note-items" ? parentFor(item) : parent),
+    ),
+  )?.id;
   const current = visible[index];
   const progressTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
@@ -481,7 +531,7 @@ export function OriginalCards({
           api("/progress", "POST", {
             content_type:
               resource === "sentences" ? "everyday_sentence" : "english_note",
-            parent_id: parent,
+            parent_id: resource === "note-items" ? parentFor(item) : parent,
             item_id: item.id,
             completed,
           }),
@@ -489,15 +539,21 @@ export function OriginalCards({
       progressQueue.current = save;
       return save;
     },
-    [resource, parent],
+    [resource, parent, parentFor],
   );
   useEffect(() => {
-    if (!current || !["sentences", "note-items"].includes(resource)) return;
+    if (
+      !current ||
+      courseEmbedded ||
+      isCourseLocked(current) ||
+      !["sentences", "note-items"].includes(resource)
+    )
+      return;
     progressTimer.current = setTimeout(() => {
       saveProgress(current, false).catch((e) => setError(e.message));
     }, 500);
     return () => clearTimeout(progressTimer.current);
-  }, [current, resource, saveProgress]);
+  }, [courseEmbedded, current, resource, saveProgress]);
   function go(n: number) {
     if (n < 0 || n >= visible.length) return;
     setIndex(n);
@@ -531,16 +587,25 @@ export function OriginalCards({
     return () => window.removeEventListener("keydown", key);
   }, [jump]);
   const noteMode = resource === "note-items";
+  const languageRegisterLabel = NOTE_REGISTER_LABELS[languageRegister];
   const title = noteMode
-    ? value(note || { id: 0 }, "title") || "English Notes"
+    ? searchResults
+      ? languageRegisterLabel && !query
+        ? languageRegisterLabel
+        : "Search Results"
+      : value(note || { id: 0 }, "title") || "English Notes"
     : resource === "sentences"
       ? "Everyday English Cards"
       : resource === "interviews"
         ? "Professional Interview Cards"
         : "Vocabulary Cards";
   const description = noteMode
-    ? value(note || { id: 0 }, "summary") ||
-      "Review this note as swipeable cards, one point at a time."
+    ? searchResults
+      ? `Showing ${visible.length} note cards${
+          query ? ` that match “${query}”` : ""
+        }${languageRegisterLabel ? `${query ? " and" : " that are"} tagged “${languageRegisterLabel}”` : ""}.`
+      : value(note || { id: 0 }, "summary") ||
+        "Review this note as swipeable cards, one point at a time."
     : resource === "sentences"
       ? "Learn natural English with short, real-life sentence cards."
       : resource === "interviews"
@@ -558,8 +623,13 @@ export function OriginalCards({
         <div className="topbar">
           <Link
             className="icon-btn"
-            to={noteMode ? "/learn/notes" : "/"}
+            to={noteMode ? "/learn/notes" : backTo || "/"}
             title="Back"
+            onClick={(event) => {
+              event.preventDefault();
+              if (window.history.state?.idx > 0) navigate(-1);
+              else navigate(noteMode ? "/learn/notes" : backTo || "/");
+            }}
           >
             ←
           </Link>
@@ -568,10 +638,12 @@ export function OriginalCards({
             onSubmit={(e) => {
               e.preventDefault();
               setIndex(0);
+              const data = new FormData(e.currentTarget);
+              const keyword = String(data.get("keyword") || "").trim();
+              const register = String(data.get("language_register") || "");
               setParams({
-                keyword: String(
-                  new FormData(e.currentTarget).get("keyword") || "",
-                ),
+                ...(keyword ? { keyword } : {}),
+                ...(noteMode && register ? { language_register: register } : {}),
               });
             }}
           >
@@ -580,13 +652,28 @@ export function OriginalCards({
               type="search"
               name="keyword"
               aria-label="Search cards"
-              defaultValue={q}
+              defaultValue={query}
               placeholder={
                 resource === "vocabulary"
                   ? "Search cards, terms, meanings, or examples..."
                   : "Search cards, phrases, or examples..."
               }
-            />
+              />
+            {noteMode && (
+              <select
+                aria-label="表达语体"
+                className="note-register-filter"
+                defaultValue={languageRegister}
+                name="language_register"
+              >
+                <option value="">全部语体</option>
+                {NOTE_REGISTER_OPTIONS.map(([code, label]) => (
+                  <option key={code} value={code}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            )}
             {noteMode && (
               <button className="search-btn" type="submit">
                 Search
@@ -688,16 +775,23 @@ export function OriginalCards({
               items={visible}
               initial={jumpIndex ?? first}
               onFlip={setIndex}
-              render={(item) => (
-                <SentenceBody
-                  resource={resource}
-                  item={item}
-                  onComplete={() => {
-                    clearTimeout(progressTimer.current);
-                    return saveProgress(item, true);
-                  }}
-                />
-              )}
+              render={(item) =>
+                isCourseLocked(item) ? (
+                  <CourseLockedContent
+                    item={item}
+                    onUnlock={() => onLockedLesson?.(item)}
+                  />
+                ) : (
+                  <SentenceBody
+                    resource={resource}
+                    item={item}
+                    onComplete={() => {
+                      clearTimeout(progressTimer.current);
+                      return saveProgress(item, true);
+                    }}
+                  />
+                )
+              }
             />
           ) : (
             <section
@@ -733,11 +827,18 @@ export function OriginalCards({
                     />
                   ) : (
                     <article
-                      className="card"
+                      className={`card${isCourseLocked(item) ? " course-locked-card" : ""}`}
                       data-card-id={item.id}
                       key={item.id}
                     >
-                      <SentenceBody item={item} resource={resource} />
+                      {isCourseLocked(item) ? (
+                        <CourseLockedContent
+                          item={item}
+                          onUnlock={() => onLockedLesson?.(item)}
+                        />
+                      ) : (
+                        <SentenceBody item={item} resource={resource} />
+                      )}
                     </article>
                   ),
                 )}
@@ -802,9 +903,9 @@ export function OriginalCards({
   );
 }
 export function NoteCollections({ items }: { items: Entry[] }) {
-  const [params, setParams] = useSearchParams(),
+  const [params] = useSearchParams(),
     [progress, setProgress] = useState<Entry[]>([]);
-  const q = (params.get("keyword") || "").toLowerCase();
+  const q = params.get("keyword") || params.get("q") || "";
   useEffect(() => {
     let active = true;
     api<Entry[]>("/progress")
@@ -816,9 +917,6 @@ export function NoteCollections({ items }: { items: Entry[] }) {
       active = false;
     };
   }, []);
-  const visible = items.filter((i) =>
-    `${value(i, "title")} ${value(i, "summary")}`.toLowerCase().includes(q),
-  );
   return (
     <div className="study-notes">
       <main className="container">
@@ -826,27 +924,7 @@ export function NoteCollections({ items }: { items: Entry[] }) {
           <Link className="icon-btn" to="/" title="Back">
             ←
           </Link>
-          <form
-            className="search-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setParams({
-                keyword: String(
-                  new FormData(e.currentTarget).get("keyword") || "",
-                ),
-              });
-            }}
-          >
-            <input
-              className="search"
-              name="keyword"
-              defaultValue={q}
-              placeholder="Search note titles, phrases, or examples..."
-            />
-            <button className="search-btn" type="submit">
-              Search
-            </button>
-          </form>
+          <NoteSearchForm query={q} />
         </div>
         <section className="hero-card">
           <h1>Study Notes</h1>
@@ -857,10 +935,10 @@ export function NoteCollections({ items }: { items: Entry[] }) {
         </section>
         <div className="section-head">
           <h2>Note Collections</h2>
-          <span>{visible.length} notes</span>
+          <span>{items.length} notes</span>
         </div>
         <section className="note-list">
-          {visible.map((item) => (
+          {items.map((item) => (
             <NoteCollection
               key={item.id}
               item={item}
@@ -872,10 +950,56 @@ export function NoteCollections({ items }: { items: Entry[] }) {
             />
           ))}
         </section>
-        {!visible.length && <div className="empty-state">No notes found.</div>}
+        {!items.length && <div className="empty-state">No notes found.</div>}
       </main>
     </div>
   );
+}
+function NoteSearchForm({ query }: { query: string }) {
+  const [, setParams] = useSearchParams();
+  return (
+    <form
+      className="search-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        const keyword = String(data.get("keyword") || "").trim();
+        const languageRegister = String(data.get("language_register") || "");
+        setParams({
+          ...(keyword ? { keyword } : {}),
+          ...(languageRegister ? { language_register: languageRegister } : {}),
+        });
+      }}
+    >
+      <input
+        className="search"
+        type="search"
+        name="keyword"
+        key={query}
+        defaultValue={query}
+        placeholder="Search note titles, phrases, or examples..."
+      />
+      <button className="search-btn" type="submit">
+        Search
+      </button>
+      <select
+        aria-label="表达语体"
+        className="note-register-filter"
+        defaultValue=""
+        name="language_register"
+      >
+        <option value="">全部语体</option>
+        {NOTE_REGISTER_OPTIONS.map(([code, label]) => (
+          <option key={code} value={code}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </form>
+  );
+}
+export function NoteSearchResults({ items }: { items: Entry[] }) {
+  return <OriginalCards items={items} resource="note-items" searchResults />;
 }
 function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
   const detail = useStudyItem("notes", item.id);

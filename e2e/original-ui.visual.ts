@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 const screens: Record<string, [string, string]> = {
-  home: ["/", ".module-group"],
+  home: ["/", ".home-dashboard"],
   sentences: ["/learn/sentences", ".card"],
   "kids-cards": ["/learn/kids-cards", ".example"],
   phonics: ["/learn/phonics", ".lesson-card"],
@@ -27,7 +27,7 @@ for (const [name, [path, ready]] of Object.entries({
       await page.getByLabel("Username", { exact: true }).fill("admin_test");
       await page.getByLabel("Password", { exact: true }).fill("Testing123!");
       await page.getByRole("button", { name: "Login", exact: true }).click();
-      await expect(page.locator(".module-groups")).toBeVisible();
+      await expect(page.locator(".home-dashboard")).toBeVisible();
       await page.goto(path);
     }
     await expect(page.locator(ready).first()).toBeVisible();

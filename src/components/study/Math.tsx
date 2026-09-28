@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LoadingImage } from "../LoadingImage";
 import { asset, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { mathVisuals } from "../../lib/math-visuals";
+import { CourseLockedContent, isCourseLocked } from "./CourseLock";
 import { FlipBook } from "./FlipBook";
 import type { ReactNode } from "react";
 function ChainCancellation() {
@@ -64,15 +65,28 @@ function Fractions({ text }: { text: string }) {
 export function MathCards({
   items,
   initialId,
+  backTo,
+  onLockedLesson,
 }: {
   items: Entry[];
   initialId?: number;
+  backTo?: string;
+  onLockedLesson?: (item: Entry) => void;
 }) {
+  const navigate = useNavigate();
   return (
     <div className="study-math">
       <main className="math-page">
         <header className="math-topbar">
-          <Link to="/" aria-label="返回学习主页">
+          <Link
+            to={backTo || "/"}
+            aria-label="返回学习主页"
+            onClick={(event) => {
+              event.preventDefault();
+              if (window.history.state?.idx > 0) navigate(-1);
+              else navigate(backTo || "/");
+            }}
+          >
             ←
           </Link>
           <strong>Happy English · Math</strong>
@@ -91,75 +105,82 @@ export function MathCards({
               0,
               items.findIndex((i) => i.id === initialId),
             )}
-            render={(item, i) => (
-              <>
-                <div className="math-card-title">
-                  <span>{i + 1}</span>
-                  <div>
-                    <small>{value(item, "category")}</small>
-                    <h2>{value(item, "title")}</h2>
+            render={(item, i) =>
+              isCourseLocked(item) ? (
+                <CourseLockedContent
+                  item={item}
+                  onUnlock={() => onLockedLesson?.(item)}
+                />
+              ) : (
+                <>
+                  <div className="math-card-title">
+                    <span>{i + 1}</span>
+                    <div>
+                      <small>{value(item, "category")}</small>
+                      <h2>{value(item, "title")}</h2>
+                    </div>
                   </div>
-                </div>
-                <p className="math-summary">
-                  <Fractions text={value(item, "summary")} />
-                </p>
-                {mathVisuals[value(item, "title")] ? (
-                  <figure className="math-figure math-formula-figure">
-                    <span>图解示例</span>
-                    {value(item, "title") === "连锁约分" ? (
-                      <ChainCancellation />
-                    ) : (
-                      <>
-                        <strong className="math-expression">
-                          <Fractions
-                            text={mathVisuals[value(item, "title")][0]}
-                          />
-                        </strong>
-                        <p>
-                          <Fractions
-                            text={mathVisuals[value(item, "title")][1]}
-                          />
-                        </p>
-                      </>
-                    )}
-                  </figure>
-                ) : (
-                  value(item, "example_image_url") && (
-                    <figure className="math-figure">
-                      <LoadingImage
-                        src={asset(value(item, "example_image_url"))}
-                        alt={`${value(item, "title")} 示意图`}
-                      />
+                  <p className="math-summary">
+                    <Fractions text={value(item, "summary")} />
+                  </p>
+                  {mathVisuals[value(item, "title")] ? (
+                    <figure className="math-figure math-formula-figure">
+                      <span>图解示例</span>
+                      {value(item, "title") === "连锁约分" ? (
+                        <ChainCancellation />
+                      ) : (
+                        <>
+                          <strong className="math-expression">
+                            <Fractions
+                              text={mathVisuals[value(item, "title")][0]}
+                            />
+                          </strong>
+                          <p>
+                            <Fractions
+                              text={mathVisuals[value(item, "title")][1]}
+                            />
+                          </p>
+                        </>
+                      )}
                     </figure>
-                  )
-                )}
-                <div className="math-sections">
-                  <section>
-                    <h3>核心知识点</h3>
+                  ) : (
+                    value(item, "example_image_url") && (
+                      <figure className="math-figure">
+                        <LoadingImage
+                          src={asset(value(item, "example_image_url"))}
+                          alt={`${value(item, "title")} 示意图`}
+                        />
+                      </figure>
+                    )
+                  )}
+                  <div className="math-sections">
+                    <section>
+                      <h3>核心知识点</h3>
+                      <p>
+                        <Fractions text={value(item, "key_points")} />
+                      </p>
+                    </section>
+                    <section className="mistakes">
+                      <h3>方法与易错点</h3>
+                      <p>
+                        <Fractions text={value(item, "common_mistakes")} />
+                      </p>
+                    </section>
+                  </div>
+                  <section className="worked-example">
+                    <h3>示例</h3>
                     <p>
-                      <Fractions text={value(item, "key_points")} />
+                      <b>题目：</b>
+                      <Fractions text={value(item, "example_question")} />
+                    </p>
+                    <p>
+                      <b>解答：</b>
+                      <Fractions text={value(item, "example_answer")} />
                     </p>
                   </section>
-                  <section className="mistakes">
-                    <h3>方法与易错点</h3>
-                    <p>
-                      <Fractions text={value(item, "common_mistakes")} />
-                    </p>
-                  </section>
-                </div>
-                <section className="worked-example">
-                  <h3>示例</h3>
-                  <p>
-                    <b>题目：</b>
-                    <Fractions text={value(item, "example_question")} />
-                  </p>
-                  <p>
-                    <b>解答：</b>
-                    <Fractions text={value(item, "example_answer")} />
-                  </p>
-                </section>
-              </>
-            )}
+                </>
+              )
+            }
           />
         ) : (
           <p className="math-empty">还没有数学知识点卡。</p>

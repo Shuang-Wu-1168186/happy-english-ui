@@ -1,12 +1,20 @@
-import { ArrowRight, BookOpen, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Award, BookOpen, ShieldCheck, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const shortcuts = [
   {
-    to: "/admin/content",
-    title: "内容管理",
-    description: "创建和维护学习笔记、日常表达、词汇与面试题。",
-    action: "管理学习内容",
+    to: "/admin/membership",
+    title: "会员管理",
+    description: "配置会员等级、课程访问权益和会员发放记录。",
+    action: "打开会员配置",
+    icon: Award,
+    tone: "membership",
+  },
+  {
+    to: "/admin/content/notes",
+    title: "学习笔记",
+    description: "创建和维护学习笔记及其中的词条内容。",
+    action: "创建学习笔记",
     icon: BookOpen,
     tone: "content",
   },
@@ -37,8 +45,8 @@ export function AdminDashboard() {
           <h2>管理工作台</h2>
           <p>在这里维护学习内容、用户账号和登录安全记录。</p>
         </div>
-        <Link className="admin-primary-action" to="/admin/content">
-          创建学习内容
+        <Link className="admin-primary-action" to="/admin/content/notes">
+          创建学习笔记
           <ArrowRight aria-hidden="true" size={18} />
         </Link>
       </div>

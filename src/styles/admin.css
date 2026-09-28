@@ -3,6 +3,593 @@ body.admin-app {
   color: #172033;
 }
 
+/* List-first membership administration. */
+.admin-app .membership-list-page {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-app .membership-filter-card {
+  overflow: visible;
+  border-color: #dfe7f3;
+}
+
+.admin-app .membership-filter-actions {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.admin-app .membership-filter-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  border: 1px solid #e0e7f1;
+  border-radius: 12px;
+  background: #f8faff;
+  box-shadow: 0 4px 12px rgb(46 65 97 / 6%);
+}
+
+.admin-app .membership-filter-action {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease,
+    box-shadow 150ms ease, transform 150ms ease;
+}
+
+.admin-app .membership-filter-action:hover {
+  transform: translateY(-1px);
+}
+
+.admin-app .membership-filter-action.is-search {
+  color: #fff;
+  background: #304fbd;
+  box-shadow: 0 2px 5px rgb(48 79 189 / 22%);
+}
+
+.admin-app .membership-filter-action.is-search:hover {
+  background: #2943a3;
+  box-shadow: 0 4px 9px rgb(48 79 189 / 28%);
+}
+
+.admin-app .membership-filter-action.is-reset {
+  border-color: #d9e2ef;
+  color: #5d6b82;
+  background: #fff;
+}
+
+.admin-app .membership-filter-action.is-reset:hover {
+  border-color: #bdc9dc;
+  color: #32435e;
+  background: #fdfefe;
+}
+
+.admin-app .membership-filter-action-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 1px;
+  background: #dce4ef;
+}
+
+.admin-app .membership-filter-action.is-create {
+  border-color: #cedaff;
+  color: #2d4aaf;
+  background: #edf2ff;
+}
+
+.admin-app .membership-filter-action.is-create:hover {
+  border-color: #aec1fa;
+  color: #243f9b;
+  background: #e3ebff;
+}
+
+.admin-app .membership-data-card {
+  overflow: hidden;
+}
+
+.admin-app .membership-table {
+  min-width: 900px;
+}
+
+.admin-app .membership-table strong,
+.admin-app .membership-table-subtitle {
+  display: block;
+}
+
+.admin-app .membership-table strong {
+  color: #2b3a53;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.admin-app .membership-table-subtitle {
+  margin-top: 3px;
+  color: #7b899d;
+  font-size: 0.74rem;
+}
+
+.admin-app .membership-table .admin-table-actions {
+  min-width: max-content;
+}
+
+.admin-app .membership-table .admin-table-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.admin-app .membership-json-cell {
+  max-width: 180px;
+  overflow: hidden;
+  color: #536177;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-app .membership-default-mark {
+  display: inline-block;
+  margin: 5px 0 0 5px;
+  color: #865400;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.admin-app .membership-pagination-summary {
+  margin: 4px 0 0;
+  color: #738097;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.admin-app .membership-pagination {
+  margin-top: 2px;
+}
+
+.admin-app .membership-status.is-unpublished,
+.admin-app .membership-status.is-pending,
+.admin-app .membership-status.is-expired,
+.admin-app .membership-status.is-archived {
+  color: #9c6100;
+  background: #fff0cb;
+}
+
+.admin-app .membership-status.is-cancelled,
+.admin-app .membership-status.is-revoked {
+  color: #b4233c;
+  background: #ffeaee;
+}
+
+.admin-app .membership-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 48px 24px;
+  background: rgb(15 23 42 / 48%);
+  backdrop-filter: blur(3px);
+}
+
+.admin-app .membership-dialog {
+  width: min(760px, 100%);
+  overflow: hidden;
+  border: 1px solid #d9e3f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 28%);
+}
+
+.admin-app .membership-dialog.is-wide {
+  width: min(1120px, 100%);
+}
+
+.admin-app .membership-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #e6ecf4;
+  background: #fbfcff;
+}
+
+.admin-app .membership-dialog-header h2 {
+  margin: 0;
+  color: #1b2a43;
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.admin-app .membership-dialog-header > button {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid #dce4f0;
+  border-radius: 8px;
+  color: #62718a;
+  background: #fff;
+}
+
+.admin-app .membership-dialog-header > button:hover {
+  color: #2f4aa7;
+  background: #f4f7ff;
+}
+
+.admin-app .membership-dialog-body {
+  max-height: calc(100vh - 128px);
+  overflow: auto;
+  padding: 22px;
+}
+
+.admin-app .membership-dialog-loading {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: #718096;
+}
+
+.admin-app .membership-dialog-form .form-label,
+.admin-app .membership-sub-editor .form-label,
+.admin-app .membership-readonly-field + .form-label {
+  color: #435168;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-app .membership-dialog-form textarea,
+.admin-app .membership-sub-editor textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.admin-app .membership-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.admin-app .membership-danger-button {
+  border-color: #efc7cc;
+  color: #b4233c;
+  background: #fff7f8;
+}
+
+.admin-app .membership-danger-button:hover {
+  border-color: #e5a7af;
+  color: #9c1d31;
+  background: #ffeff2;
+}
+
+.admin-app .membership-detail-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.admin-app .membership-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border: 1px solid #e3eaf3;
+  border-radius: 11px;
+  overflow: hidden;
+}
+
+.admin-app .membership-detail-grid > div {
+  min-height: 70px;
+  padding: 12px 14px;
+  border-right: 1px solid #e8edf4;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.admin-app .membership-detail-grid > div:nth-child(2n) {
+  border-right: 0;
+}
+
+.admin-app .membership-detail-grid > div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.admin-app .membership-detail-grid dt {
+  margin-bottom: 5px;
+  color: #75839a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.admin-app .membership-detail-grid dd {
+  margin: 0;
+  color: #31425e;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.admin-app .membership-detail-json {
+  max-width: 100%;
+  margin: 0;
+  overflow: auto;
+  color: inherit;
+  font: inherit;
+  white-space: pre-wrap;
+}
+
+.admin-app .membership-related-section,
+.admin-app .membership-sub-editor {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid #e6ecf4;
+}
+
+.admin-app .membership-related-section > h3,
+.admin-app .membership-related-heading h3 {
+  margin: 0;
+  color: #223552;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-app .membership-related-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-app .membership-related-heading p {
+  margin: 0 0 4px;
+  color: #5871a8;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-app .membership-related-table {
+  margin-top: 13px;
+  --bs-table-border-color: #e8edf4;
+}
+
+.admin-app .membership-related-table thead th {
+  padding: 10px 12px;
+  color: #748298;
+  background: #f8faff;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.admin-app .membership-related-table tbody td {
+  padding: 11px 12px;
+  color: #465773;
+  font-size: 0.81rem;
+  vertical-align: middle;
+}
+
+.admin-app .membership-related-table strong,
+.admin-app .membership-related-table small {
+  display: block;
+}
+
+.admin-app .membership-related-table strong {
+  color: #2b3a53;
+  font-weight: 750;
+}
+
+.admin-app .membership-readonly-field {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 11px;
+  border: 1px solid #e0e7f1;
+  border-radius: 7px;
+  color: #54647d;
+  background: #f8faff;
+  font-size: 0.86rem;
+}
+
+.admin-app .membership-user-picker {
+  position: relative;
+}
+
+.admin-app .membership-user-picker-control {
+  position: relative;
+}
+
+.admin-app .membership-user-picker-control .form-control {
+  padding-left: 37px;
+}
+
+.admin-app .membership-user-picker-icon {
+  position: absolute;
+  top: 11px;
+  left: 12px;
+  z-index: 1;
+  color: #7c8ba4;
+  pointer-events: none;
+}
+
+.admin-app .membership-user-picker-results {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid #d6e0ee;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 14px 30px rgb(30 41 59 / 16%);
+}
+
+.admin-app .membership-user-picker-results button {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid #eef2f7;
+  color: #34445e;
+  background: #fff;
+  text-align: left;
+}
+
+.admin-app .membership-user-picker-results button:last-child {
+  border-bottom: 0;
+}
+
+.admin-app .membership-user-picker-results button:hover,
+.admin-app .membership-user-picker-results button:focus-visible {
+  color: #2944a6;
+  background: #f3f6ff;
+  outline: 0;
+}
+
+.admin-app .membership-user-picker-results strong,
+.admin-app .membership-user-picker-selected strong {
+  color: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.admin-app .membership-user-picker-results span,
+.admin-app .membership-user-picker-selected span {
+  color: #77869b;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-app .membership-user-picker-status {
+  margin: 0;
+  padding: 14px 12px;
+  color: #718096;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.admin-app .membership-user-picker-status.is-error {
+  color: #b4233c;
+}
+
+.admin-app .membership-user-picker-selected {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 8px 7px 11px;
+  border: 1px solid #cbd8ef;
+  border-radius: 7px;
+  background: #f5f8ff;
+}
+
+.admin-app .membership-user-picker-selected > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.admin-app .membership-user-picker-selected strong,
+.admin-app .membership-user-picker-selected span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-app .membership-user-picker-selected button {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border: 1px solid #c8d5f1;
+  border-radius: 6px;
+  color: #3654a7;
+  background: #fff;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.admin-app .membership-user-picker-selected button:hover {
+  border-color: #9db3e6;
+  background: #eef3ff;
+}
+
+.admin-app .membership-user-picker-hint {
+  margin: 5px 0 0;
+  color: #7a879b;
+  font-size: 0.74rem;
+}
+
+@media (max-width: 760px) {
+  .admin-app .membership-filter-actions {
+    width: 100%;
+  }
+
+  .admin-app .membership-dialog-backdrop {
+    padding: 16px 10px;
+  }
+
+  .admin-app .membership-dialog-body {
+    max-height: calc(100vh - 72px);
+    padding: 16px;
+  }
+
+  .admin-app .membership-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-app .membership-detail-grid > div,
+  .admin-app .membership-detail-grid > div:nth-child(2n),
+  .admin-app .membership-detail-grid > div:nth-last-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid #e8edf4;
+  }
+
+  .admin-app .membership-detail-grid > div:last-child {
+    border-bottom: 0;
+  }
+
+  .admin-app .membership-related-heading,
+  .admin-app .membership-detail-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-app .membership-related-heading .admin-action-button,
+  .admin-app .membership-detail-actions .admin-action-button,
+  .admin-app .membership-form-actions .admin-action-button {
+    justify-content: center;
+  }
+
+  .admin-app .membership-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 .admin-app .admin-shell {
   min-height: 100vh;
   display: grid;
@@ -143,6 +730,64 @@ body.admin-app {
     rgba(104, 139, 255, 0.2)
   );
   box-shadow: 0 8px 20px rgba(6, 17, 55, 0.16);
+}
+
+.admin-app .admin-nav-group {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-app .admin-nav-parent {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0 12px;
+  color: #c9d5f5;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.admin-app .admin-nav-group.is-active .admin-nav-parent {
+  color: #fff;
+}
+
+.admin-app .admin-nav-submenu {
+  display: grid;
+  gap: 3px;
+  margin: -1px 0 3px 20px;
+  padding-left: 11px;
+  border-left: 1px solid rgba(191, 210, 255, 0.22);
+}
+
+.admin-app .admin-nav-sublink {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #afc0e9;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.admin-app .admin-nav-sublink:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.admin-app .admin-nav-sublink.is-active {
+  border-color: rgba(188, 207, 255, 0.16);
+  color: #fff;
+  background: rgba(104, 139, 255, 0.27);
 }
 
 .admin-app .admin-sidebar-footer {
@@ -1308,6 +1953,447 @@ body.admin-app {
 
 .admin-app .admin-nav-overlay {
   display: none;
+}
+
+/* Membership, course-entitlement, and material configuration. */
+.admin-app .membership-page {
+  max-width: 1440px;
+}
+
+.admin-app .membership-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-app .membership-heading h1 {
+  margin: 3px 0 9px;
+  color: #172033;
+  font-size: clamp(1.7rem, 3vw, 2.15rem);
+  font-weight: 750;
+}
+
+.admin-app .membership-heading p:last-child {
+  max-width: 710px;
+  margin: 0;
+  color: #667085;
+}
+
+.admin-app .membership-tabs {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  gap: 5px;
+  padding: 5px;
+  margin-bottom: 22px;
+  border: 1px solid #e1e8f3;
+  border-radius: 13px;
+  background: #f6f8fc;
+}
+
+.admin-app .membership-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 9px;
+  color: #5f6b7c;
+  background: transparent;
+  font: inherit;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.admin-app .membership-tabs button.is-active {
+  color: #2247a6;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(31 56 112 / 10%);
+}
+
+.admin-app .membership-error {
+  white-space: pre-wrap;
+}
+
+.admin-app .membership-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.admin-app .membership-list-card,
+.admin-app .membership-form-card,
+.admin-app .membership-binding-card {
+  overflow: hidden;
+  border: 1px solid #e2e8f1;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 7px 21px rgb(40 57 84 / 5%);
+}
+
+.admin-app .membership-list-card {
+  position: sticky;
+  top: 20px;
+}
+
+.admin-app .membership-list-head,
+.admin-app .membership-card-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.admin-app .membership-list-head {
+  padding: 17px 17px 14px;
+  border-bottom: 1px solid #edf1f6;
+}
+
+.admin-app .membership-list-head strong,
+.admin-app .membership-list-head small {
+  display: block;
+}
+
+.admin-app .membership-list-head small {
+  margin-top: 3px;
+  color: #7b8798;
+  font-size: 0.78rem;
+}
+
+.admin-app .membership-list-head > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  color: #2858be;
+  background: transparent;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.admin-app .membership-record-list {
+  max-height: calc(100vh - 245px);
+  overflow: auto;
+  padding: 7px;
+}
+
+.admin-app .membership-record-list > button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 10px;
+  border: 0;
+  border-radius: 10px;
+  color: #3c4b61;
+  background: transparent;
+  text-align: left;
+}
+
+.admin-app .membership-record-list > button:hover {
+  background: #f6f8fc;
+}
+
+.admin-app .membership-record-list > button.is-selected {
+  color: #163d95;
+  background: #eaf1ff;
+}
+
+.admin-app .membership-record-title {
+  overflow: hidden;
+  font-size: 0.91rem;
+  font-weight: 680;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-app .membership-record-list button > span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.admin-app .membership-record-list em {
+  color: #9b6400;
+  font-size: 0.7rem;
+  font-style: normal;
+}
+
+.admin-app .membership-status {
+  display: inline-block;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: #667085;
+  background: #edf0f4;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.admin-app .membership-status.is-active,
+.admin-app .membership-status.is-published {
+  color: #087044;
+  background: #dcf8e9;
+}
+
+.admin-app .membership-status.is-draft,
+.admin-app .membership-status.is-inactive {
+  color: #9c6100;
+  background: #fff0cb;
+}
+
+.admin-app .membership-editor-stack {
+  display: grid;
+  gap: 20px;
+}
+
+.admin-app .membership-card-title p {
+  margin: 0 0 3px;
+  color: #5871a8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-app .membership-card-title h2 {
+  margin: 0;
+  color: #1a2941;
+  font-size: 1.17rem;
+  font-weight: 750;
+}
+
+.admin-app .membership-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border: 1px solid #f2c8c8;
+  border-radius: 8px;
+  color: #bd3030;
+  background: #fff9f9;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.admin-app .membership-form-card .form-label,
+.admin-app .membership-binding-card .form-label {
+  color: #435168;
+  font-size: 0.82rem;
+  font-weight: 680;
+}
+
+.admin-app .membership-form-card textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.admin-app .membership-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #45556e;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.admin-app .membership-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #3163c7;
+}
+
+.admin-app .membership-help {
+  margin: 12px 0 16px;
+  color: #6a788e;
+  font-size: 0.84rem;
+}
+
+.admin-app .membership-course-filter {
+  align-items: end;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid #e3eaf4;
+  border-radius: 10px;
+  background: #f8faff;
+}
+
+.admin-app .membership-course-filter .form-label {
+  margin-bottom: 5px;
+  color: #56657a;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.admin-app .membership-course-filter-reset {
+  width: 100%;
+  justify-content: center;
+}
+
+.admin-app .membership-course-filter-summary {
+  padding-top: 2px;
+  color: #6e7e94;
+  font-size: 0.76rem;
+}
+
+.admin-app .membership-binding-list,
+.admin-app .membership-course-list,
+.admin-app .membership-lesson-list {
+  display: grid;
+  gap: 9px;
+}
+
+.admin-app .membership-binding-row,
+.admin-app .membership-course-row,
+.admin-app .membership-lesson-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px;
+  border: 1px solid #e6ebf3;
+  border-radius: 10px;
+  background: #fcfdff;
+}
+
+.admin-app .membership-binding-row > .membership-check {
+  min-width: 0;
+}
+
+.admin-app .membership-binding-row .membership-check span,
+.admin-app .membership-course-row > div:first-child,
+.admin-app .membership-lesson-list article > div:first-child {
+  min-width: 0;
+}
+
+.admin-app .membership-binding-row strong,
+.admin-app .membership-binding-row small,
+.admin-app .membership-course-row strong,
+.admin-app .membership-course-row small,
+.admin-app .membership-lesson-list article strong,
+.admin-app .membership-lesson-list article small {
+  display: block;
+}
+
+.admin-app .membership-binding-row small,
+.admin-app .membership-course-row small,
+.admin-app .membership-lesson-list article small {
+  overflow: hidden;
+  margin-top: 2px;
+  color: #748198;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-app .membership-binding-row > input {
+  width: min(42%, 320px);
+  padding: 7px 9px;
+  border: 1px solid #d9e0ea;
+  border-radius: 7px;
+  color: #334258;
+  background: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.77rem;
+}
+
+.admin-app .membership-binding-row > input:disabled {
+  color: #a7b0bd;
+  background: #f4f6f9;
+}
+
+.admin-app .membership-course-actions,
+.admin-app .membership-lesson-list article > div:last-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.admin-app .membership-lesson-list {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e7ebf1;
+}
+
+.admin-app .membership-course-editor {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #e7ebf1;
+}
+
+.admin-app .membership-lesson-list article button {
+  border: 0;
+  color: #2a57ae;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.admin-app .membership-lesson-list article button.is-delete {
+  color: #bd3030;
+}
+
+.admin-app .membership-empty {
+  margin: 10px;
+  color: #7b8798;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@media (max-width: 960px) {
+  .admin-app .membership-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-app .membership-list-card {
+    position: static;
+  }
+
+  .admin-app .membership-record-list {
+    display: flex;
+    max-height: none;
+    overflow-x: auto;
+  }
+
+  .admin-app .membership-record-list > button {
+    min-width: 190px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-app .membership-page {
+    padding-top: 24px !important;
+  }
+
+  .admin-app .membership-heading,
+  .admin-app .membership-binding-row,
+  .admin-app .membership-course-row,
+  .admin-app .membership-lesson-list article {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-app .membership-heading > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-app .membership-binding-row > input {
+    width: 100%;
+  }
+
+  .admin-app .membership-course-actions,
+  .admin-app .membership-lesson-list article > div:last-child {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 980px) {

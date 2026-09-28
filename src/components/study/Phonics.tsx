@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { Speak } from "./Speech";
@@ -120,10 +120,17 @@ function Lesson({ lesson, number }: { lesson: Entry; number: number }) {
 export function Phonics({
   items,
   initialId,
+  backTo,
+  onLockedLesson,
+  onSelectLesson,
 }: {
   items: Entry[];
   initialId?: number;
+  backTo?: string;
+  onLockedLesson?: (lesson: Entry) => void;
+  onSelectLesson?: (lesson: Entry) => void;
 }) {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const id = Number(params.get("lesson")) || initialId || items[0]?.id;
   const index = Math.max(
@@ -131,16 +138,40 @@ export function Phonics({
       items.findIndex((i) => i.id === id),
     ),
     lesson = items[index];
-  const menu = Math.floor(index / 10),
-    count = Math.ceil(items.length / 10);
-  function choose(id: number) {
-    setParams({ lesson: String(id) });
+  const count = Math.ceil(items.length / 10);
+  const [menu, setMenu] = useState(() => Math.floor(index / 10));
+
+  useEffect(() => {
+    setMenu(Math.floor(index / 10));
+  }, [index]);
+
+  function locked(item: Entry) {
+    return item.is_locked === true || item.access_state === "locked";
+  }
+
+  function choose(item: Entry) {
+    if (locked(item)) {
+      onLockedLesson?.(item);
+      return;
+    }
+    setMenu(Math.floor(items.findIndex((entry) => entry.id === item.id) / 10));
+    setParams({ lesson: String(item.id) });
+    onSelectLesson?.(item);
   }
   return (
     <div className="study-phonics">
       <main className="phonics-page">
         <header className="phonics-topbar">
-          <Link className="back-button" to="/" aria-label="Back to modules">
+          <Link
+            className="back-button"
+            to={backTo || "/"}
+            aria-label="Back to modules"
+            onClick={(event) => {
+              event.preventDefault();
+              if (window.history.state?.idx > 0) navigate(-1);
+              else navigate(backTo || "/");
+            }}
+          >
             ←
           </Link>
           <div className="brand-mark">
@@ -172,7 +203,11 @@ export function Phonics({
             className="lesson-layout"
             aria-label="Natural phonics lessons"
           >
-            <nav className="lesson-menu" aria-label="Phonics lessons">
+            <nav
+              className="lesson-menu"
+              id="phonics-lessons"
+              aria-label="Phonics lessons"
+            >
               <div className="menu-title">
                 <p className="menu-label">LESSONS · 课程</p>
                 <small>
@@ -180,33 +215,37 @@ export function Phonics({
                 </small>
               </div>
               <div className="lesson-links">
-                {items.slice(menu * 10, menu * 10 + 10).map((item, i) => (
-                  <a
-                    key={item.id}
-                    className={`lesson-link${item.id === lesson.id ? " active" : ""}`}
-                    href={`?lesson=${item.id}`}
-                    aria-current={item.id === lesson.id ? "page" : undefined}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      choose(item.id);
-                    }}
-                  >
-                    <span>{menu * 10 + i + 1}</span>
-                    <div>
-                      <strong>{value(item, "title")}</strong>
-                      <small>{value(item, "subtitle")}</small>
-                    </div>
-                  </a>
-                ))}
+                {items.slice(menu * 10, menu * 10 + 10).map((item, i) => {
+                  const itemLocked = locked(item);
+                  return (
+                    <a
+                      key={item.id}
+                      className={`lesson-link${item.id === lesson.id ? " active" : ""}${itemLocked ? " is-locked" : ""}`}
+                      href={`?lesson=${item.id}`}
+                      aria-current={item.id === lesson.id ? "page" : undefined}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        choose(item);
+                      }}
+                    >
+                      <span>{menu * 10 + i + 1}</span>
+                      <div>
+                        <strong>{value(item, "title")}</strong>
+                        <small>{value(item, "subtitle")}</small>
+                      </div>
+                      {itemLocked && <em>🔒 会员解锁</em>}
+                    </a>
+                  );
+                })}
               </div>
               {count > 1 && (
                 <div className="lesson-pagination">
                   {menu > 0 ? (
                     <a
-                      href={`?lesson=${items[(menu - 1) * 10].id}`}
+                      href="#phonics-lessons"
                       onClick={(e) => {
                         e.preventDefault();
-                        choose(items[(menu - 1) * 10].id);
+                        setMenu(menu - 1);
                       }}
                     >
                       ← 前 10 课
@@ -216,10 +255,10 @@ export function Phonics({
                   )}
                   {menu < count - 1 && (
                     <a
-                      href={`?lesson=${items[(menu + 1) * 10].id}`}
+                      href="#phonics-lessons"
                       onClick={(e) => {
                         e.preventDefault();
-                        choose(items[(menu + 1) * 10].id);
+                        setMenu(menu + 1);
                       }}
                     >
                       后 10 课 →

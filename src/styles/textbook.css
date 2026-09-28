@@ -133,6 +133,14 @@
   background: var(--book-purple);
   color: #fff;
 }
+.study-textbook .filter-chip.is-locked {
+  border-style: dashed;
+  opacity: 0.72;
+}
+.study-textbook .filter-chip.is-locked em {
+  font-size: 0.72rem;
+  font-style: normal;
+}
 .study-textbook .filter-chip b {
   display: grid;
   min-width: 19px;

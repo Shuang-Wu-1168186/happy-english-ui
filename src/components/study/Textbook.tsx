@@ -1,7 +1,8 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { entries, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useStudyItem } from "../../lib/study";
+import { CourseLockedContent, isCourseLocked } from "./CourseLock";
 import { Speak } from "./Speech";
 const avatars: Record<string, string> = {
   baobao: "baobao",
@@ -13,13 +14,23 @@ const avatars: Record<string, string> = {
   mike: "mike",
   sara: "sara",
 };
-function Article({ lesson }: { lesson: Entry }) {
-  const detail = useStudyItem("textbook", lesson.id);
+function Article({
+  lesson,
+  embedded = false,
+  onLockedLesson,
+}: {
+  lesson: Entry;
+  embedded?: boolean;
+  onLockedLesson?: (lesson: Entry) => void;
+}) {
+  const detail = useStudyItem("textbook", embedded ? undefined : lesson.id);
+  const content = embedded ? lesson : detail?.item || lesson;
+  const locked = isCourseLocked(lesson);
   const blocks: {
     speaker: string;
     sentences: { item: Entry; text: string }[];
   }[] = [];
-  entries(detail?.item || lesson, "sentences").forEach((item) => {
+  entries(content, "sentences").forEach((item) => {
     const source = value(item, "english_text").trim(),
       colon = source.indexOf(":");
     const speaker = colon >= 0 ? source.slice(0, colon).trim() : "",
@@ -44,44 +55,55 @@ function Article({ lesson }: { lesson: Entry }) {
         className="lesson-article"
         aria-label={`${value(lesson, "title")} 中英对照课文`}
       >
-        {detail?.error && <p role="alert">{detail.error}</p>}
-        {!detail && <p className="textbook-empty">正在加载…</p>}
-        {blocks.map((block, i) => (
-          <section
-            key={i}
-            className={`speech-block ${block.speaker ? "has-speaker" : "narration-block"}`}
-            data-speaker={block.speaker.toLowerCase() || "narration"}
-          >
-            {block.speaker && (
-              <div className="speaker-heading">
-                <span
-                  className={`speaker-avatar${avatars[block.speaker.toLowerCase()] ? ` speaker-avatar-${avatars[block.speaker.toLowerCase()]}` : ""}`}
-                  aria-hidden="true"
-                />
-                <h3>{block.speaker}</h3>
-              </div>
+        {locked ? (
+          <CourseLockedContent
+            item={lesson}
+            onUnlock={() => onLockedLesson?.(lesson)}
+          />
+        ) : (
+          <>
+            {!embedded && detail?.error && <p role="alert">{detail.error}</p>}
+            {!embedded && !detail && (
+              <p className="textbook-empty">正在加载…</p>
             )}
-            <div className="speech-content">
-              {block.sentences.map(({ item, text }, j) => (
-                <div className="article-sentence" key={item.id || j}>
-                  <div className="article-english-row">
-                    <p lang="en">{text}</p>
-                    <Speak
-                      className="sentence-audio"
-                      text={text}
-                      label={`播放 ${block.speaker} 的英文句子`}
+            {blocks.map((block, i) => (
+              <section
+                key={i}
+                className={`speech-block ${block.speaker ? "has-speaker" : "narration-block"}`}
+                data-speaker={block.speaker.toLowerCase() || "narration"}
+              >
+                {block.speaker && (
+                  <div className="speaker-heading">
+                    <span
+                      className={`speaker-avatar${avatars[block.speaker.toLowerCase()] ? ` speaker-avatar-${avatars[block.speaker.toLowerCase()]}` : ""}`}
+                      aria-hidden="true"
                     />
+                    <h3>{block.speaker}</h3>
                   </div>
-                  <p className="sentence-chinese">
-                    {value(item, "chinese_text")}
-                  </p>
+                )}
+                <div className="speech-content">
+                  {block.sentences.map(({ item, text }, j) => (
+                    <div className="article-sentence" key={item.id || j}>
+                      <div className="article-english-row">
+                        <p lang="en">{text}</p>
+                        <Speak
+                          className="sentence-audio"
+                          text={text}
+                          label={`播放 ${block.speaker} 的英文句子`}
+                        />
+                      </div>
+                      <p className="sentence-chinese">
+                        {value(item, "chinese_text")}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-        ))}
-        {detail?.item && !blocks.length && (
-          <p className="textbook-empty">这篇课文还没有录入句子。</p>
+              </section>
+            ))}
+            {content && !blocks.length && (
+              <p className="textbook-empty">这篇课文还没有录入句子。</p>
+            )}
+          </>
         )}
       </article>
     </>
@@ -90,10 +112,17 @@ function Article({ lesson }: { lesson: Entry }) {
 export function Textbook({
   items,
   initialId,
+  backTo,
+  embedded = false,
+  onLockedLesson,
 }: {
   items: Entry[];
   initialId?: number;
+  backTo?: string;
+  embedded?: boolean;
+  onLockedLesson?: (lesson: Entry) => void;
 }) {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const units = [...new Set(items.map((i) => value(i, "unit_name")))];
   const initial = items.find((i) => i.id === initialId);
@@ -108,7 +137,15 @@ export function Textbook({
     <div className="study-textbook">
       <main className="textbook-page">
         <header className="textbook-topbar">
-          <Link to="/" aria-label="返回学习主页">
+          <Link
+            to={backTo || "/"}
+            aria-label="返回学习主页"
+            onClick={(event) => {
+              event.preventDefault();
+              if (window.history.state?.idx > 0) navigate(-1);
+              else navigate(backTo || "/");
+            }}
+          >
             ←
           </Link>
           <strong>Happy English · Textbook</strong>
@@ -153,27 +190,37 @@ export function Textbook({
                 <small>选择课文</small>
               </div>
               <div className="filter-list" role="tablist" aria-label="教材课文">
-                {lessons.map((l) => (
-                  <a
-                    key={l.id}
-                    className={`filter-chip${l.id === lesson?.id ? " active" : ""}`}
-                    href={`?unit=${encodeURIComponent(unit)}&lesson_id=${l.id}`}
-                    role="tab"
-                    aria-selected={l.id === lesson?.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setParams({ unit, lesson_id: String(l.id) });
-                    }}
-                  >
-                    {value(l, "lesson_name")}
-                    {l.title ? ` · ${value(l, "title")}` : ""}
-                  </a>
-                ))}
+                {lessons.map((l) => {
+                  const lessonLocked = isCourseLocked(l);
+                  return (
+                    <a
+                      key={l.id}
+                      className={`filter-chip${l.id === lesson?.id ? " active" : ""}${lessonLocked ? " is-locked" : ""}`}
+                      href={`?unit=${encodeURIComponent(unit)}&lesson_id=${l.id}`}
+                      role="tab"
+                      aria-selected={l.id === lesson?.id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (lessonLocked) onLockedLesson?.(l);
+                        else setParams({ unit, lesson_id: String(l.id) });
+                      }}
+                    >
+                      {value(l, "lesson_name")}
+                      {l.title ? ` · ${value(l, "title")}` : ""}
+                      {lessonLocked && <em> 🔒</em>}
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}
           {lesson ? (
-            <Article key={lesson.id} lesson={lesson} />
+            <Article
+              key={lesson.id}
+              embedded={embedded}
+              lesson={lesson}
+              onLockedLesson={onLockedLesson}
+            />
           ) : (
             <p className="textbook-empty">尚未录入教材课文。</p>
           )}

@@ -1,20 +1,21 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { courseLandingPath } from "../lib/course-routes";
 // Preserve bookmarks from the Flask application while React owns navigation.
 export function LegacyRoute() {
   const { pathname, search } = useLocation();
   const params = new URLSearchParams(search);
   const routes: Record<string, string> = {
     "/english/home": "/",
-    "/english/cards": "/learn/sentences",
+    "/english/cards": courseLandingPath("sentences"),
     "/english/notes": "/learn/notes",
-    "/english/kids-cards": "/learn/kids-cards",
-    "/english/phonics": "/learn/phonics",
-    "/english/textbook": "/learn/textbook",
-    "/english/daily-spoken-dialogue": "/learn/dialogues",
-    "/english/math-cards": "/learn/math-cards",
-    "/english/vocabulary-cards": "/learn/vocabulary",
-    "/english/interview-cards": "/learn/interviews",
-    "/english/content/create": "/admin/content",
+    "/english/kids-cards": courseLandingPath("kids-cards"),
+    "/english/phonics": courseLandingPath("phonics"),
+    "/english/textbook": courseLandingPath("textbook"),
+    "/english/daily-spoken-dialogue": courseLandingPath("dialogues"),
+    "/english/math-cards": courseLandingPath("math-cards"),
+    "/english/vocabulary-cards": courseLandingPath("vocabulary"),
+    "/english/interview-cards": courseLandingPath("interviews"),
+    "/english/content/create": "/admin/content/notes",
   };
   let to = routes[pathname];
   if (pathname === "/english/note-cards")
@@ -24,7 +25,7 @@ export function LegacyRoute() {
         ? `/learn/notes/${params.get("note_id")}`
         : "/learn/notes";
   if (pathname === "/english/interview-question/manage") {
-    to = "/admin/content";
+    to = "/admin/content/notes";
     params.set("resource", "interviews");
     if (params.has("question_id")) params.set("id", params.get("question_id")!);
   }

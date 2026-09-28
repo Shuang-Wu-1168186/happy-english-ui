@@ -3,6 +3,105 @@ import { Link, useSearchParams } from "react-router-dom";
 import { value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { Speak } from "./Speech";
+
+export function dialogueSections(items: Entry[]) {
+  return [...new Set(items.map((item) => value(item, "section_code")))].map(
+    (code) => ({
+      code,
+      items: items.filter((item) => value(item, "section_code") === code),
+    }),
+  );
+}
+
+export function DialogueLessonContent({ items }: { items: Entry[] }) {
+  const sections = dialogueSections(items);
+  return (
+    <article className="lesson-content">
+      {sections.map((section, index) => (
+        <section
+          className="learning-section"
+          id={section.code}
+          key={section.code}
+        >
+          <div className="section-title">
+            <span>PART {String.fromCharCode(65 + index)}</span>
+            <h2>{value(section.items[0], "section_title")}</h2>
+          </div>
+          {["vocabulary", "extra"].includes(section.code) ? (
+            <div className="vocabulary-grid">
+              {section.items.map((item) => (
+                <article className="vocabulary-card" key={item.id}>
+                  <div>
+                    <h3>{value(item, "item_title")}</h3>
+                    {Boolean(item.pronunciation) && (
+                      <em>{value(item, "pronunciation")}</em>
+                    )}
+                  </div>
+                  <Speak
+                    className=""
+                    text={value(item, "english_text")}
+                    label={`播放 ${value(item, "item_title")}`}
+                  />
+                  <p className="meaning">{value(item, "chinese_text")}</p>
+                  {Boolean(item.explanation) && (
+                    <p>{value(item, "explanation")}</p>
+                  )}
+                  {Boolean(item.examples) && (
+                    <blockquote>{value(item, "examples")}</blockquote>
+                  )}
+                </article>
+              ))}
+            </div>
+          ) : ["dialogue", "practice"].includes(section.code) ? (
+            <div
+              className={`dialogue-list${section.code === "practice" ? " practice-list" : ""}`}
+            >
+              {section.items.map((item) => (
+                <article className="dialogue-line" key={item.id}>
+                  <div className="speaker">{value(item, "speaker")}</div>
+                  <div className="line-copy">
+                    <p lang="en">{value(item, "english_text")}</p>
+                    <small>{value(item, "chinese_text")}</small>
+                  </div>
+                  <Speak
+                    className=""
+                    text={value(item, "english_text")}
+                    label="播放这句英文"
+                  />
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="prompt-grid">
+              {section.items.map((item, itemIndex) => (
+                <article className="prompt-card" key={item.id}>
+                  <span>{itemIndex + 1}</span>
+                  <h3>{value(item, "item_title")}</h3>
+                  <p lang="en">{value(item, "english_text")}</p>
+                  <p className="translation">{value(item, "chinese_text")}</p>
+                  {Boolean(item.explanation) && (
+                    <div className="hints">
+                      <b>Hints</b>
+                      {value(item, "explanation")}
+                    </div>
+                  )}
+                  <Speak
+                    className=""
+                    text={value(item, "english_text")}
+                    label="听问题"
+                  >
+                    🔊 听问题
+                  </Speak>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      ))}
+    </article>
+  );
+}
+
 export function Dialogue({
   items,
   initialId,
@@ -29,12 +128,7 @@ export function Dialogue({
     (i) =>
       value(i, "lesson_code") === value(lesson || { id: 0 }, "lesson_code"),
   );
-  const sections = [
-    ...new Set(current.map((i) => value(i, "section_code"))),
-  ].map((code) => ({
-    code,
-    items: current.filter((i) => value(i, "section_code") === code),
-  }));
+  const sections = dialogueSections(current);
   const matching = lessons.filter((i) =>
     `${value(i, "chapter_title")} ${value(i, "lesson_title")} ${value(i, "lesson_code")}`
       .toLowerCase()
@@ -109,87 +203,7 @@ export function Dialogue({
               ))}
             </nav>
           </aside>
-          <article className="lesson-content">
-            {sections.map((s, i) => (
-              <section className="learning-section" id={s.code} key={s.code}>
-                <div className="section-title">
-                  <span>PART {String.fromCharCode(65 + i)}</span>
-                  <h2>{value(s.items[0], "section_title")}</h2>
-                </div>
-                {["vocabulary", "extra"].includes(s.code) ? (
-                  <div className="vocabulary-grid">
-                    {s.items.map((item) => (
-                      <article className="vocabulary-card" key={item.id}>
-                        <div>
-                          <h3>{value(item, "item_title")}</h3>
-                          {Boolean(item.pronunciation) && (
-                            <em>{value(item, "pronunciation")}</em>
-                          )}
-                        </div>
-                        <Speak
-                          className=""
-                          text={value(item, "english_text")}
-                          label={`播放 ${value(item, "item_title")}`}
-                        />
-                        <p className="meaning">{value(item, "chinese_text")}</p>
-                        {Boolean(item.explanation) && (
-                          <p>{value(item, "explanation")}</p>
-                        )}
-                        {Boolean(item.examples) && (
-                          <blockquote>{value(item, "examples")}</blockquote>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                ) : ["dialogue", "practice"].includes(s.code) ? (
-                  <div
-                    className={`dialogue-list${s.code === "practice" ? " practice-list" : ""}`}
-                  >
-                    {s.items.map((item) => (
-                      <article className="dialogue-line" key={item.id}>
-                        <div className="speaker">{value(item, "speaker")}</div>
-                        <div className="line-copy">
-                          <p lang="en">{value(item, "english_text")}</p>
-                          <small>{value(item, "chinese_text")}</small>
-                        </div>
-                        <Speak
-                          className=""
-                          text={value(item, "english_text")}
-                          label="播放这句英文"
-                        />
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="prompt-grid">
-                    {s.items.map((item, j) => (
-                      <article className="prompt-card" key={item.id}>
-                        <span>{j + 1}</span>
-                        <h3>{value(item, "item_title")}</h3>
-                        <p lang="en">{value(item, "english_text")}</p>
-                        <p className="translation">
-                          {value(item, "chinese_text")}
-                        </p>
-                        {Boolean(item.explanation) && (
-                          <div className="hints">
-                            <b>Hints</b>
-                            {value(item, "explanation")}
-                          </div>
-                        )}
-                        <Speak
-                          className=""
-                          text={value(item, "english_text")}
-                          label="听问题"
-                        >
-                          🔊 听问题
-                        </Speak>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </section>
-            ))}
-          </article>
+          <DialogueLessonContent items={current} />
         </section>
       </main>
     </div>

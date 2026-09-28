@@ -3,18 +3,18 @@ import type { Entry } from "./api";
 export const modules = [
   {
     key: "sentences",
-    title: "日常英语",
-    en: "Everyday speaking",
+    title: "每日口语",
+    en: "Daily speaking",
     icon: "💬",
     description: "把实用表达带入每一天，从一句开口练起。",
     color: "#ecf2ff",
   },
   {
     key: "kids-cards",
-    title: "儿童英语",
-    en: "Little explorers",
+    title: "课本单词",
+    en: "Textbook vocabulary",
     icon: "🌈",
-    description: "看图片、听发音，用有趣的卡片认识世界。",
+    description: "围绕课本单元学习核心单词、发音和例句。",
     color: "#fff1de",
   },
   {
@@ -27,7 +27,7 @@ export const modules = [
   },
   {
     key: "textbook",
-    title: "英语课本",
+    title: "英文课本",
     en: "Your English textbook",
     icon: "📖",
     description: "跟着课文逐句学习，积累扎实的语言基础。",
@@ -35,8 +35,8 @@ export const modules = [
   },
   {
     key: "dialogues",
-    title: "情景对话",
-    en: "Real conversations",
+    title: "日常口语对话",
+    en: "Daily spoken dialogues",
     icon: "🎧",
     description: "走进真实场景，练习自然流畅的英语对话。",
     color: "#e7f3f9",

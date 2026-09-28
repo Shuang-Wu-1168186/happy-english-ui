@@ -5,16 +5,14 @@ async function login(page: Page, username = "admin_test") {
   await page.getByLabel("Username", { exact: true }).fill(username);
   await page.getByLabel("Password", { exact: true }).fill("Testing123!");
   await page.getByRole("button", { name: "Login", exact: true }).click();
-  await expect(page.locator(".module-groups")).toBeVisible();
+  await expect(page.locator(".home-dashboard")).toBeVisible();
 }
-test("original homepage groups, role visibility and login", async ({
-  page,
-}) => {
+test("learning homepage dashboard and login", async ({ page }) => {
   await login(page);
-  await expect(page.locator(".module-card")).toHaveCount(9);
+  await expect(page.locator(".learning-area-card")).toHaveCount(6);
   await expect(
-    page.locator(".module-group[open] .group-copy strong"),
-  ).toHaveText("日常");
+    page.getByRole("heading", { name: "选择你的学习区域", exact: true }),
+  ).toBeVisible();
   await expect(page.locator(".sidebar")).toHaveCount(0);
   await page.screenshot({
     path: "test-results/home-desktop.png",
@@ -22,7 +20,7 @@ test("original homepage groups, role visibility and login", async ({
   });
   await page.getByRole("button", { name: "Logout" }).click();
   await login(page, "learner_test");
-  await expect(page.locator(".module-card")).toHaveCount(6);
+  await expect(page.locator(".learning-area-card")).toHaveCount(6);
   await expect(
     page.getByRole("link", { name: "后台管理", exact: true }),
   ).toHaveCount(0);
@@ -36,6 +34,140 @@ test("original homepage groups, role visibility and login", async ({
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBeTruthy();
+});
+test("homepage reveals a recently learned phrase", async ({ page }) => {
+  await page.route("**/api/learning/review-items**", async (route) => {
+    await route.fulfill({
+      json: {
+        items: [
+          {
+            id: 101,
+            resource: "sentences",
+            item_id: 1,
+            label: "日常短语",
+            prompt: "Thank you.",
+            answer: "谢谢。",
+          },
+        ],
+      },
+    });
+  });
+  await login(page);
+  await expect(
+    page.getByRole("heading", {
+      name: "考考自己：近 7 天学过的单词和短语",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("Thank you.", { exact: true })).toBeVisible();
+  await expect(page.getByText("谢谢。", { exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "点击查看释义", exact: true }).click();
+  await expect(page.getByText("谢谢。", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /回到内容/ })).toHaveAttribute(
+    "href",
+    "/learn/sentences/1",
+  );
+});
+test("foundation learning separates textbook, phonics, and textbook vocabulary", async ({
+  page,
+}) => {
+  await login(page);
+  await page
+    .locator(".learning-area-card")
+    .filter({ hasText: "基础学习" })
+    .click();
+  await expect(page).toHaveURL(/\/foundation$/);
+  await expect(
+    page.getByRole("heading", { name: "选择一个基础学习专区", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /英文课本/ })).toHaveAttribute(
+    "href",
+    "/learn/textbook",
+  );
+  await expect(page.getByRole("link", { name: /自然拼读/ })).toHaveAttribute(
+    "href",
+    "/learn/phonics",
+  );
+  await expect(page.getByRole("link", { name: /课本单词/ })).toHaveAttribute(
+    "href",
+    "/learn/kids-cards",
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: "test-results/foundation-mobile.png",
+    fullPage: true,
+  });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+});
+test("workplace learning separates interview English and professional vocabulary", async ({
+  page,
+}) => {
+  await login(page);
+  await page
+    .locator(".learning-area-card")
+    .filter({ hasText: "职场专区" })
+    .click();
+  await expect(page).toHaveURL(/\/workplace$/);
+  await expect(
+    page.getByRole("heading", { name: "选择一个职场学习专区", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /面试英语/ })).toHaveAttribute(
+    "href",
+    "/learn/interviews",
+  );
+  await expect(page.getByRole("link", { name: /专业词汇/ })).toHaveAttribute(
+    "href",
+    "/learn/vocabulary",
+  );
+});
+test("daily speaking separates daily practice and spoken dialogues", async ({
+  page,
+}) => {
+  await login(page);
+  await page
+    .locator(".learning-area-card")
+    .filter({ hasText: "日常开口" })
+    .click();
+  await expect(page).toHaveURL(/\/daily-speaking$/);
+  await expect(
+    page.getByRole("heading", { name: "选择一个日常开口专区", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /每日口语/ })).toHaveAttribute(
+    "href",
+    "/learn/sentences",
+  );
+  await expect(
+    page.getByRole("link", { name: /日常口语对话专区/ }),
+  ).toHaveAttribute("href", "/learn/dialogues");
+});
+test("private zone contains the personal learning notes entry", async ({
+  page,
+}) => {
+  await login(page);
+  const privateZone = page
+    .locator(".learning-area-card")
+    .filter({ hasText: "私人专区" });
+  await expect(privateZone).toHaveAttribute("href", "/course-modules/6");
+  await privateZone.click();
+  await expect(page).toHaveURL(/\/course-modules\/6$/);
+  await expect(
+    page.getByRole("heading", { name: "私人专区", exact: true }),
+  ).toBeVisible();
+
+  const notes = page.getByRole("link", { name: /我的英语笔记/ });
+  await expect(notes).toHaveAttribute("href", "/learn/notes");
+  await notes.click();
+  await expect(page).toHaveURL(/\/learn\/notes$/);
+  await expect(
+    page.getByRole("heading", { name: "Study Notes", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".note-card").filter({ hasText: "Daily practice" }),
+  ).toBeVisible();
 });
 test("homepage management shortcut opens the separate admin workspace on desktop and mobile", async ({
   page,
@@ -113,7 +245,7 @@ test("homepage management shortcut opens the separate admin workspace on desktop
     ).toBeTruthy();
   }
   await page.goto("/manage?resource=interviews");
-  await expect(page).toHaveURL(/\/admin\/content\?resource=interviews$/);
+  await expect(page).toHaveURL(/\/admin\/content\/notes\?resource=interviews$/);
   await expect(
     page.getByRole("heading", {
       name: "Create Interview Question",
@@ -152,6 +284,34 @@ test("daily card blur, search, jump and automatic study progress", async ({
     path: "test-results/sentences-desktop.png",
     fullPage: true,
   });
+});
+test("study note search includes card text", async ({ page }) => {
+  await login(page);
+  await page.goto("/learn/notes");
+  const search = page.getByPlaceholder(
+    "Search note titles, phrases, or examples...",
+  );
+  await search.fill("Good morning");
+  const searchResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === "/api/content/note-items" &&
+      url.searchParams.get("q") === "Good morning" &&
+      response.status() === 200
+    );
+  });
+  await search.press("Enter");
+  await searchResponse;
+  await expect(page).toHaveURL(/keyword=Good\+morning/);
+  await expect(page.locator(".note-card")).toHaveCount(0);
+  await expect(page.locator(".note-carousel-shell")).toBeVisible();
+  await expect(page.locator(".note-carousel-shell .card")).toHaveCount(1);
+  await expect(page.locator(".note-carousel-shell .english")).toBeHidden();
+  await page.getByRole("button", { name: "Show or hide English" }).click();
+  await expect(page.locator(".note-carousel-shell .english")).toBeVisible();
+  await expect(page.locator(".note-carousel-shell .english")).toHaveText(
+    "Good morning",
+  );
 });
 test("all original learning layouts and page flip survive navigation", async ({
   page,
@@ -234,7 +394,8 @@ test("old note links retain forward and backward page flips", async ({
       raw_text: "Keep useful English in one place and review it regularly.",
       english_text: "New words · useful phrases · example sentences",
       chinese_text: "把新单词、实用短语和例句集中记录，并定期复习。",
-      explanation: "Use this note as a starting point for your English learning records.",
+      explanation:
+        "Use this note as a starting point for your English learning records.",
       examples: "Vocabulary\nPhrases\nExample sentences",
     },
   });

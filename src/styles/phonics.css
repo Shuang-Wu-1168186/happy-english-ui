@@ -194,6 +194,13 @@
   background: #eeeaff;
   color: var(--purple-dark);
 }
+.study-phonics .lesson-link.is-locked {
+  background: #fcfafc;
+  opacity: 0.72;
+}
+.study-phonics .lesson-link.is-locked:hover {
+  background: #f7f2f7;
+}
 .study-phonics .lesson-link > span {
   display: grid;
   width: 25px;
@@ -227,6 +234,14 @@
   margin-top: 2px;
   color: var(--muted);
   font-size: 0.66rem;
+}
+.study-phonics .lesson-link em {
+  margin-left: auto;
+  color: #9a7299;
+  font-size: 0.63rem;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
 }
 .study-phonics .lesson-card {
   padding: 30px;
