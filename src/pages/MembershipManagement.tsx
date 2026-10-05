@@ -771,18 +771,13 @@ export function MembershipManagement() {
 }
 
 export function MaterialDevelopment() {
-  const [topics, setTopics] = useState<Entry[]>([]);
   const [templates, setTemplates] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
   const loadSupport = useCallback(async () => {
-    const [topicResult, templateResult] = await Promise.all([
-      api<{ items: Entry[] }>("/admin/learning-topics"),
-      api<{ items: Entry[] }>("/admin/learning-templates"),
-    ]);
-    setTopics(topicResult.items);
+    const templateResult = await api<{ items: Entry[] }>("/admin/learning-templates");
     setTemplates(templateResult.items);
   }, []);
 
@@ -843,7 +838,6 @@ export function MaterialDevelopment() {
           refreshSupport={loadSupport}
           reportError={setError}
           templates={templates}
-          topics={topics}
         />
       )}
     </section>
@@ -1738,15 +1732,13 @@ function MaterialsPanel({
   refreshSupport,
   reportError,
   templates,
-  topics,
 }: {
   refreshKey: number;
   refreshSupport: () => Promise<unknown>;
   reportError: (message: string) => void;
   templates: Entry[];
-  topics: Entry[];
 }) {
-  const [filters, setFilters] = useState({ q: "", topic_id: "", is_published: "" });
+  const [filters, setFilters] = useState({ q: "", is_published: "" });
   const [applied, setApplied] = useState(filters);
   const [page, setPage] = useState(1);
   const [dialog, setDialog] = useState<DialogState | null>(null);
@@ -1810,9 +1802,8 @@ function MaterialsPanel({
         `/admin/learning-materials${selectedId ? `/${selectedId}` : ""}`,
         selectedId ? "PUT" : "POST",
         {
-          topic_id: Number(form.get("topic_id")),
           template_id: optionalNumber(form.get("template_id")),
-          material_code: String(form.get("material_code") || ""),
+          material_code: String(form.get("material_code") || "").trim().toLowerCase(),
           title: String(form.get("title") || ""),
           title_en: String(form.get("title_en") || ""),
           summary: String(form.get("summary") || ""),
@@ -1909,8 +1900,6 @@ function MaterialsPanel({
 
   const selected = detail || dialog?.record || null;
   const lessons = entries(detail || { id: 0 }, "lessons");
-  const topicName = (topicId: number) =>
-    value(topics.find((topic) => topic.id === topicId), "title") || `专题 #${topicId}`;
   const templateName = (material: Entry | null | undefined) => {
     const template = material?.template;
     if (template && typeof template === "object" && !Array.isArray(template)) {
@@ -1935,7 +1924,7 @@ function MaterialsPanel({
       <section className="card shadow-sm admin-filter-panel membership-filter-card">
         <div className="card-body">
           <div className="admin-filter-panel-title">
-            <div><p>查询教材</p><span>按教材名称、来源、专题或发布状态查询。</span></div>
+            <div><p>查询教材</p><span>按教材名称、来源或发布状态查询。</span></div>
           </div>
           <form
             className="row g-3 admin-filter-form"
@@ -1946,14 +1935,13 @@ function MaterialsPanel({
               setApplied(filters);
             }}
           >
-            <div className="col-md-4"><label className="form-label" htmlFor="material-query">教材名称或编码</label><input className="form-control" id="material-query" onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))} placeholder="例如 Travel English" value={filters.q} /></div>
-            <div className="col-md-3"><label className="form-label" htmlFor="material-topic-filter">所属专题</label><select className="form-select" id="material-topic-filter" onChange={(event) => setFilters((current) => ({ ...current, topic_id: event.target.value }))} value={filters.topic_id}><option value="">全部专题</option>{topics.map((topic) => <option key={topic.id} value={topic.id}>{value(topic, "title")}</option>)}</select></div>
+            <div className="col-md-6"><label className="form-label" htmlFor="material-query">教材名称或编码</label><input className="form-control" id="material-query" onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))} placeholder="例如 Travel English" value={filters.q} /></div>
             <div className="col-md-2"><label className="form-label" htmlFor="material-status">发布状态</label><select className="form-select" id="material-status" onChange={(event) => setFilters((current) => ({ ...current, is_published: event.target.value }))} value={filters.is_published}><option value="">全部状态</option><option value="1">已发布</option><option value="0">未发布</option></select></div>
             <FilterActions
               createLabel="新建"
               onCreate={() => openDialog("new")}
               onReset={() => {
-                const reset = { q: "", topic_id: "", is_published: "" };
+                const reset = { q: "", is_published: "" };
                 setFilters(reset);
                 setApplied(reset);
                 setPage(1);
@@ -1966,13 +1954,12 @@ function MaterialsPanel({
       <DataCard count={result.items.length} emptyText="调整查询条件，或新建一本教材。" loading={loading} title="教材列表 · learning_material">
         <div className="table-responsive">
           <table className="table admin-data-table membership-table mb-0">
-            <thead><tr><th>编号</th><th>教材</th><th>所属专题</th><th>类型与模板</th><th>发布状态</th><th className="text-end">操作</th></tr></thead>
+            <thead><tr><th>编号</th><th>教材</th><th>类型与模板</th><th>发布状态</th><th className="text-end">操作</th></tr></thead>
             <tbody>
               {result.items.map((material) => (
                 <tr key={material.id}>
                   <td className="admin-table-id" data-label="编号">#{material.id}</td>
                   <td data-label="教材"><strong>{value(material, "title")}</strong><small className="membership-table-subtitle">{value(material, "material_code")}</small></td>
-                  <td data-label="所属专题">{topicName(numberValue(material, "topic_id"))}</td>
                   <td data-label="类型与模板">{value(material, "material_type")}<small className="membership-table-subtitle">{templateName(material)}</small></td>
                   <td data-label="发布状态"><Status status={isEnabled(material, "is_published") ? "published" : "unpublished"} /></td>
                   <td className="admin-table-actions-cell" data-label="操作"><div className="admin-table-actions"><button className="admin-table-button" onClick={() => void openDialog("detail", material)} type="button"><Eye aria-hidden="true" size={14} /> 查看详情</button><button className="admin-table-button" onClick={() => void openDialog("edit", material)} type="button"><FilePenLine aria-hidden="true" size={14} /> 修改教材</button><button className="admin-table-button" onClick={() => void openDialog("lessons", material)} type="button">维护课时</button><button className="admin-table-button is-warning" onClick={() => void removeMaterial(material)} type="button">删除</button></div></td>
@@ -1991,7 +1978,7 @@ function MaterialsPanel({
               <DetailGrid items={[
                 { label: "教材编码", value: value(selected, "material_code") },
                 { label: "教材名称", value: value(selected, "title") },
-                { label: "所属专题", value: topicName(numberValue(selected, "topic_id")) },
+                { label: "关联课程", value: entries(selected, "courses").map((course) => value(course, "title")).filter(Boolean).join(" / ") || "尚未关联课程" },
                 { label: "教材类型", value: value(selected, "material_type") },
                 { label: "渲染模板", value: templateName(selected) },
                 { label: "出版社或来源", value: value(selected, "publisher") },
@@ -2005,8 +1992,8 @@ function MaterialsPanel({
             <>
               {dialog.mode !== "lessons" && (
               <form className="row g-3 membership-dialog-form" key={selected?.id || "new-material"} onSubmit={saveMaterial}>
-                <div className="col-md-6"><label className="form-label" htmlFor="material-topic">所属专题</label><select className="form-select" defaultValue={value(selected, "topic_id")} id="material-topic" name="topic_id" required><option value="">请选择专题</option>{topics.map((topic) => <option key={topic.id} value={topic.id}>{value(topic, "title")}</option>)}</select></div>
-                <FormInput defaultValue={value(selected, "material_code")} label="教材编码" name="material_code" required />
+                <div className="col-12"><p className="mb-0 text-muted">教材通过课程关联到专题；请在“课程开发”中选择教材，再在专题管理中关联课程。</p></div>
+                <FormInput defaultValue={value(selected, "material_code")} label="教材编码（自动转小写）" name="material_code" required />
                 <FormInput defaultValue={value(selected, "title")} label="教材名称" name="title" required />
                 <FormInput defaultValue={value(selected, "title_en")} label="英文名称" name="title_en" />
                 <FormSelect defaultValue={value(selected, "material_type") || "textbook"} label="教材类型" name="material_type" options={materialTypes.map((item) => [item, item])} />

@@ -17,6 +17,7 @@ type TopicZoneTopic = {
   icon: string;
   color: string;
   resource: string;
+  path?: string;
 };
 
 export type TopicZoneConfig = {
@@ -129,7 +130,7 @@ export function TopicZone({ config }: { config: TopicZoneConfig }) {
                 to={
                   topic.catalogId
                     ? `/course-topics/${topic.catalogId}`
-                    : courseLandingPath(topic.resource)
+                    : topic.path || courseLandingPath(topic.resource)
                 }
                 style={{ background: topic.color }}
               >

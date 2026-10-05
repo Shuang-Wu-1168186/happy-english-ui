@@ -6,6 +6,7 @@ import { Speak } from "../components/study/Speech";
 import { api, entries, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 import { DialogueCourseClassroom } from "./DialogueCourseClassroom";
+import { CommuteCourseClassroom } from "./CommuteCourseClassroom";
 import { InterviewCourseClassroom } from "./InterviewCourseClassroom";
 import { OriginalCourseClassroom } from "./OriginalCourseClassroom";
 import { PutAsideStyleCourseware } from "../components/courseware/PutAsideStyleCourseware";
@@ -253,6 +254,21 @@ export function CourseClassroom() {
           <p className="course-loading">正在打开课程…</p>
         </main>
       </div>
+    );
+
+  if (activeLesson && activeTemplate.code === "commute")
+    return (
+      <CommuteCourseClassroom
+        activeLesson={activeLesson}
+        course={course}
+        isPreview={isPreview}
+        lessons={lessons}
+        lockedLesson={lockedLesson}
+        onCloseUpgrade={() => setLockedLesson(null)}
+        onLockLesson={setLockedLesson}
+        onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
+        previewCount={previewCount}
+      />
     );
 
   if (

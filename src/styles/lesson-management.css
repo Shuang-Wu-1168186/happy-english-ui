@@ -1,0 +1,331 @@
+.admin-app .lesson-management-page {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-app .lesson-management-heading,
+.admin-app .lesson-management-table-heading,
+.admin-app .lesson-editor-heading,
+.admin-app .lesson-editor-section-heading,
+.admin-app .lesson-section-card > header,
+.admin-app .lesson-item-editor-heading,
+.admin-app .lesson-editor-actions,
+.admin-app .lesson-management-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.admin-app .lesson-management-heading h1 {
+  margin: 3px 0 6px;
+  color: #1d2d48;
+  font-size: 1.56rem;
+  font-weight: 800;
+}
+
+.admin-app .lesson-management-heading p:last-child,
+.admin-app .lesson-editor-section-heading p {
+  margin: 0;
+  color: #63718a;
+  font-size: 0.9rem;
+}
+
+.admin-app .lesson-management-notice {
+  margin: 0;
+}
+
+.admin-app .lesson-material-selector {
+  border-color: #dfe7f3;
+}
+
+.admin-app .lesson-material-selector .card-body {
+  display: grid;
+  max-width: 720px;
+  gap: 5px;
+}
+
+.admin-app .lesson-material-selector .form-label,
+.admin-app .lesson-editor-dialog .form-label {
+  margin-bottom: 0;
+  color: #435168;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-app .lesson-material-selector small {
+  color: #718098;
+  font-size: 0.76rem;
+}
+
+.admin-app .lesson-management-table-card {
+  overflow: hidden;
+  border-color: #e0e8f3;
+}
+
+.admin-app .lesson-management-table-heading {
+  padding: 17px 20px;
+  border-bottom: 1px solid #e7edf5;
+  background: #fbfcff;
+}
+
+.admin-app .lesson-management-table-heading p,
+.admin-app .lesson-editor-heading p {
+  margin: 0 0 3px;
+  color: #5871a8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-app .lesson-management-table-heading h2,
+.admin-app .lesson-editor-heading h2 {
+  margin: 0;
+  color: #1d2d48;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.admin-app .lesson-management-empty {
+  margin: 0;
+  padding: 30px 20px;
+  color: #728096;
+  text-align: center;
+}
+
+.admin-app .lesson-management-table {
+  min-width: 800px;
+}
+
+.admin-app .lesson-management-table td {
+  vertical-align: middle;
+}
+
+.admin-app .lesson-management-table td:first-child strong,
+.admin-app .lesson-management-table td:first-child small {
+  display: block;
+}
+
+.admin-app .lesson-management-table td:first-child strong {
+  color: #2b3a53;
+  font-size: 0.88rem;
+}
+
+.admin-app .lesson-management-table td:first-child small {
+  margin-top: 3px;
+  color: #7b899d;
+  font-size: 0.74rem;
+}
+
+.admin-app .lesson-management-actions {
+  justify-content: flex-end;
+}
+
+.admin-app .lesson-management-actions .admin-action-button {
+  padding: 6px 9px;
+}
+
+.admin-app .lesson-status {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #90620d;
+  background: #fff0cb;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.admin-app .lesson-status.is-published {
+  color: #087044;
+  background: #dcf8e9;
+}
+
+.admin-app .lesson-editor-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 30px 20px;
+  background: rgb(15 23 42 / 48%);
+  backdrop-filter: blur(3px);
+}
+
+.admin-app .lesson-editor-dialog {
+  width: min(1120px, 100%);
+  max-height: calc(100vh - 60px);
+  overflow: hidden;
+  border: 1px solid #d9e3f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 28%);
+}
+
+.admin-app .lesson-editor-heading {
+  padding: 18px 22px;
+  border-bottom: 1px solid #e6ecf4;
+  background: #fbfcff;
+}
+
+.admin-app .lesson-editor-heading > button,
+.admin-app .lesson-item-editor-heading button {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #dce4f0;
+  border-radius: 8px;
+  color: #62718a;
+  background: #fff;
+}
+
+.admin-app .lesson-editor-body {
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+  padding: 22px;
+}
+
+.admin-app .lesson-editor-section {
+  margin-top: 22px;
+}
+
+.admin-app .lesson-editor-section:first-of-type {
+  margin-top: 0;
+}
+
+.admin-app .lesson-editor-section h3 {
+  margin: 0 0 14px;
+  color: #263652;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.admin-app .lesson-editor-section-heading {
+  align-items: flex-start;
+}
+
+.admin-app .lesson-editor-section-heading h3 {
+  margin-bottom: 4px;
+}
+
+.admin-app .lesson-editor-publish {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  color: #435168;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-app .lesson-editor-publish input {
+  width: 16px;
+  height: 16px;
+  accent-color: #3163c7;
+}
+
+.admin-app .lesson-section-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.admin-app .lesson-section-card {
+  border: 1px solid #dce5f1;
+  border-radius: 12px;
+  background: #fbfcff;
+}
+
+.admin-app .lesson-section-card > header {
+  padding: 13px 15px;
+  border-bottom: 1px solid #e5ebf4;
+}
+
+.admin-app .lesson-section-card h4 {
+  margin: 0;
+  color: #31415e;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.admin-app .lesson-section-card header small {
+  color: #748198;
+  font-size: 0.74rem;
+}
+
+.admin-app .lesson-section-card > header .admin-action-button {
+  padding: 6px 9px;
+}
+
+.admin-app .lesson-section-empty {
+  margin: 0;
+  padding: 14px 15px;
+  color: #77869a;
+  font-size: 0.82rem;
+}
+
+.admin-app .lesson-item-editor {
+  margin: 12px;
+  padding: 13px;
+  border: 1px solid #e1e8f2;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.admin-app .lesson-item-editor-heading {
+  margin-bottom: 10px;
+}
+
+.admin-app .lesson-item-editor-heading strong {
+  color: #4b5f7e;
+  font-size: 0.8rem;
+}
+
+.admin-app .lesson-item-editor-heading button {
+  width: 29px;
+  height: 29px;
+  color: #b4233c;
+  border-color: #f1ced5;
+  background: #fff7f8;
+}
+
+.admin-app .lesson-payload-input {
+  min-height: 132px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.admin-app .lesson-editor-actions {
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+@media (max-width: 760px) {
+  .admin-app .lesson-management-heading,
+  .admin-app .lesson-management-table-heading,
+  .admin-app .lesson-editor-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-app .lesson-management-heading > button,
+  .admin-app .lesson-management-table-heading > button {
+    justify-content: center;
+  }
+
+  .admin-app .lesson-editor-backdrop {
+    padding: 12px;
+  }
+
+  .admin-app .lesson-editor-dialog {
+    max-height: calc(100vh - 24px);
+  }
+
+  .admin-app .lesson-editor-body {
+    max-height: calc(100vh - 122px);
+    padding: 16px;
+  }
+}

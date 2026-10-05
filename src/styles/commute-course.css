@@ -1,0 +1,674 @@
+.commute-course-app {
+  min-height: 100svh;
+  padding: 0 14px 28px;
+  color: #122033;
+  background:
+    radial-gradient(circle at 8% 2%, #d9f8ed 0, transparent 31%),
+    radial-gradient(circle at 96% 16%, #e2e8ff 0, transparent 36%), #f4f7f7;
+}
+
+.commute-course-shell {
+  width: min(100%, 500px);
+  margin: 0 auto;
+}
+
+.commute-course-topbar {
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: minmax(68px, 1fr) minmax(0, 1.8fr) minmax(54px, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.commute-course-topbar button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  padding: 8px 10px;
+  color: #1b3542;
+  background: transparent;
+  font: 700 0.86rem/1 inherit;
+  white-space: nowrap;
+}
+
+.commute-course-topbar button:last-child {
+  justify-self: end;
+  background: #ffffffa8;
+  box-shadow: inset 0 0 0 1px #d9e5e3;
+}
+
+.commute-course-topbar > div {
+  min-width: 0;
+  text-align: center;
+}
+
+.commute-course-topbar span,
+.commute-sheet-heading span {
+  display: block;
+  color: #668083;
+  font-size: 0.59rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.commute-course-topbar strong {
+  display: block;
+  overflow: hidden;
+  color: #173238;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commute-course-intro {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 124px;
+  padding: 20px;
+  border: 1px solid #dcebea;
+  border-radius: 24px;
+  background: #ffffffd9;
+  box-shadow: 0 12px 34px #27525012;
+}
+
+.commute-course-intro > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.commute-course-intro p {
+  margin: 0 0 7px;
+  color: #37706d;
+  font-size: 0.77rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.commute-course-intro h1 {
+  margin: 0;
+  color: #16353d;
+  font-size: clamp(1.2rem, 5vw, 1.5rem);
+  line-height: 1.25;
+}
+
+.commute-course-intro span {
+  display: block;
+  margin-top: 8px;
+  color: #5d6c77;
+  font-size: 0.83rem;
+  line-height: 1.5;
+}
+
+.commute-course-intro i,
+.commute-course-illustration {
+  display: grid;
+  flex: 0 0 55px;
+  width: 55px;
+  height: 55px;
+  place-items: center;
+  border-radius: 18px;
+  background: #d4f3e6;
+  font-size: 1.75rem;
+  font-style: normal;
+}
+
+.commute-course-illustration {
+  object-fit: cover;
+}
+
+.commute-preview-note {
+  margin: 12px 2px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #795215;
+  background: #fff5d9;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.commute-flow {
+  margin-top: 18px;
+}
+
+.commute-flow-empty {
+  padding: 32px;
+  border-radius: 20px;
+  color: #61717a;
+  background: #fff;
+  text-align: center;
+}
+
+.commute-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 3px 10px;
+  color: #587174;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.commute-progress-track {
+  height: 7px;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #d9e8e5;
+}
+
+.commute-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #12a47c, #46c68a);
+  transition: width 180ms ease-out;
+}
+
+.commute-flow-card {
+  min-height: 456px;
+  overflow: hidden;
+  border: 1px solid #d6e9e5;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 16px 42px #25434218;
+  touch-action: pan-y;
+}
+
+.commute-start-card,
+.commute-vocabulary-card,
+.commute-practice-card,
+.commute-complete-card {
+  min-height: 454px;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 7vw, 34px);
+}
+
+.commute-start-card {
+  color: #eafff8;
+  background:
+    radial-gradient(circle at 92% 10%, #46d8a278 0, transparent 29%),
+    linear-gradient(145deg, #123c48, #176f67);
+}
+
+.commute-eyebrow {
+  margin: 0 0 12px;
+  color: #48cda0;
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+}
+
+.commute-start-card h1,
+.commute-complete-card h2,
+.commute-vocabulary-card h2,
+.commute-practice-card h2 {
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.commute-start-card h1 {
+  max-width: 9em;
+  font-size: clamp(1.8rem, 8.4vw, 2.45rem);
+  line-height: 1.18;
+}
+
+.commute-start-card > p:not(.commute-eyebrow) {
+  margin: 18px 0 0;
+  color: #c2e6de;
+  font-size: 0.97rem;
+  line-height: 1.65;
+}
+
+.commute-start-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 22px 0 auto;
+}
+
+.commute-start-points span {
+  padding: 7px 9px;
+  border: 1px solid #c2fff12e;
+  border-radius: 10px;
+  color: #d7fff3;
+  background: #ffffff13;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.commute-primary-button,
+.commute-secondary-button,
+.commute-answer-options button {
+  min-height: 52px;
+  border: 0;
+  border-radius: 16px;
+  font: 800 0.96rem/1.2 inherit;
+}
+
+.commute-primary-button {
+  padding: 12px 18px;
+  color: #fff;
+  background: #126d62;
+  box-shadow: 0 7px 17px #126d6230;
+}
+
+.commute-start-card .commute-primary-button {
+  color: #103b42;
+  background: #d5ffe9;
+  box-shadow: none;
+}
+
+.commute-primary-button:disabled {
+  color: #8e9c9d;
+  background: #e5ebea;
+  box-shadow: none;
+}
+
+.commute-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #3c8176;
+  font-size: 0.73rem;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+}
+
+.commute-card-heading span:last-child {
+  color: #a6b5b3;
+  font-size: 0.85rem;
+}
+
+.commute-vocabulary-card h2 {
+  margin-top: 22px;
+  color: #16363d;
+  font-size: clamp(2rem, 9.5vw, 2.75rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.commute-listen {
+  align-self: flex-start;
+  min-height: 44px;
+  margin-top: 15px;
+  padding: 9px 13px;
+  border: 1px solid #cbe4df;
+  border-radius: 13px;
+  color: #1f6f65;
+  background: #f2fbf8;
+  font: 800 0.83rem/1 inherit;
+}
+
+.commute-meaning {
+  margin: 22px 0 0;
+  color: #102f36;
+  font-size: 1.13rem;
+  font-weight: 850;
+}
+
+.commute-explanation {
+  margin: 7px 0 0;
+  color: #63777c;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.commute-example {
+  margin: 20px 0 auto;
+  padding: 13px 15px;
+  border-left: 3px solid #64cda9;
+  border-radius: 0 12px 12px 0;
+  background: #f3f9f7;
+}
+
+.commute-example p {
+  margin: 0;
+  color: #294c52;
+  font-size: 0.9rem;
+  line-height: 1.48;
+}
+
+.commute-example footer {
+  margin-top: 5px;
+  color: #77878a;
+  font-size: 0.79rem;
+}
+
+.commute-card-actions {
+  display: grid;
+  grid-template-columns: minmax(86px, 0.65fr) minmax(0, 1.35fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.commute-secondary-button {
+  padding: 10px;
+  color: #507276;
+  background: #edf5f3;
+}
+
+.commute-secondary-button:disabled {
+  color: #b6c3c2;
+}
+
+.commute-practice-card > .commute-eyebrow {
+  color: #8071bd;
+}
+
+.commute-practice-card h2 {
+  color: #292c50;
+  font-size: clamp(1.38rem, 6vw, 1.7rem);
+  line-height: 1.25;
+}
+
+.commute-practice-card
+  > p:not(
+    .commute-eyebrow,
+    .commute-practice-sentence,
+    .commute-answer-feedback
+  ) {
+  margin: 10px 0 0;
+  color: #677086;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.commute-practice-sentence {
+  margin: 21px 0 14px;
+  padding: 13px 14px;
+  border-radius: 13px;
+  color: #363258;
+  background: #f4f1ff;
+  font-size: 0.95rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.commute-answer-options {
+  display: grid;
+  gap: 9px;
+}
+
+.commute-answer-options button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid #dedbf1;
+  color: #39335b;
+  background: #fff;
+  text-align: left;
+}
+
+.commute-answer-options button.is-selected {
+  border-color: #998ad7;
+  background: #f4f1ff;
+}
+
+.commute-answer-options button.is-correct {
+  border-color: #49b882;
+  color: #14633e;
+  background: #e8faef;
+}
+
+.commute-answer-feedback {
+  min-height: 28px;
+  margin: 11px 0 auto;
+  color: #9b6330;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.commute-answer-feedback.is-correct {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: #1f7550;
+}
+
+.commute-answer-feedback span {
+  font-size: 0.76rem;
+}
+
+.commute-complete-card {
+  align-items: flex-start;
+  justify-content: center;
+  color: #ecfffa;
+  background:
+    radial-gradient(circle at 82% 12%, #8be3c55c 0, transparent 24%),
+    linear-gradient(145deg, #132e4d, #36598a);
+}
+
+.commute-complete-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 19px;
+  place-items: center;
+  border-radius: 50%;
+  color: #173d55;
+  background: #ceffe9;
+  font-size: 1.55rem;
+  font-weight: 900;
+}
+
+.commute-complete-card .commute-eyebrow {
+  color: #a9e7cf;
+}
+
+.commute-complete-card h2 {
+  font-size: clamp(1.8rem, 8vw, 2.3rem);
+}
+
+.commute-complete-card > p:not(.commute-eyebrow) {
+  margin: 13px 0 0;
+  color: #c6ddec;
+  line-height: 1.65;
+}
+
+.commute-review-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 22px 0 28px;
+}
+
+.commute-review-terms span {
+  padding: 7px 9px;
+  border: 1px solid #d8eeff2d;
+  border-radius: 9px;
+  color: #e4f9ff;
+  background: #ffffff13;
+  font-size: 0.73rem;
+}
+
+.commute-complete-card .commute-primary-button {
+  width: 100%;
+  color: #173c61;
+  background: #d0f4ff;
+  box-shadow: none;
+}
+
+.commute-save-note {
+  margin: 11px 5px 0;
+  color: #789093;
+  font-size: 0.76rem;
+  text-align: center;
+}
+
+.commute-lesson-switcher {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.commute-lesson-switcher button {
+  min-height: 46px;
+  border: 1px solid #d5e3e1;
+  border-radius: 14px;
+  color: #317069;
+  background: #ffffffb8;
+  font: 800 0.84rem/1 inherit;
+}
+
+.commute-lesson-switcher button:disabled {
+  color: #a8b6b5;
+  background: #edf2f1;
+}
+
+.commute-lesson-switcher span {
+  color: #6c8382;
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.commute-sheet-backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  background: #14263378;
+}
+
+.commute-lesson-sheet {
+  width: min(100%, 500px);
+  max-height: min(75svh, 620px);
+  overflow: auto;
+  padding: 20px;
+  border-radius: 25px 25px 18px 18px;
+  background: #fff;
+  box-shadow: 0 -12px 46px #0b1c2933;
+}
+
+.commute-sheet-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.commute-sheet-heading h2 {
+  margin: 5px 0 0;
+  color: #193940;
+  font-size: 1.14rem;
+}
+
+.commute-sheet-heading button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #5c6d72;
+  background: #eff5f4;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.commute-sheet-lessons {
+  display: grid;
+  gap: 8px;
+  margin-top: 19px;
+}
+
+.commute-sheet-lessons button {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border: 1px solid #e1ebea;
+  border-radius: 14px;
+  color: #38595d;
+  background: #fff;
+  text-align: left;
+}
+
+.commute-sheet-lessons button.is-active {
+  border-color: #61b69e;
+  color: #176858;
+  background: #eaf8f2;
+}
+
+.commute-sheet-lessons button span {
+  color: #8ca4a3;
+  font-size: 0.77rem;
+  font-weight: 900;
+}
+
+.commute-sheet-lessons button strong {
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commute-sheet-lessons button em {
+  font-style: normal;
+}
+
+.commute-flow.is-embedded {
+  max-width: 500px;
+}
+
+.commute-flow.is-embedded .commute-flow-card,
+.commute-flow.is-embedded .commute-start-card,
+.commute-flow.is-embedded .commute-vocabulary-card,
+.commute-flow.is-embedded .commute-practice-card,
+.commute-flow.is-embedded .commute-complete-card {
+  min-height: 420px;
+}
+
+@media (min-width: 720px) {
+  .commute-course-app {
+    padding-top: 14px;
+    padding-bottom: 42px;
+  }
+
+  .commute-course-shell {
+    padding: 0 16px;
+    border-radius: 32px;
+  }
+}
+
+@media (max-height: 720px) and (max-width: 600px) {
+  .commute-course-intro {
+    min-height: 105px;
+    padding: 15px 18px;
+  }
+
+  .commute-flow-card,
+  .commute-start-card,
+  .commute-vocabulary-card,
+  .commute-practice-card,
+  .commute-complete-card {
+    min-height: 400px;
+  }
+
+  .commute-start-card,
+  .commute-vocabulary-card,
+  .commute-practice-card,
+  .commute-complete-card {
+    padding: 24px;
+  }
+
+  .commute-start-card h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commute-progress-track span {
+    transition: none;
+  }
+}

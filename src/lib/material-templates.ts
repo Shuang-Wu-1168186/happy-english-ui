@@ -4,6 +4,7 @@ export type MaterialTemplateCode =
   | "standard"
   | "put-aside"
   | "dialogue"
+  | "commute"
   | "textbook"
   | "cards"
   | "phonics"
@@ -13,7 +14,7 @@ export type MaterialTemplateDefinition = {
   code: MaterialTemplateCode;
   version: 1;
   name: string;
-  contentKind: "courseware" | "dialogue" | "source";
+  contentKind: "courseware" | "dialogue" | "structured" | "source";
   description: string;
 };
 
@@ -42,8 +43,15 @@ export const MATERIAL_TEMPLATE_REGISTRY: Record<
     code: "dialogue",
     version: 1,
     name: "情景对话",
-    contentKind: "dialogue",
+    contentKind: "structured",
     description: "按词汇、对话和练习分区展示的口语对话页。",
+  },
+  "commute.v1": {
+    code: "commute",
+    version: 1,
+    name: "通勤微课",
+    contentKind: "structured",
+    description: "为地铁和短时通勤设计的分步听读与情境接话学习页。",
   },
   "textbook.v1": {
     code: "textbook",
@@ -114,4 +122,3 @@ export function resolveMaterialTemplate(
     apiTemplate: template,
   };
 }
-

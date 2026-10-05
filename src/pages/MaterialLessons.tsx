@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
+import { CommuteCourseClassroom } from "./CommuteCourseClassroom";
 import { HomeNavigation } from "../components/Layout";
 import { MaterialTemplateRenderer } from "../components/material-templates/MaterialTemplateRenderer";
 import { api, entries, value } from "../lib/api";
@@ -87,6 +88,21 @@ export function MaterialLessons() {
   const isPreview = material?.access_state === "preview";
   const previewCount = Number(material?.preview_lesson_count || 2);
   const hasLockedLessons = lessons.some((lesson) => isLocked(lesson));
+
+  if (!error && material && activeDetail && activeTemplate.code === "commute")
+    return (
+      <CommuteCourseClassroom
+        activeLesson={activeDetail}
+        course={material}
+        isPreview={isPreview}
+        lessons={lessons}
+        lockedLesson={lockedLesson}
+        onCloseUpgrade={() => setLockedLesson(null)}
+        onLockLesson={setLockedLesson}
+        onSelectLesson={(lesson) => void loadLesson(lesson)}
+        previewCount={previewCount}
+      />
+    );
 
   return (
     <div className="study-home material-lessons-page">

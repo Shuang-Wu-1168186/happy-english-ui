@@ -159,6 +159,30 @@
 .admin-app .topic-editor-dialog textarea {
   min-height: 108px;
 }
+
+.admin-app .topic-code-help {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 9px;
+  margin-top: 6px;
+  color: #718098;
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.admin-app .topic-code-help button {
+  padding: 0;
+  border: 0;
+  color: #2d58bb;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+}
+
+.admin-app .topic-code-help button:disabled {
+  color: #a2acbb;
+}
 .admin-app .topic-published-check {
   display: flex;
   align-items: center;

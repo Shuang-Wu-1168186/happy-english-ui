@@ -133,6 +133,68 @@
   color: #3d63dd;
 }
 
+.study-editor .editor-loading-overlay,
+.study-interview-editor .editor-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(3px);
+}
+
+.study-editor .editor-loading-dialog,
+.study-interview-editor .editor-loading-dialog {
+  width: min(320px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  color: #667085;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28);
+  text-align: center;
+}
+
+.study-editor .editor-loading-dialog strong,
+.study-interview-editor .editor-loading-dialog strong {
+  color: #1d2939;
+  font-size: 16px;
+}
+
+.study-editor .editor-loading-dialog > span:last-child,
+.study-interview-editor .editor-loading-dialog > span:last-child {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.study-editor .editor-loading-spinner,
+.study-interview-editor .editor-loading-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid #dbe5ff;
+  border-top-color: #3d63dd;
+  border-radius: 50%;
+  animation: editor-loading-spin 750ms linear infinite;
+}
+
+@keyframes editor-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-editor .editor-loading-spinner,
+  .study-interview-editor .editor-loading-spinner {
+    animation-duration: 1.5s;
+  }
+}
+
 .study-editor .preview-page-shell {
   border-radius: 22px;
   background: #f8fafc;

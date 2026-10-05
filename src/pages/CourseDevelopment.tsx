@@ -24,7 +24,6 @@ type CourseFilters = {
 
 type MaterialPickerFilters = {
   q: string;
-  topicId: string;
   isPublished: string;
 };
 
@@ -160,7 +159,7 @@ export function CourseDevelopment() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [materialPickerFilters, setMaterialPickerFilters] =
-    useState<MaterialPickerFilters>({ q: "", topicId: "", isPublished: "" });
+    useState<MaterialPickerFilters>({ q: "", isPublished: "" });
   const [pickerMaterials, setPickerMaterials] = useState<Entry[]>([]);
   const [pickerTotal, setPickerTotal] = useState(0);
   const [pickerLoading, setPickerLoading] = useState(false);
@@ -175,11 +174,6 @@ export function CourseDevelopment() {
     () => new Map(materials.map((material) => [material.id, material])),
     [materials],
   );
-  const topicById = useMemo(
-    () => new Map(topics.map((topic) => [topic.id, topic])),
-    [topics],
-  );
-
   const loadReferenceData = useCallback(async () => {
     const [topicResponse, materialResponse] = await Promise.all([
       api<Page>("/admin/learning-topics?page=1&page_size=100"),
@@ -227,7 +221,6 @@ export function CourseDevelopment() {
         page_size: String(materialPickerPageSize),
       });
       if (nextFilters.q.trim()) params.set("q", nextFilters.q.trim());
-      if (nextFilters.topicId) params.set("topic_id", nextFilters.topicId);
       if (nextFilters.isPublished) {
         params.set("is_published", nextFilters.isPublished);
       }
@@ -303,12 +296,6 @@ export function CourseDevelopment() {
     };
   }, [editor, loadPickerMaterials, materialPickerFilters]);
 
-  function topicName(topicId: number) {
-    return topicId
-      ? value(topicById.get(topicId), "title") || `专题 #${topicId}`
-      : "未关联专题";
-  }
-
   function courseTopicNames(course: Entry) {
     const names = entries(course, "topics")
       .map((topic) => value(topic, "title"))
@@ -322,7 +309,7 @@ export function CourseDevelopment() {
     setEditorError("");
     setError("");
     setNotice("");
-    setMaterialPickerFilters({ q: "", topicId: "", isPublished: "" });
+    setMaterialPickerFilters({ q: "", isPublished: "" });
     setPickerError("");
     setDraggedMaterialId(null);
     setMaterialDropTarget(null);
@@ -459,10 +446,6 @@ export function CourseDevelopment() {
 
   async function saveCourse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!form.materialIds.length) {
-      setEditorError("请至少关联一本教材。");
-      return;
-    }
     setSaving(true);
     setEditorError("");
     setError("");
@@ -532,7 +515,7 @@ export function CourseDevelopment() {
         <div>
           <p className="admin-list-eyebrow">内容管理</p>
           <h1>课程开发</h1>
-          <p>组合多本教材，并在这里设置课程是否免费。</p>
+          <p>课程可先独立创建，再按需要关联、排序或移除教材。</p>
         </div>
         <button
           className="admin-action-button admin-action-secondary"
@@ -803,7 +786,7 @@ export function CourseDevelopment() {
         ) : (
           <div className="admin-empty-state">
             <strong>没有匹配的课程</strong>
-            <span>新建课程并关联一本或多本教材。</span>
+            <span>新建独立课程，或在编辑时关联教材。</span>
           </div>
         )}
         <footer className="course-development-pagination">
@@ -1029,9 +1012,11 @@ export function CourseDevelopment() {
                   <div className="course-material-picker-heading">
                     <div>
                       <label className="form-label">
-                        关联教材（可多选，拖拽左侧手柄调整顺序）
+                        关联教材（可选；可多选、排序或移除）
                       </label>
-                      <p>课程先独立创建，之后可在“专题维护”中关联到专题。</p>
+                      <p>
+                        教材不是必填项；课程创建后也可在这里随时添加、排序或移除。
+                      </p>
                     </div>
                     <BookCopy aria-hidden="true" size={19} />
                   </div>
@@ -1053,26 +1038,6 @@ export function CourseDevelopment() {
                           value={materialPickerFilters.q}
                         />
                       </div>
-                    </label>
-                    <label>
-                      <span>专题</span>
-                      <select
-                        aria-label="按专题筛选教材"
-                        onChange={(event) =>
-                          setMaterialPickerFilters((current) => ({
-                            ...current,
-                            topicId: event.target.value,
-                          }))
-                        }
-                        value={materialPickerFilters.topicId}
-                      >
-                        <option value="">全部专题</option>
-                        {topics.map((topic) => (
-                          <option key={topic.id} value={topic.id}>
-                            {value(topic, "title")}
-                          </option>
-                        ))}
-                      </select>
                     </label>
                     <label>
                       <span>发布状态</span>
@@ -1125,9 +1090,7 @@ export function CourseDevelopment() {
                             onDragStart={(event) =>
                               startMaterialDrag(event, material.id)
                             }
-                            onDrop={(event) =>
-                              dropMaterial(event, material.id)
-                            }
+                            onDrop={(event) => dropMaterial(event, material.id)}
                           >
                             <span
                               aria-hidden="true"
@@ -1207,10 +1170,7 @@ export function CourseDevelopment() {
                         >
                           <span>
                             <strong>{value(material, "title")}</strong>
-                            <small>
-                              {topicName(numberValue(material.topic_id))} ·{" "}
-                              {value(material, "material_code")}
-                            </small>
+                            <small>{value(material, "material_code")}</small>
                           </span>
                           <span>{selected ? "已关联" : "添加"}</span>
                         </button>
@@ -1226,7 +1186,6 @@ export function CourseDevelopment() {
                       !pickerMaterials.length && (
                         <p className="course-material-picker-empty">
                           {materialPickerFilters.q ||
-                          materialPickerFilters.topicId ||
                           materialPickerFilters.isPublished
                             ? "没有符合筛选条件的教材。"
                             : "还没有教材，请先在“教材开发”中创建教材。"}

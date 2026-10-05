@@ -37,6 +37,18 @@ const blankForm = (): TopicForm => ({
   is_published: true,
 });
 
+const topicCodePattern = /^[a-z0-9][a-z0-9-]{0,99}$/;
+
+function topicCodeFromText(input: string) {
+  return input
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 100);
+}
+
 function topicForm(topic: Entry): TopicForm {
   return {
     module_id: value(topic, "module_id"),
@@ -438,6 +450,13 @@ export function TopicManagement() {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const topicCode = form.topic_code.trim();
+    if (!topicCodePattern.test(topicCode)) {
+      setError(
+        "专题编码只能使用小写英文字母、数字和连字符，例如 daily-speaking。",
+      );
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -448,6 +467,7 @@ export function TopicManagement() {
         editing ? "PUT" : "POST",
         {
           ...form,
+          topic_code: topicCode,
           module_id: Number(form.module_id),
           sort_order: Number(form.sort_order || 0),
           is_published: form.is_published ? 1 : 0,
@@ -783,12 +803,36 @@ export function TopicManagement() {
                     id="topic-code"
                     maxLength={100}
                     onChange={(event) =>
-                      setField("topic_code", event.target.value)
+                      setField(
+                        "topic_code",
+                        topicCodeFromText(event.target.value),
+                      )
+                    }
+                    onInvalid={(event) =>
+                      event.currentTarget.setCustomValidity(
+                        "专题编码只能使用小写英文字母、数字和连字符，例如 daily-speaking。",
+                      )
+                    }
+                    onInput={(event) =>
+                      event.currentTarget.setCustomValidity("")
                     }
                     pattern="[a-z0-9][a-z0-9-]{0,99}"
+                    placeholder="例如 daily-speaking"
                     required
                     value={form.topic_code}
                   />
+                  <div className="topic-code-help">
+                    仅用于系统识别和链接，不能填中文。填写英文名称后可自动生成。
+                    <button
+                      disabled={!form.title_en.trim()}
+                      onClick={() =>
+                        setField("topic_code", topicCodeFromText(form.title_en))
+                      }
+                      type="button"
+                    >
+                      根据英文名称生成
+                    </button>
+                  </div>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label" htmlFor="topic-title">
@@ -811,9 +855,17 @@ export function TopicManagement() {
                     className="form-control"
                     id="topic-title-en"
                     maxLength={200}
-                    onChange={(event) =>
-                      setField("title_en", event.target.value)
-                    }
+                    onChange={(event) => {
+                      const titleEn = event.target.value;
+                      setForm((current) => ({
+                        ...current,
+                        title_en: titleEn,
+                        topic_code:
+                          !editing && !current.topic_code
+                            ? topicCodeFromText(titleEn)
+                            : current.topic_code,
+                      }));
+                    }}
                     value={form.title_en}
                   />
                 </div>

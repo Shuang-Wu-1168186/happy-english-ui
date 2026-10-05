@@ -4,6 +4,31 @@ import { value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { Speak } from "./Speech";
 
+type VocabularyExample = {
+  english: string;
+  chinese: string;
+};
+
+function vocabularyExamples(item: Entry): VocabularyExample[] {
+  const rawExamples = item.examples;
+  if (Array.isArray(rawExamples)) {
+    const structured = rawExamples.flatMap((rawExample) => {
+      if (!rawExample || typeof rawExample !== "object" || Array.isArray(rawExample))
+        return [];
+      const example = rawExample as Entry;
+      const english =
+        value(example, "english").trim() || value(example, "en").trim();
+      const chinese =
+        value(example, "chinese").trim() || value(example, "cn").trim();
+      return english || chinese ? [{ english, chinese }] : [];
+    });
+    if (structured.length) return structured;
+  }
+
+  const text = typeof rawExamples === "string" ? rawExamples.trim() : "";
+  return text ? [{ english: text, chinese: "" }] : [];
+}
+
 export function dialogueSections(items: Entry[]) {
   return [...new Set(items.map((item) => value(item, "section_code")))].map(
     (code) => ({
@@ -27,30 +52,71 @@ export function DialogueLessonContent({ items }: { items: Entry[] }) {
             <span>PART {String.fromCharCode(65 + index)}</span>
             <h2>{value(section.items[0], "section_title")}</h2>
           </div>
-          {["vocabulary", "extra"].includes(section.code) ? (
-            <div className="vocabulary-grid">
-              {section.items.map((item) => (
-                <article className="vocabulary-card" key={item.id}>
-                  <div>
-                    <h3>{value(item, "item_title")}</h3>
-                    {Boolean(item.pronunciation) && (
-                      <em>{value(item, "pronunciation")}</em>
-                    )}
-                  </div>
+          {section.code === "extra" ? (
+            <div className="reading-activity-list">
+              {section.items.map((item, itemIndex) => (
+                <article className="reading-activity-card" key={item.id}>
+                  <span className="reading-activity-step">
+                    {String(itemIndex + 1).padStart(2, "0")}
+                  </span>
+                  <h3>{value(item, "item_title")}</h3>
+                  <p className="reading-activity-text" lang="en">
+                    {value(item, "english_text")}
+                  </p>
+                  {Boolean(item.chinese_text) && (
+                    <p className="reading-activity-guidance">
+                      {value(item, "chinese_text")}
+                    </p>
+                  )}
                   <Speak
-                    className=""
+                    className="reading-activity-listen"
                     text={value(item, "english_text")}
-                    label={`播放 ${value(item, "item_title")}`}
-                  />
-                  <p className="meaning">{value(item, "chinese_text")}</p>
-                  {Boolean(item.explanation) && (
-                    <p>{value(item, "explanation")}</p>
-                  )}
-                  {Boolean(item.examples) && (
-                    <blockquote>{value(item, "examples")}</blockquote>
-                  )}
+                    label={`朗读 ${value(item, "item_title")}`}
+                  >
+                    🔊 听读
+                  </Speak>
                 </article>
               ))}
+            </div>
+          ) : ["vocabulary"].includes(section.code) ? (
+            <div className="vocabulary-grid">
+              {section.items.map((item) => {
+                const examples = vocabularyExamples(item);
+                return (
+                  <article className="vocabulary-card" key={item.id}>
+                    <div>
+                      <h3>{value(item, "item_title")}</h3>
+                      {Boolean(item.pronunciation) && (
+                        <em>{value(item, "pronunciation")}</em>
+                      )}
+                    </div>
+                    <Speak
+                      className=""
+                      text={value(item, "english_text")}
+                      label={`播放 ${value(item, "item_title")}`}
+                    />
+                    <p className="meaning">{value(item, "chinese_text")}</p>
+                    {Boolean(item.explanation) && (
+                      <p>{value(item, "explanation")}</p>
+                    )}
+                    {examples.length > 0 && (
+                      <blockquote className="vocabulary-examples">
+                        {examples.map((example, exampleIndex) => (
+                          <div
+                            className="vocabulary-example"
+                            key={`${example.english}-${example.chinese}-${exampleIndex}`}
+                          >
+                            {example.english && (
+                              <span lang="en">{example.english}</span>
+                            )}
+                            {example.chinese && <small>{example.chinese}</small>}
+                          </div>
+                        ))}
+                      </blockquote>
+                    )}
+                  </article>
+                );
+              })}
             </div>
           ) : ["dialogue", "practice"].includes(section.code) ? (
             <div

@@ -31,8 +31,12 @@ import { PutAsideCourseware } from "./pages/PutAsideCourseware";
 import { PutAsideMiniProgramPreview } from "./pages/PutAsideMiniProgramPreview";
 import { NoteToCourseware } from "./pages/NoteToCourseware";
 import { TopicManagement } from "./pages/TopicManagement";
-import { MaterialDevelopment, MembershipManagement } from "./pages/MembershipManagement";
+import {
+  MaterialDevelopment,
+  MembershipManagement,
+} from "./pages/MembershipManagement";
 import { CourseDevelopment } from "./pages/CourseDevelopment";
+import { LessonManagement } from "./pages/LessonManagement";
 import { MaterialLessons } from "./pages/MaterialLessons";
 import { TemplateManagement } from "./pages/TemplateManagement";
 
@@ -133,14 +137,35 @@ export default function App() {
                   element={<RedirectWithSearch to="/admin/content/notes" />}
                 />
                 <Route path="content/notes" element={<Manage />} />
+                <Route
+                  path="content/interviews"
+                  element={<Manage defaultResource="interviews" />}
+                />
                 <Route path="content/topics" element={<TopicManagement />} />
-                <Route path="content/materials" element={<MaterialDevelopment />} />
-                <Route path="content/templates" element={<TemplateManagement />} />
+                <Route
+                  path="content/materials"
+                  element={<MaterialDevelopment />}
+                />
+                <Route
+                  path="content/templates"
+                  element={<TemplateManagement />}
+                />
                 <Route path="content/courses" element={<CourseDevelopment />} />
+                <Route path="content/lessons" element={<LessonManagement />} />
                 <Route path="learning/topics" element={<TopicManagement />} />
-                <Route path="learning/materials" element={<MaterialDevelopment />} />
-                <Route path="learning/templates" element={<TemplateManagement />} />
-                <Route path="learning/courses" element={<CourseDevelopment />} />
+                <Route
+                  path="learning/materials"
+                  element={<MaterialDevelopment />}
+                />
+                <Route
+                  path="learning/templates"
+                  element={<TemplateManagement />}
+                />
+                <Route
+                  path="learning/courses"
+                  element={<CourseDevelopment />}
+                />
+                <Route path="learning/lessons" element={<LessonManagement />} />
                 <Route
                   path="content/course-preview"
                   element={<NoteCoursePreview />}
@@ -153,7 +178,10 @@ export default function App() {
                   path="content/put-aside-mini-program"
                   element={<PutAsideMiniProgramPreview />}
                 />
-                <Route path="content/note-to-courseware" element={<NoteToCourseware />} />
+                <Route
+                  path="content/note-to-courseware"
+                  element={<NoteToCourseware />}
+                />
                 <Route path="users" element={<Users />} />
                 <Route
                   path="users/create"

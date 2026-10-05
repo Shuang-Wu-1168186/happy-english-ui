@@ -253,6 +253,24 @@ test("homepage management shortcut opens the separate admin workspace on desktop
     }),
   ).toBeVisible();
 });
+test("interview question entry remains available from the admin menu", async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto("/admin");
+  await page
+    .getByRole("navigation", { name: "后台菜单" })
+    .getByRole("link", { name: "面试题录入", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/admin\/content\/interviews$/);
+  await expect(
+    page.getByRole("heading", {
+      name: "Create Interview Question",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Question", { exact: true })).toBeVisible();
+});
 test("daily card blur, search, jump and automatic study progress", async ({
   page,
 }) => {

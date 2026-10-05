@@ -4,7 +4,6 @@ import { entries } from "../lib/api";
 import { Kids } from "../components/study/Kids";
 import { Phonics } from "../components/study/Phonics";
 import { Textbook } from "../components/study/Textbook";
-import { Dialogue } from "../components/study/Dialogue";
 import { MathCards } from "../components/study/Math";
 import {
   NoteCollections,
@@ -127,8 +126,6 @@ function LearningContent({ resource, id }: { resource: string; id?: number }) {
       return <Phonics items={items} initialId={id} />;
     case "textbook":
       return <Textbook items={items} initialId={id} />;
-    case "dialogues":
-      return <Dialogue items={items} initialId={id} />;
     case "math-cards":
       return <MathCards items={items} initialId={id} />;
     default:

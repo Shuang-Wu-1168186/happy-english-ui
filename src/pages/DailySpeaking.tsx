@@ -19,6 +19,7 @@ const dailySpeakingConfig: TopicZoneConfig = {
       icon: "🎧",
       color: "#e7f3f9",
       resource: "dialogues",
+      path: "/course-resources/dialogues",
     },
   },
 };

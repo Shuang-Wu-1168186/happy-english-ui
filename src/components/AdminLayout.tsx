@@ -26,6 +26,11 @@ const navigation = [
 const contentNavigation = [
   { to: "/admin/content/notes", label: "学习笔记", icon: FilePenLine },
   {
+    to: "/admin/content/interviews",
+    label: "面试题录入",
+    icon: FilePenLine,
+  },
+  {
     to: "/admin/content/topics",
     aliases: ["/admin/learning/topics"],
     label: "专题维护",
@@ -49,8 +54,18 @@ const contentNavigation = [
     label: "课程开发",
     icon: BookCopy,
   },
+  {
+    to: "/admin/content/lessons",
+    aliases: ["/admin/learning/lessons"],
+    label: "课时管理",
+    icon: FilePenLine,
+  },
   { to: "/admin/content/course-preview", label: "课程预览", icon: Eye },
-  { to: "/admin/content/note-to-courseware", label: "笔记转教材", icon: BookCopy },
+  {
+    to: "/admin/content/note-to-courseware",
+    label: "笔记转教材",
+    icon: BookCopy,
+  },
   {
     to: "/admin/content/put-aside-courseware",
     label: "put aside 样稿",

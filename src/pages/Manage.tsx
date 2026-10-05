@@ -11,14 +11,26 @@ import {
 } from "../lib/note-language";
 import { useStudyCatalog, useStudyItem } from "../lib/study";
 import { Speak } from "../components/study/Speech";
-export function Manage() {
-  const [params] = useSearchParams();
-  return <EditorLoader key={params.toString()} />;
+const INTERVIEW_EDITOR_PATH = "/admin/content/interviews";
+
+function managementPath(resource: string, id?: number) {
+  if (resource === "interviews")
+    return `${INTERVIEW_EDITOR_PATH}${id ? `?id=${id}` : ""}`;
+  const params = new URLSearchParams({ resource });
+  if (id) params.set("id", String(id));
+  return `/admin/content/notes?${params.toString()}`;
 }
-function EditorLoader() {
+
+export function Manage({ defaultResource = "" }: { defaultResource?: string }) {
+  const [params] = useSearchParams();
+  return (
+    <EditorLoader defaultResource={defaultResource} key={params.toString()} />
+  );
+}
+function EditorLoader({ defaultResource }: { defaultResource: string }) {
   const [params] = useSearchParams(),
     id = params.get("id"),
-    resource = params.get("resource") || "";
+    resource = params.get("resource") || defaultResource;
   const result = useStudyItem(resource, id || undefined);
   const notes = useStudyCatalog("notes"),
     categories = useStudyCatalog("interview-categories");
@@ -69,9 +81,9 @@ function Editor({
           if (typeof v === "string" || typeof v === "number")
             data[k] = String(v);
       if (initial)
-        data.usage_scenarios = noteScenarioCodes(
-          initial.usage_scenarios,
-        ).join(",");
+        data.usage_scenarios = noteScenarioCodes(initial.usage_scenarios).join(
+          ",",
+        );
       if (initialResource === "sentences") {
         data.english_text = data.en || "";
         data.chinese_text = data.cn || "";
@@ -90,7 +102,7 @@ function Editor({
       }
       return data;
     }),
-    [busy, setBusy] = useState(false),
+    [busyMessage, setBusyMessage] = useState<string | null>(null),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [hidden, setHidden] = useState(true);
@@ -98,7 +110,8 @@ function Editor({
   const interview = resource === "interviews",
     noteMode = resource === "note-items",
     knowledge = noteMode && form.item_type === "knowledge",
-    everyday = resource === "sentences";
+    everyday = resource === "sentences",
+    busy = busyMessage !== null;
   const moduleName =
     (
       {
@@ -149,7 +162,7 @@ function Editor({
   }
   async function upload(file?: File) {
     if (!file) return;
-    setBusy(true);
+    setBusyMessage("正在上传图片…");
     try {
       const f = new FormData();
       f.append("file", file);
@@ -160,7 +173,7 @@ function Editor({
     } catch (e) {
       setError((e as Error).message);
     } finally {
-      setBusy(false);
+      setBusyMessage(null);
     }
   }
   async function remove() {
@@ -169,16 +182,16 @@ function Editor({
       !window.confirm("Delete this item? This action cannot be undone.")
     )
       return;
-    setBusy(true);
+    setBusyMessage("正在删除卡片…");
     setError("");
     setMessage("");
     try {
       await api(`/content/${resource}/${initial.id}`, "DELETE");
-      navigate(`/admin/content/notes?resource=${resource}`);
+      navigate(managementPath(resource));
     } catch (e) {
       setError((e as Error).message);
     } finally {
-      setBusy(false);
+      setBusyMessage(null);
     }
   }
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -189,93 +202,93 @@ function Editor({
       setError("Choose module.");
       return;
     }
-    setBusy(true);
-    let data: Record<string, unknown> = {};
-    if (everyday)
-      data = {
-        tag: form.tag || "Everyday Speaking",
-        en: form.english_text || "",
-        cn: form.chinese_text || "",
-        note: form.explanation || "",
-        share_status: Number(form.share_status || 0),
-        priority_order: Number(form.priority_order || 0),
-      };
-    else if (resource === "vocabulary")
-      data = {
-        category: form.category || "professional vocabulary",
-        term: form.english_text || form.item_title || "",
-        chinese_meaning: form.chinese_text || "",
-        english_note: form.explanation || "",
-        example_sentence: form.examples || "",
-        extra_note: form.raw_text || "",
-        sort_order: Number(form.sort_order || 0),
-      };
-    else if (noteMode) {
-      for (const key of [
-        "item_type",
-        "item_title",
-        "raw_text",
-        "english_text",
-        "chinese_text",
-        "explanation",
-        "examples",
-        "keywords",
-        "example_image_url",
-        "example_image_alt",
-      ])
-        data[key] = form[key] || "";
-      data.note_id = Number(form.note_id);
-      data.priority_order = Number(form.priority_order || 0);
-      data.share_status = Number(form.share_status || 0);
-      if (form.language_register)
-        data.language_register = form.language_register;
-      if (form.usage_scenarios !== undefined)
-        data.usage_scenarios = noteScenarioCodes(form.usage_scenarios);
-      if (form.register_reason) data.register_reason = form.register_reason;
-    } else if (resource === "notes")
-      data = {
-        title: form.title,
-        note_date: form.note_date,
-        source: form.source || "",
-        summary: form.summary || "",
-        share_status: Number(form.share_status || 0),
-        priority_order: Number(form.priority_order || 0),
-      };
-    else if (interview) {
-      for (const key of [
-        "question",
-        "question_cn",
-        "short_answer",
-        "full_answer",
-        "answer_tip",
-        "keywords",
-      ])
-        data[key] = form[key] || "";
-      for (const key of [
-        "category_id",
-        "difficulty_level",
-        "share_status",
-        "priority_order",
-      ])
-        data[key] = Number(form[key] || 0);
-      data.sections = ["situation", "action", "result", "learning"]
-        .map((s, i) => ({
-          section_type: s,
-          section_title: [
-            "Situation",
-            "What I Did",
-            "Result",
-            "What I Learned",
-          ][i],
-          content_en: form[`${s}_en`] || "",
-          content_cn: form[`${s}_cn`] || "",
-        }))
-        .filter((s) => s.content_en || s.content_cn);
-    }
-    const action = (e.nativeEvent as SubmitEvent).submitter?.getAttribute(
-      "value",
-    );
+    setBusyMessage("正在保存卡片…");
     try {
+      let data: Record<string, unknown> = {};
+      if (everyday)
+        data = {
+          tag: form.tag || "Everyday Speaking",
+          en: form.english_text || "",
+          cn: form.chinese_text || "",
+          note: form.explanation || "",
+          share_status: Number(form.share_status || 0),
+          priority_order: Number(form.priority_order || 0),
+        };
+      else if (resource === "vocabulary")
+        data = {
+          category: form.category || "professional vocabulary",
+          term: form.english_text || form.item_title || "",
+          chinese_meaning: form.chinese_text || "",
+          english_note: form.explanation || "",
+          example_sentence: form.examples || "",
+          extra_note: form.raw_text || "",
+          sort_order: Number(form.sort_order || 0),
+        };
+      else if (noteMode) {
+        for (const key of [
+          "item_type",
+          "item_title",
+          "raw_text",
+          "english_text",
+          "chinese_text",
+          "explanation",
+          "examples",
+          "keywords",
+          "example_image_url",
+          "example_image_alt",
+        ])
+          data[key] = form[key] || "";
+        data.note_id = Number(form.note_id);
+        data.priority_order = Number(form.priority_order || 0);
+        data.share_status = Number(form.share_status || 0);
+        if (form.language_register)
+          data.language_register = form.language_register;
+        if (form.usage_scenarios !== undefined)
+          data.usage_scenarios = noteScenarioCodes(form.usage_scenarios);
+        if (form.register_reason) data.register_reason = form.register_reason;
+      } else if (resource === "notes")
+        data = {
+          title: form.title,
+          note_date: form.note_date,
+          source: form.source || "",
+          summary: form.summary || "",
+          share_status: Number(form.share_status || 0),
+          priority_order: Number(form.priority_order || 0),
+        };
+      else if (interview) {
+        for (const key of [
+          "question",
+          "question_cn",
+          "short_answer",
+          "full_answer",
+          "answer_tip",
+          "keywords",
+        ])
+          data[key] = form[key] || "";
+        for (const key of [
+          "category_id",
+          "difficulty_level",
+          "share_status",
+          "priority_order",
+        ])
+          data[key] = Number(form[key] || 0);
+        data.sections = ["situation", "action", "result", "learning"]
+          .map((s, i) => ({
+            section_type: s,
+            section_title: [
+              "Situation",
+              "What I Did",
+              "Result",
+              "What I Learned",
+            ][i],
+            content_en: form[`${s}_en`] || "",
+            content_cn: form[`${s}_cn`] || "",
+          }))
+          .filter((s) => s.content_en || s.content_cn);
+      }
+      const action = (e.nativeEvent as SubmitEvent).submitter?.getAttribute(
+        "value",
+      );
       const saved = await api<Entry>(
         `/content/${resource}${initial ? `/${initial.id}` : ""}`,
         initial ? "PUT" : "POST",
@@ -296,17 +309,39 @@ function Editor({
           example_image_alt: "",
         }));
       } else if (!initial && resource === "notes") {
-        navigate(`/admin/content/notes?resource=note-items&parent_id=${saved.id}`);
-      } else navigate(`/admin/content/notes?resource=${resource}&id=${saved.id}`);
+        navigate(
+          `/admin/content/notes?resource=note-items&parent_id=${saved.id}`,
+        );
+      } else navigate(managementPath(resource, saved.id));
     } catch (e) {
       setError((e as Error).message);
     } finally {
-      setBusy(false);
+      setBusyMessage(null);
     }
   }
   return (
-    <div className={interview ? "study-interview-editor" : "study-editor"}>
-      <div className={interview ? "manage-page" : "note-item-create-page"}>
+    <div
+      aria-busy={busy}
+      className={interview ? "study-interview-editor" : "study-editor"}
+    >
+      {busy && (
+        <div
+          aria-atomic="true"
+          aria-live="polite"
+          className="editor-loading-overlay"
+          role="status"
+        >
+          <div className="editor-loading-dialog">
+            <span aria-hidden="true" className="editor-loading-spinner" />
+            <strong>{busyMessage}</strong>
+            <span>请稍候，完成后会自动恢复操作。</span>
+          </div>
+        </div>
+      )}
+      <div
+        className={interview ? "manage-page" : "note-item-create-page"}
+        inert={busy}
+      >
         <div className="editor-panel">
           <div className="page-head">
             <div>
@@ -336,10 +371,7 @@ function Editor({
             </div>
             {interview && (
               <div className="head-actions">
-                <Link
-                  className="btn-secondary"
-                  to="/admin/content/notes?resource=interviews"
-                >
+                <Link className="btn-secondary" to={INTERVIEW_EDITOR_PATH}>
                   内容管理
                 </Link>
               </div>
@@ -519,7 +551,9 @@ function Editor({
                         <select
                           id="language_register"
                           value={form.language_register || ""}
-                          onChange={(e) => set("language_register", e.target.value)}
+                          onChange={(e) =>
+                            set("language_register", e.target.value)
+                          }
                         >
                           <option value="">自动判断（新卡片）</option>
                           {NOTE_REGISTER_OPTIONS.map(([code, label]) => (
@@ -630,10 +664,7 @@ function Editor({
                 </button>
               )}
               {interview && initial && (
-                <Link
-                  className="btn-light"
-                  to="/admin/content/notes?resource=interviews"
-                >
+                <Link className="btn-light" to={INTERVIEW_EDITOR_PATH}>
                   Create New
                 </Link>
               )}
