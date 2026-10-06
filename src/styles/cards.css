@@ -972,7 +972,16 @@ body.image-preview-open {
   font-weight: 700;
 }
 
-.study-cards .admin-delete-btn {
+.study-cards .admin-delete-wrap,
+.study-interview .admin-delete-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.study-cards .admin-delete-btn,
+.study-interview .admin-delete-btn {
   border: 1px solid #fecaca;
   border-radius: 999px;
   background: #fff1f2;
@@ -983,8 +992,22 @@ body.image-preview-open {
   cursor: pointer;
 }
 
-.study-cards .admin-delete-btn:hover {
+.study-cards .admin-delete-btn:hover,
+.study-interview .admin-delete-btn:hover {
   background: #ffe4e6;
+}
+
+.study-cards .admin-delete-btn:disabled,
+.study-interview .admin-delete-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.study-cards .admin-delete-error,
+.study-interview .admin-delete-error {
+  color: #b42318;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .study-cards .card-icon-btn,

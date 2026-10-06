@@ -438,6 +438,8 @@ test("old note links retain forward and backward page flips", async ({
       explanation:
         "Use this note as a starting point for your English learning records.",
       examples: "Vocabulary\nPhrases\nExample sentences",
+      example_image_url: previewImage,
+      example_image_alt: "Preview test image",
     },
   });
   expect(template.ok()).toBeTruthy();

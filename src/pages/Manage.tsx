@@ -111,7 +111,9 @@ function Editor({
     noteMode = resource === "note-items",
     knowledge = noteMode && form.item_type === "knowledge",
     everyday = resource === "sentences",
-    busy = busyMessage !== null;
+    busy = busyMessage !== null,
+    noteImageUrl = form.example_image_url?.trim() || "",
+    submissionBlocked = busy || (noteMode && !noteImageUrl);
   const moduleName =
     (
       {
@@ -202,6 +204,10 @@ function Editor({
       setError("Choose module.");
       return;
     }
+    if (noteMode && !noteImageUrl) {
+      setError("请先上传笔记图片，或填写图片地址后再保存。");
+      return;
+    }
     setBusyMessage("正在保存卡片…");
     try {
       let data: Record<string, unknown> = {};
@@ -237,7 +243,8 @@ function Editor({
           "example_image_url",
           "example_image_alt",
         ])
-          data[key] = form[key] || "";
+          data[key] =
+            key === "example_image_url" ? noteImageUrl : form[key] || "";
         data.note_id = Number(form.note_id);
         data.priority_order = Number(form.priority_order || 0);
         data.share_status = Number(form.share_status || 0);
@@ -601,10 +608,10 @@ function Editor({
                           onChange={(e) => upload(e.target.files?.[0])}
                         />
                         <div className="field-help">
-                          Upload an image, or fill in the image URL below.
+                          笔记卡片必须上传图片，或填写下方图片地址后才能保存。
                         </div>
                       </div>
-                      {field("example_image_url", "Example Image URL")}
+                      {field("example_image_url", "Example Image URL", 0, true)}
                       {field("example_image_alt", "Example Image Alt")}
                     </>
                   )}
@@ -644,7 +651,7 @@ function Editor({
               <button
                 type="submit"
                 className="btn-primary"
-                disabled={busy}
+                disabled={submissionBlocked}
                 value="save"
               >
                 {interview
@@ -658,7 +665,7 @@ function Editor({
                   type="submit"
                   className="btn-secondary"
                   value="save_and_continue"
-                  disabled={busy}
+                  disabled={submissionBlocked}
                 >
                   Save and Continue
                 </button>

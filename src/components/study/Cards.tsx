@@ -200,14 +200,68 @@ function NoteLanguageTags({ item }: { item: Entry }) {
     </div>
   );
 }
+function AdminDeleteButton({
+  item,
+  resource,
+  onDeleted,
+}: {
+  item: Entry;
+  resource: string;
+  onDeleted: (itemId: number) => void;
+}) {
+  const { user } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+  if (user?.role !== "admin") return null;
+  const label =
+    value(item, "item_title") ||
+    value(item, "english_text") ||
+    value(item, "en") ||
+    value(item, "term") ||
+    value(item, "question") ||
+    "这张卡片";
+  async function remove() {
+    if (deleting || !window.confirm(`确定删除“${label}”吗？`)) return;
+    setDeleting(true);
+    setError("");
+    try {
+      await api(`/content/${resource}/${item.id}`, "DELETE");
+      onDeleted(item.id);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "删除失败，请稍后重试。");
+    } finally {
+      setDeleting(false);
+    }
+  }
+  return (
+    <span className="admin-delete-wrap">
+      <button
+        aria-label={`删除卡片：${label}`}
+        className="admin-delete-btn"
+        disabled={deleting}
+        onClick={() => void remove()}
+        type="button"
+      >
+        {deleting ? "删除中…" : "删除"}
+      </button>
+      {error && (
+        <span className="admin-delete-error" role="alert">
+          {error}
+        </span>
+      )}
+    </span>
+  );
+}
 function SentenceBody({
   item,
   resource,
   onComplete,
+  onDelete,
 }: {
   item: Entry;
   resource: string;
   onComplete?: () => Promise<unknown>;
+  onDelete?: (itemId: number) => void;
 }) {
   const [english, setEnglish] = useState(false);
   const [frequencyCount, setFrequencyCount] = useState(() =>
@@ -255,6 +309,13 @@ function SentenceBody({
             "note"}
         </span>
         {note && <NoteLanguageTags item={item} />}
+        {onDelete && (
+          <AdminDeleteButton
+            item={item}
+            resource={resource}
+            onDeleted={onDelete}
+          />
+        )}
       </div>
       {note && (
         <div className="note-frequency-control">
@@ -418,10 +479,12 @@ function InterviewCard({
   item,
   active,
   categories,
+  onDelete,
 }: {
   item: Entry;
   active: boolean;
   categories: Entry[];
+  onDelete: (itemId: number) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const detail = useStudyItem(
@@ -442,6 +505,11 @@ function InterviewCard({
             Level {value(item, "difficulty_level")}
           </span>
         </div>
+        <AdminDeleteButton
+          item={item}
+          resource="interviews"
+          onDeleted={onDelete}
+        />
       </div>
       <h2 className="question-title">{value(item, "question")}</h2>
       {value(item, "question_cn") && (
@@ -518,8 +586,10 @@ export function OriginalCards({
   const q = query.toLowerCase(),
     category = params.get("category") || "",
     languageRegister = params.get("language_register") || "";
+  const [deletedIds, setDeletedIds] = useState<Set<number>>(() => new Set());
   const visible = items.filter(
     (i) =>
+      !deletedIds.has(i.id) &&
       (!category || value(i, "category") === category) &&
       (!languageRegister || value(i, "language_register") === languageRegister) &&
       (searchResults ||
@@ -569,6 +639,26 @@ export function OriginalCards({
     undefined,
   );
   const progressQueue = useRef<Promise<unknown>>(Promise.resolve());
+  function handleCardDeleted(itemId: number) {
+    const deletedIndex = visible.findIndex((item) => item.id === itemId);
+    if (deletedIndex < 0) return;
+    const remaining = visible.length - 1;
+    const shiftedIndex = deletedIndex < index ? index - 1 : index;
+    const nextIndex = Math.min(
+      Math.max(0, shiftedIndex),
+      Math.max(0, remaining - 1),
+    );
+    setDeletedIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+      nextIds.add(itemId);
+      return nextIds;
+    });
+    setIndex(nextIndex);
+    if (resource === "note-items") {
+      setJumpIndex(nextIndex);
+      setBookGeneration((generation) => generation + 1);
+    }
+  }
   const saveProgress = useCallback(
     (item: Entry, completed: boolean) => {
       const save = progressQueue.current
@@ -831,6 +921,7 @@ export function OriginalCards({
                   <SentenceBody
                     resource={resource}
                     item={item}
+                    onDelete={handleCardDeleted}
                     onComplete={() => {
                       clearTimeout(progressTimer.current);
                       return saveProgress(item, true);
@@ -870,6 +961,7 @@ export function OriginalCards({
                       item={item}
                       categories={categories}
                       active={Math.abs(i - index) < 2}
+                      onDelete={handleCardDeleted}
                     />
                   ) : (
                     <article
@@ -883,7 +975,11 @@ export function OriginalCards({
                           onUnlock={() => onLockedLesson?.(item)}
                         />
                       ) : (
-                        <SentenceBody item={item} resource={resource} />
+                        <SentenceBody
+                          item={item}
+                          resource={resource}
+                          onDelete={handleCardDeleted}
+                        />
                       )}
                     </article>
                   ),

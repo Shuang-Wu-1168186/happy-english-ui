@@ -23,18 +23,20 @@ test("original content editor preview and API create, edit, delete", async ({
     "浏览器测试句子。",
   );
   await page.getByRole("button", { name: "Save Card", exact: true }).click();
-  await expect(page).toHaveURL(/\/admin\/content\?resource=sentences&id=\d+/);
+  await expect(page).toHaveURL(
+    /\/admin\/content\/notes\?resource=sentences&id=\d+/,
+  );
   const id = new URL(page.url()).searchParams.get("id");
   expect(id).not.toBeNull();
   await page.getByLabel("Chinese Text", { exact: true }).fill("更新后的中文。");
   await page.getByRole("button", { name: "Save Card", exact: true }).click();
   await expect(page).toHaveURL(
-    new RegExp(`/admin/content\\?resource=sentences&id=${id}`),
+    new RegExp(`/admin/content/notes\\?resource=sentences&id=${id}`),
   );
   await expect(page.locator(".preview-panel .cn")).toHaveText("更新后的中文。");
   page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Delete", exact: true }).click();
-  await expect(page).toHaveURL(/\/admin\/content\?resource=sentences$/);
+  await expect(page).toHaveURL(/\/admin\/content\/notes\?resource=sentences$/);
   await page.goto("/admin/users");
   await expect(
     page.getByRole("heading", { name: "用户管理", exact: true }),
@@ -68,13 +70,34 @@ test("creating a study note opens its card creation form", async ({ page }) => {
       .fill(`Browser study note ${Date.now()}`);
     await page.getByRole("button", { name: "Save Card", exact: true }).click();
     await expect(page).toHaveURL(
-      /\/admin\/content\?resource=note-items&parent_id=\d+/,
+      /\/admin\/content\/notes\?resource=note-items&parent_id=\d+/,
     );
     noteId = new URL(page.url()).searchParams.get("parent_id");
     expect(noteId).not.toBeNull();
     await expect(
       page.getByLabel("Note (for MODULE02)", { exact: true }),
     ).toHaveValue(noteId!);
+    const saveCard = page.getByRole("button", {
+      name: "Save Card",
+      exact: true,
+    });
+    await expect(saveCard).toBeDisabled();
+    await page.getByLabel("Item Title", { exact: true }).fill("Picture note");
+    await page.getByLabel("Raw Text", { exact: true }).fill("Picture note");
+    await page
+      .getByLabel("English Text", { exact: true })
+      .fill("A note needs an image.");
+    await page
+      .getByLabel("Chinese Text", { exact: true })
+      .fill("笔记需要一张图片。");
+    await page
+      .getByLabel("Example Image URL", { exact: true })
+      .fill("/static/uploads/browser-note.webp");
+    await expect(saveCard).toBeEnabled();
+    await saveCard.click();
+    await expect(page).toHaveURL(
+      /\/admin\/content\/notes\?resource=note-items&id=\d+$/,
+    );
   } finally {
     if (noteId)
       expect(
