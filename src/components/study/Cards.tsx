@@ -210,6 +210,11 @@ function SentenceBody({
   onComplete?: () => Promise<unknown>;
 }) {
   const [english, setEnglish] = useState(false);
+  const [frequencyCount, setFrequencyCount] = useState(() =>
+    Number(item.frequency_count) || 0,
+  );
+  const [frequencySaving, setFrequencySaving] = useState(false);
+  const [frequencyError, setFrequencyError] = useState("");
   const { user } = useAuth();
   const note = resource === "note-items",
     knowledge = value(item, "item_type") === "knowledge";
@@ -219,6 +224,25 @@ function SentenceBody({
     value(item, "english_text") ||
     value(item, "item_title") ||
     value(item, "raw_text");
+  async function recordEncounter() {
+    if (frequencySaving) return;
+    setFrequencySaving(true);
+    setFrequencyError("");
+    try {
+      const result = await api<{ frequency_count: number }>(
+        `/content/note-items/${item.id}/frequency`,
+        "POST",
+      );
+      const next = Number(result.frequency_count);
+      setFrequencyCount(Number.isFinite(next) ? next : frequencyCount + 1);
+    } catch (error) {
+      setFrequencyError(
+        error instanceof Error ? error.message : "记录失败，请稍后重试。",
+      );
+    } finally {
+      setFrequencySaving(false);
+    }
+  }
   return (
     <div className={note ? "note-book-page-content" : "card-content"}>
       <div className="card-top">
@@ -232,6 +256,28 @@ function SentenceBody({
         </span>
         {note && <NoteLanguageTags item={item} />}
       </div>
+      {note && (
+        <div className="note-frequency-control">
+          <button
+            className="note-frequency-btn"
+            type="button"
+            disabled={frequencySaving}
+            aria-label={`记录遇到一次，当前已记录 ${frequencyCount} 次`}
+            onClick={() => void recordEncounter()}
+          >
+            {frequencySaving ? "记录中…" : "遇到一次"}
+            <strong>+1</strong>
+          </button>
+          <span className="note-frequency-count">
+            已记录 {frequencyCount} 次
+          </span>
+          {frequencyError && (
+            <span className="note-frequency-error" role="alert">
+              {frequencyError}
+            </span>
+          )}
+        </div>
+      )}
       {knowledge ? (
         <>
           <section className="knowledge-card-hero">

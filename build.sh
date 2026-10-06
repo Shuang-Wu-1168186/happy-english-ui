@@ -1,1 +1,2 @@
 source  "$HOME/.nvm/nvm.sh" && nvm use 20 && npm run build
+source "$HOME/.nvm/nvm.sh" && nvm use 20 && npm run build

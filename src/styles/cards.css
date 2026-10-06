@@ -921,6 +921,57 @@ body.image-preview-open {
   margin-left: auto;
 }
 
+.study-cards .note-frequency-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: -4px;
+}
+
+.study-cards .note-frequency-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.study-cards .note-frequency-btn strong {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.study-cards .note-frequency-btn:hover {
+  background: #ffedd5;
+}
+
+.study-cards .note-frequency-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.study-cards .note-frequency-count {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.study-cards .note-frequency-error {
+  color: #b42318;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .study-cards .admin-delete-btn {
   border: 1px solid #fecaca;
   border-radius: 999px;

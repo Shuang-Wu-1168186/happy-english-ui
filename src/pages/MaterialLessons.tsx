@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
-import { CommuteCourseClassroom } from "./CommuteCourseClassroom";
+import {
+  CommuteCourseClassroom,
+  CommuteCourseLoading,
+} from "./CommuteCourseClassroom";
+import { OriginalCourseClassroom } from "./OriginalCourseClassroom";
 import { HomeNavigation } from "../components/Layout";
 import { MaterialTemplateRenderer } from "../components/material-templates/MaterialTemplateRenderer";
 import { api, entries, value } from "../lib/api";
@@ -16,6 +20,18 @@ function isLocked(lesson: Entry | null | undefined) {
   return lesson?.is_locked === true || lesson?.access_state === "locked";
 }
 
+function usesPhonicsLayout(material: Entry | null | undefined) {
+  if (!material) return false;
+  if (resolveMaterialTemplate(material).code === "phonics") return true;
+  const availableLessons = entries(material, "lessons").filter(
+    (lesson) => !isLocked(lesson),
+  );
+  return (
+    availableLessons.length > 0 &&
+    availableLessons.every((lesson) => read(lesson, "source_resource") === "phonics")
+  );
+}
+
 export function MaterialLessons() {
   const { materialId = "" } = useParams();
   const id = Number(materialId);
@@ -28,20 +44,40 @@ export function MaterialLessons() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    setMaterial(null);
+    setLessons([]);
+    setActiveLesson(null);
+    setActiveDetail(null);
+    setLockedLesson(null);
+    setLessonLoading(false);
+    setError("");
     if (!Number.isInteger(id) || id < 1) {
       setError("教材地址无效。");
       return;
     }
     let active = true;
-    api<Entry>(`/learning/materials/${id}`)
-      .then((result) => {
+    async function loadMaterial() {
+      try {
+        const summary = await api<Entry>(`/learning/materials/${id}`);
+        const isPhonics = usesPhonicsLayout(summary);
+        const result = isPhonics
+          ? await api<Entry>(
+              `/learning/materials/${id}?include_lesson_content=true`,
+            )
+          : summary;
         if (!active) return;
         const nextLessons = entries(result, "lessons");
+        const initialLesson =
+          nextLessons.find((lesson) => !isLocked(lesson)) || null;
         setMaterial(result);
         setLessons(nextLessons);
-        setActiveLesson(nextLessons.find((lesson) => !isLocked(lesson)) || null);
-      })
-      .catch((requestError: Error) => active && setError(requestError.message));
+        setActiveLesson(initialLesson);
+        setActiveDetail(isPhonics ? initialLesson : null);
+      } catch (requestError) {
+        if (active) setError((requestError as Error).message);
+      }
+    }
+    void loadMaterial();
     return () => {
       active = false;
     };
@@ -79,7 +115,12 @@ export function MaterialLessons() {
 
   useEffect(() => {
     const firstAvailable = lessons.find((lesson) => !isLocked(lesson));
-    if (material && firstAvailable) void loadLesson(firstAvailable);
+    if (
+      material &&
+      firstAvailable &&
+      !usesPhonicsLayout(material)
+    )
+      void loadLesson(firstAvailable);
     // The initial lesson is loaded once after the material metadata arrives.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [material, lessons]);
@@ -88,8 +129,15 @@ export function MaterialLessons() {
   const isPreview = material?.access_state === "preview";
   const previewCount = Number(material?.preview_lesson_count || 2);
   const hasLockedLessons = lessons.some((lesson) => isLocked(lesson));
+  const firstAvailableLesson = lessons.find((lesson) => !isLocked(lesson));
 
-  if (!error && material && activeDetail && activeTemplate.code === "commute")
+  if (
+    !error &&
+    material &&
+    firstAvailableLesson &&
+    activeTemplate.code === "commute"
+  ) {
+    if (!activeDetail) return <CommuteCourseLoading course={material} />;
     return (
       <CommuteCourseClassroom
         activeLesson={activeDetail}
@@ -101,6 +149,23 @@ export function MaterialLessons() {
         onLockLesson={setLockedLesson}
         onSelectLesson={(lesson) => void loadLesson(lesson)}
         previewCount={previewCount}
+      />
+    );
+  }
+
+  if (!error && material && activeDetail && usesPhonicsLayout(material))
+    return (
+      <OriginalCourseClassroom
+        activeLesson={activeDetail}
+        course={material}
+        isPreview={isPreview}
+        lessons={lessons}
+        lockedLesson={lockedLesson}
+        onCloseUpgrade={() => setLockedLesson(null)}
+        onLockLesson={setLockedLesson}
+        onSelectLesson={(lesson) => void loadLesson(lesson)}
+        previewCount={previewCount}
+        resource="phonics"
       />
     );
 

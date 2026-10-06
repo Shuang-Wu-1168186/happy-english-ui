@@ -215,9 +215,19 @@ test("the learning-material entry also uses the commute lesson screen", async ({
   page,
 }) => {
   await login(page);
+  let releaseLessonResponse!: () => void;
+  const lessonResponseCanFinish = new Promise<void>((resolve) => {
+    releaseLessonResponse = resolve;
+  });
+  let markLessonRequested!: () => void;
+  const lessonRequested = new Promise<void>((resolve) => {
+    markLessonRequested = resolve;
+  });
   await page.route("**/api/learning/materials/115**", async (route) => {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname.endsWith("/lessons/2934")) {
+      markLessonRequested();
+      await lessonResponseCanFinish;
       await route.fulfill({ json: commuteLesson });
       return;
     }
@@ -237,9 +247,73 @@ test("the learning-material entry also uses the commute lesson screen", async ({
   });
 
   await page.goto("/learning-materials/115");
+  await lessonRequested;
+  await expect(page.locator(".commute-course-app")).toBeVisible();
+  await expect(page.locator(".commute-course-loading")).toContainText(
+    "正在进入通勤微课…",
+  );
+  await expect(page.locator(".material-lessons-page")).toHaveCount(0);
+  releaseLessonResponse();
   await expect(page.locator(".commute-course-app")).toBeVisible();
   await expect(page.locator(".material-lessons-page")).toHaveCount(0);
   await expect(
     page.getByRole("img", { name: "地铁上也能学 · 3 分钟自然接话 的配图" }),
   ).toBeVisible();
+});
+
+test("the learning-material phonics entry keeps the original phonics layout", async ({
+  page,
+}) => {
+  await login(page);
+  let requestedLessonContent = false;
+  const phonicsLesson = {
+    id: 2935,
+    title: "a + 辅音 + e",
+    summary: "学习长元音 a 的常见拼读规律。",
+    template: { code: "phonics", version: 1, renderer: "phonics.v1" },
+    access_state: "available",
+    source_content: {
+      id: 1,
+      title: "a + 辅音 + e",
+      subtitle: "第一讲 · 长元音 a",
+      pattern_text: "a + 辅音 + e → /eɪ/",
+      sound_text: "a 发字母音 /eɪ/；词尾 e 不发音",
+      learning_tip: "a 和词尾 e 中间隔一个辅音时，a 通常读 /eɪ/。",
+      examples: [{ word: "cake", focus: "a_e", sound: "/keɪk/" }],
+      quiz_prompt: "Which word follows the pattern a + 辅音 + e?",
+      quiz_choices: ["cake", "cat"],
+      quiz_answer: "cake",
+    },
+  };
+  await page.route("**/api/learning/materials/116**", async (route) => {
+    const url = new URL(route.request().url());
+    const includesContent =
+      url.searchParams.get("include_lesson_content") === "true";
+    requestedLessonContent ||= includesContent;
+    await route.fulfill({
+      json: {
+        id: 116,
+        title: "自然拼读课程",
+        summary: "从字母音开始练习拼读规律。",
+        access_state: "available",
+        preview_lesson_count: 2,
+        template: { code: "phonics", version: 1, renderer: "phonics.v1" },
+        lessons: [
+          includesContent
+            ? phonicsLesson
+            : {
+                ...phonicsLesson,
+                source_content: undefined,
+              },
+        ],
+      },
+    });
+  });
+
+  await page.goto("/learning-materials/116");
+  await expect(page.locator(".study-phonics")).toBeVisible();
+  await expect(page.locator(".phonics-hero")).toBeVisible();
+  await expect(page.locator(".lesson-card")).toBeVisible();
+  await expect(page.locator(".material-lessons-page")).toHaveCount(0);
+  expect(requestedLessonContent).toBeTruthy();
 });

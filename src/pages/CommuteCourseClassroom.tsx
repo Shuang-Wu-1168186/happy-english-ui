@@ -37,6 +37,48 @@ function generatedCommuteIllustration(lesson: Entry) {
     : "";
 }
 
+export function CommuteCourseLoading({ course }: Pick<Props, "course">) {
+  const navigate = useNavigate();
+  const topic = useMemo(() => entries(course, "topics")[0] || null, [course]);
+  const topicId = Number(course.topic_id || topic?.id || 0);
+  const fallbackTo =
+    Number.isInteger(topicId) && topicId > 0
+      ? `/course-topics/${topicId}`
+      : "/learning";
+
+  function leaveClassroom() {
+    if (window.history.state?.idx > 0) navigate(-1);
+    else navigate(fallbackTo);
+  }
+
+  return (
+    <div aria-busy="true" className="commute-course-app">
+      <main className="commute-course-shell">
+        <header className="commute-course-topbar">
+          <button
+            aria-label="返回上一页"
+            onClick={leaveClassroom}
+            type="button"
+          >
+            ← 返回
+          </button>
+          <div>
+            <span>COMMUTE MICRO ENGLISH</span>
+            <strong>{read(course, "title") || "地铁通勤英语"}</strong>
+          </div>
+          <span aria-hidden="true">正在加载</span>
+        </header>
+
+        <section className="commute-course-loading" role="status">
+          <span aria-hidden="true" className="commute-course-loading-spinner" />
+          <strong>正在进入通勤微课…</strong>
+          <span>正在准备本节学习内容。</span>
+        </section>
+      </main>
+    </div>
+  );
+}
+
 export function CommuteCourseClassroom({
   course,
   lessons,

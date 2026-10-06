@@ -331,6 +331,29 @@ test("study note search includes card text", async ({ page }) => {
     "Good morning",
   );
 });
+test("study note cards record a manual encounter frequency", async ({ page }) => {
+  await login(page);
+  const before = await (
+    await page.request.get("/api/content/note-items/1")
+  ).json();
+  const currentCount = Number(before.frequency_count || 0);
+  await page.goto("/learn/notes/1");
+  const frequencyButton = page.getByRole("button", { name: /记录遇到一次/ });
+  await expect(frequencyButton).toBeVisible();
+  const frequencyResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return (
+      url.pathname === "/api/content/note-items/1/frequency" &&
+      response.request().method() === "POST" &&
+      response.status() === 200
+    );
+  });
+  await frequencyButton.click();
+  await frequencyResponse;
+  await expect(page.locator(".note-frequency-count")).toHaveText(
+    `已记录 ${currentCount + 1} 次`,
+  );
+});
 test("all original learning layouts and page flip survive navigation", async ({
   page,
 }) => {
