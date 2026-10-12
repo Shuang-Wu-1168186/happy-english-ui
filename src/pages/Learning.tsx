@@ -11,13 +11,17 @@ import {
   OriginalCards,
 } from "../components/study/Cards";
 import { modules } from "../lib/modules";
-import { courseLandingPath, isCourseResource } from "../lib/course-routes";
+import {
+  courseLandingPath,
+  isCourseResource,
+  usesOriginalStudyPage,
+} from "../lib/course-routes";
 
 export function Learning() {
   const { resource = "sentences", id } = useParams();
   if (!modules.some((m) => m.key === resource) && resource !== "note-items")
     return <Message error="找不到这个学习模块。" />;
-  if (isCourseResource(resource))
+  if (isCourseResource(resource) && !usesOriginalStudyPage(resource))
     return <Navigate replace to={courseLandingPath(resource)} />;
   if (resource === "notes" && id) return <NoteDetail key={id} id={id} />;
   if (resource === "notes") return <NotesPage />;

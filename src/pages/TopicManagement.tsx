@@ -891,11 +891,13 @@ export function TopicManagement() {
                   <input
                     className="form-control"
                     id="topic-cover-url"
+                    inputMode="url"
                     maxLength={500}
                     onChange={(event) =>
                       setField("cover_url", event.target.value)
                     }
-                    type="url"
+                    placeholder="/static/... 或 https://..."
+                    type="text"
                     value={form.cover_url}
                   />
                 </div>
@@ -930,6 +932,13 @@ export function TopicManagement() {
                     立即发布给学习者
                   </label>
                 </div>
+                {error && (
+                  <div className="col-12">
+                    <div className="topic-editor-error" role="alert">
+                      {error}
+                    </div>
+                  </div>
+                )}
                 <div className="col-12 d-flex gap-2">
                   <button
                     className="admin-action-button admin-action-primary"

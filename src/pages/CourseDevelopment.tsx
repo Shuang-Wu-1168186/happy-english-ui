@@ -958,10 +958,13 @@ export function CourseDevelopment() {
                   <input
                     className="form-control"
                     id="course-editor-cover"
+                    inputMode="url"
+                    maxLength={500}
                     onChange={(event) =>
                       updateForm("coverUrl", event.target.value)
                     }
-                    type="url"
+                    placeholder="/static/... 或 https://..."
+                    type="text"
                     value={form.coverUrl}
                   />
                 </div>

@@ -159,6 +159,15 @@
 .admin-app .topic-editor-dialog textarea {
   min-height: 108px;
 }
+.admin-app .topic-editor-error {
+  padding: 10px 12px;
+  border: 1px solid #f1c4cd;
+  border-radius: 9px;
+  color: #a4233c;
+  background: #fff5f7;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
 
 .admin-app .topic-code-help {
   display: flex;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
+import { PrivateZoneFavorite } from "../components/PrivateZoneFavorite";
 import {
   CommuteCourseClassroom,
   CommuteCourseLoading,
@@ -32,6 +33,18 @@ function usesPhonicsLayout(material: Entry | null | undefined) {
   );
 }
 
+function usesTextbookLayout(material: Entry | null | undefined) {
+  if (!material) return false;
+  if (resolveMaterialTemplate(material).code === "textbook") return true;
+  const availableLessons = entries(material, "lessons").filter(
+    (lesson) => !isLocked(lesson),
+  );
+  return (
+    availableLessons.length > 0 &&
+    availableLessons.every((lesson) => read(lesson, "source_resource") === "textbook")
+  );
+}
+
 export function MaterialLessons() {
   const { materialId = "" } = useParams();
   const id = Number(materialId);
@@ -60,7 +73,8 @@ export function MaterialLessons() {
       try {
         const summary = await api<Entry>(`/learning/materials/${id}`);
         const isPhonics = usesPhonicsLayout(summary);
-        const result = isPhonics
+        const needsSourceLayout = isPhonics || usesTextbookLayout(summary);
+        const result = needsSourceLayout
           ? await api<Entry>(
               `/learning/materials/${id}?include_lesson_content=true`,
             )
@@ -118,7 +132,8 @@ export function MaterialLessons() {
     if (
       material &&
       firstAvailable &&
-      !usesPhonicsLayout(material)
+      !usesPhonicsLayout(material) &&
+      !usesTextbookLayout(material)
     )
       void loadLesson(firstAvailable);
     // The initial lesson is loaded once after the material metadata arrives.
@@ -139,34 +154,59 @@ export function MaterialLessons() {
   ) {
     if (!activeDetail) return <CommuteCourseLoading course={material} />;
     return (
-      <CommuteCourseClassroom
-        activeLesson={activeDetail}
-        course={material}
-        isPreview={isPreview}
-        lessons={lessons}
-        lockedLesson={lockedLesson}
-        onCloseUpgrade={() => setLockedLesson(null)}
-        onLockLesson={setLockedLesson}
-        onSelectLesson={(lesson) => void loadLesson(lesson)}
-        previewCount={previewCount}
-      />
+      <>
+        <CommuteCourseClassroom
+          activeLesson={activeDetail}
+          course={material}
+          isPreview={isPreview}
+          lessons={lessons}
+          lockedLesson={lockedLesson}
+          onCloseUpgrade={() => setLockedLesson(null)}
+          onLockLesson={setLockedLesson}
+          onSelectLesson={(lesson) => void loadLesson(lesson)}
+          previewCount={previewCount}
+        />
+        <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />
+      </>
     );
   }
 
   if (!error && material && activeDetail && usesPhonicsLayout(material))
     return (
-      <OriginalCourseClassroom
-        activeLesson={activeDetail}
-        course={material}
-        isPreview={isPreview}
-        lessons={lessons}
-        lockedLesson={lockedLesson}
-        onCloseUpgrade={() => setLockedLesson(null)}
-        onLockLesson={setLockedLesson}
-        onSelectLesson={(lesson) => void loadLesson(lesson)}
-        previewCount={previewCount}
-        resource="phonics"
-      />
+      <>
+        <OriginalCourseClassroom
+          activeLesson={activeDetail}
+          course={material}
+          isPreview={isPreview}
+          lessons={lessons}
+          lockedLesson={lockedLesson}
+          onCloseUpgrade={() => setLockedLesson(null)}
+          onLockLesson={setLockedLesson}
+          onSelectLesson={(lesson) => void loadLesson(lesson)}
+          previewCount={previewCount}
+          resource="phonics"
+        />
+        <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />
+      </>
+    );
+
+  if (!error && material && activeLesson && usesTextbookLayout(material))
+    return (
+      <>
+        <OriginalCourseClassroom
+          activeLesson={activeLesson}
+          course={material}
+          isPreview={isPreview}
+          lessons={lessons}
+          lockedLesson={lockedLesson}
+          onCloseUpgrade={() => setLockedLesson(null)}
+          onLockLesson={setLockedLesson}
+          onSelectLesson={(lesson) => void loadLesson(lesson)}
+          previewCount={previewCount}
+          resource="textbook"
+        />
+        <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />
+      </>
     );
 
   return (
@@ -274,6 +314,7 @@ export function MaterialLessons() {
           </>
         )}
       </main>
+      {material && <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />}
       {lockedLesson && (
         <div className="course-upgrade-backdrop" role="presentation">
           <section

@@ -8,7 +8,8 @@ export type MaterialTemplateCode =
   | "textbook"
   | "cards"
   | "phonics"
-  | "interview";
+  | "interview"
+  | "mind-map";
 
 export type MaterialTemplateDefinition = {
   code: MaterialTemplateCode;
@@ -80,6 +81,13 @@ export const MATERIAL_TEMPLATE_REGISTRY: Record<
     name: "面试练习",
     contentKind: "source",
     description: "按面试问题、答案和要点展示的练习页。",
+  },
+  "mind-map.v1": {
+    code: "mind-map",
+    version: 1,
+    name: "思维导图课件",
+    contentKind: "source",
+    description: "逐页展示原 PDF 思维导图版面，兼容互动词汇图。",
   },
 };
 

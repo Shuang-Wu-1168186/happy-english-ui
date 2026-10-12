@@ -17,11 +17,14 @@ export function HomeNavigation() {
                 后台管理
               </Link>
             )}
+            <Link className="logout-link" to="/me">
+              我的
+            </Link>
             <button
               className="logout-link"
               onClick={() => logout().catch((e) => setError(e.message))}
             >
-              Logout
+              退出登录
             </button>
           </div>
         </div>
@@ -90,24 +93,18 @@ export function AccountNavigation() {
                 </button>
                 {menu && (
                   <ul className="dropdown-menu dropdown-menu-end show">
-                    {!["learner", "premium_learner"].includes(
-                      user?.role || "",
-                    ) && (
-                      <>
-                        <li>
-                          <Link
-                            className="dropdown-item"
-                            to="/profile"
-                            onClick={() => setMenu(false)}
-                          >
-                            Profile
-                          </Link>
-                        </li>
-                        <li>
-                          <hr className="dropdown-divider" />
-                        </li>
-                      </>
-                    )}
+                    <li>
+                      <Link
+                        className="dropdown-item"
+                        to="/me"
+                        onClick={() => setMenu(false)}
+                      >
+                        我的
+                      </Link>
+                    </li>
+                    <li>
+                      <hr className="dropdown-divider" />
+                    </li>
                     <li>
                       <button
                         className="dropdown-item text-danger"
@@ -162,7 +159,9 @@ export function Layout() {
       pathname.startsWith("/courses/") ||
       pathname.startsWith("/course-modules/") ||
       pathname.startsWith("/course-topics/") ||
-      pathname.startsWith("/learning-materials/")
+      pathname.startsWith("/learning-materials/") ||
+      pathname.startsWith("/private-zone") ||
+      pathname === "/me"
         ? "study-home"
         : pathname.startsWith("/learn/")
           ? `study-${kind}`
@@ -180,7 +179,9 @@ export function Layout() {
     pathname.startsWith("/course-modules/") ||
     pathname.startsWith("/course-topics/") ||
     pathname.startsWith("/learning-materials/") ||
-    pathname.startsWith("/learn/")
+    pathname.startsWith("/learn/") ||
+    pathname.startsWith("/private-zone") ||
+    pathname === "/me"
   )
     return <Outlet />;
   return (

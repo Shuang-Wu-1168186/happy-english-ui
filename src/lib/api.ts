@@ -32,6 +32,15 @@ export const entries = (entry: Entry, key: string): Entry[] =>
 function errorMessage(detail: unknown, status: number) {
   if (typeof detail === "string") {
     const message = detail.trim();
+    if (status === 403 && message === "Administrator access required.") {
+      return "当前账号没有管理员权限，请使用管理员账号重新登录。";
+    }
+    if (
+      status === 403 &&
+      message === "Session expired. Refresh the page and try again."
+    ) {
+      return "登录状态已过期，请刷新页面后重试。";
+    }
     if (status === 404 && /^not found$/i.test(message)) {
       return "当前服务尚未更新，请启动最新后端后重试。";
     }
@@ -52,18 +61,40 @@ function errorMessage(detail: unknown, status: number) {
 }
 
 export async function request(path: string, options: RequestInit = {}) {
-  const headers = new Headers(options.headers);
-  if (options.body && !(options.body instanceof FormData))
-    headers.set("Content-Type", "application/json");
-  if (options.method && options.method !== "GET")
-    headers.set("X-CSRF-Token", csrf);
-  let response: Response;
-  try {
-    response = await fetch(`${base}/api${path}`, {
+  const requiresCsrf = Boolean(options.method && options.method !== "GET");
+  const send = () => {
+    const headers = new Headers(options.headers);
+    if (options.body && !(options.body instanceof FormData))
+      headers.set("Content-Type", "application/json");
+    if (requiresCsrf) headers.set("X-CSRF-Token", csrf);
+    return fetch(`${base}/api${path}`, {
       ...options,
       headers,
       credentials: "include",
     });
+  };
+  let response: Response;
+  try {
+    response = await send();
+    const failedWithExpiredSession =
+      response.status === 403 &&
+      requiresCsrf &&
+      path !== "/auth/session" &&
+      (await response
+        .clone()
+        .json()
+        .catch(() => null))?.detail ===
+        "Session expired. Refresh the page and try again.";
+    if (failedWithExpiredSession) {
+      const sessionResponse = await fetch(`${base}/api/auth/session`, {
+        credentials: "include",
+      });
+      if (sessionResponse.ok) {
+        const session = (await sessionResponse.json()) as Partial<Session>;
+        if (typeof session.csrf_token === "string") csrf = session.csrf_token;
+        response = await send();
+      }
+    }
   } catch {
     throw new Error("无法连接服务，请检查后端是否已启动。");
   }

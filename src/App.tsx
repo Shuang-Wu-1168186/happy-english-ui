@@ -39,6 +39,13 @@ import { CourseDevelopment } from "./pages/CourseDevelopment";
 import { LessonManagement } from "./pages/LessonManagement";
 import { MaterialLessons } from "./pages/MaterialLessons";
 import { TemplateManagement } from "./pages/TemplateManagement";
+import { PrivateZoneManagement } from "./pages/PrivateZoneManagement";
+import { MySpace } from "./pages/MySpace";
+import {
+  PrivateZone,
+  PrivateZoneFavoriteCourses,
+  PrivateZonePersonalNotes,
+} from "./pages/PrivateZone";
 
 function Protected({ admin = false }: { admin?: boolean }) {
   const { user, loading, error } = useAuth();
@@ -101,6 +108,16 @@ export default function App() {
                 path="course-topics/:topicId"
                 element={<CourseTopicCatalog />}
               />
+              <Route path="private-zone" element={<PrivateZone />} />
+              <Route
+                path="private-zone/favorite-courses"
+                element={<PrivateZoneFavoriteCourses />}
+              />
+              <Route
+                path="private-zone/personal-notes"
+                element={<PrivateZonePersonalNotes />}
+              />
+              <Route path="me" element={<MySpace />} />
               <Route path="learn/:resource" element={<Learning />} />
               <Route path="learn/:resource/:id" element={<Detail />} />
               <Route path="profile" element={<Profile />} />
@@ -190,6 +207,7 @@ export default function App() {
                 <Route path="users/:id/edit" element={<UserEditRedirect />} />
                 <Route path="login-monitor" element={<LoginMonitor />} />
                 <Route path="membership" element={<MembershipManagement />} />
+                <Route path="private-zone" element={<PrivateZoneManagement />} />
               </Route>
             </Route>
           </Route>

@@ -1,0 +1,792 @@
+.mind-map-lesson {
+  display: grid;
+  gap: 18px;
+}
+
+.mind-map-lesson-hero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 18px;
+  overflow: hidden;
+  padding: 24px;
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at 86% 8%,
+      rgba(255, 255, 255, 0.28),
+      transparent 31%
+    ),
+    linear-gradient(140deg, #5142a6, #8a75dc);
+  color: #fff;
+}
+
+.mind-map-lesson-hero > div {
+  min-width: 0;
+}
+
+.mind-map-lesson-hero p,
+.mind-map-lesson-hero h3,
+.mind-map-lesson-hero span,
+.mind-map-lesson-hero small {
+  display: block;
+}
+
+.mind-map-lesson-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.11em;
+}
+
+.mind-map-lesson-hero h3 {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 9px 0 0;
+  color: #fff;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.mind-map-lesson-hero h3 small {
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.52em;
+  font-weight: 700;
+}
+
+.mind-map-lesson-hero > div > span {
+  max-width: 660px;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.91rem;
+  line-height: 1.65;
+}
+
+.mind-map-lesson-hero > strong {
+  display: grid;
+  width: 88px;
+  flex: none;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 19px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.mind-map-lesson-hero > strong > span {
+  font-size: 2rem;
+}
+
+.mind-map-lesson-hero > strong small {
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.mind-map-center-memory {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  padding: 17px 19px;
+  border: 1px solid #e4dcf5;
+  border-radius: 18px;
+  background: #fffdf8;
+  box-shadow: 0 8px 20px rgba(73, 56, 140, 0.05);
+}
+
+.mind-map-center-memory p,
+.mind-map-center-memory h4,
+.mind-map-center-memory aside,
+.mind-map-center-memory aside strong,
+.mind-map-center-memory aside span {
+  display: block;
+  margin: 0;
+}
+
+.mind-map-center-memory p {
+  color: #887a9e;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.mind-map-center-memory h4 {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+  color: #42375e;
+  font-size: 1.15rem;
+}
+
+.mind-map-center-memory h4 small {
+  color: #877e96;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.72em;
+}
+
+.mind-map-center-memory aside {
+  padding: 10px 12px;
+  border-radius: 13px;
+  background: #efe9fb;
+}
+
+.mind-map-center-memory aside strong {
+  color: #745aa5;
+  font-size: 0.67rem;
+  letter-spacing: 0.06em;
+}
+
+.mind-map-center-memory aside span {
+  margin-top: 4px;
+  color: #625875;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.mind-map-canvas {
+  position: relative;
+  min-height: 390px;
+  overflow: hidden;
+  border: 1px solid #e4e0f3;
+  border-radius: 23px;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(219, 211, 250, 0.45),
+      transparent 29%
+    ),
+    linear-gradient(145deg, #fcfbff, #f7f5fe);
+}
+
+.mind-map-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(74%, 440px);
+  height: 236px;
+  border: 1px dashed #cfc7ed;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mind-map-spoke {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 142px;
+  background: linear-gradient(#bfb4e5, rgba(191, 180, 229, 0.15));
+  transform-origin: 50% 0;
+}
+
+.mind-map-spoke-top {
+  transform: translate(-50%, -100%);
+}
+
+.mind-map-spoke-bottom {
+  transform: translate(-50%, 0) rotate(180deg);
+}
+
+.mind-map-spoke-left {
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+.mind-map-spoke-right {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.mind-map-center-node {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 116px;
+  height: 116px;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  border: 6px solid #f5f2ff;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #806de1, #5945b9);
+  box-shadow: 0 14px 30px rgba(80, 61, 165, 0.27);
+  color: #fff;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.mind-map-center-node > span {
+  font-size: 1.62rem;
+}
+
+.mind-map-center-node strong {
+  font-size: 0.89rem;
+}
+
+.mind-map-center-node small {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.68rem;
+}
+
+.mind-map-branch-nodes {
+  position: absolute;
+  inset: 0;
+}
+
+.mind-map-branch-node {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  width: 132px;
+  min-height: 74px;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+  padding: 8px 7px;
+  border: 1px solid currentColor;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 8px 17px rgba(64, 51, 114, 0.1);
+  color: #6a5fc0;
+  font: inherit;
+  text-align: center;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.mind-map-branch-node:hover,
+.mind-map-branch-node.is-active {
+  background: currentColor;
+  box-shadow: 0 13px 26px rgba(64, 51, 114, 0.22);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.mind-map-branch-node > span {
+  font-size: 1.23rem;
+}
+
+.mind-map-branch-node strong {
+  font-size: 0.77rem;
+}
+
+.mind-map-branch-node small {
+  font-size: 0.65rem;
+}
+
+.mind-map-branch-node.is-visited::after {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  width: 19px;
+  height: 19px;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #46a878;
+  color: #fff;
+  content: "✓";
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.mind-map-branch-node:nth-child(1) {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mind-map-branch-node:nth-child(1):hover,
+.mind-map-branch-node:nth-child(1).is-active {
+  transform: translateX(-50%) scale(1.05);
+}
+
+.mind-map-branch-node:nth-child(2) {
+  top: 130px;
+  right: max(24px, 9%);
+}
+
+.mind-map-branch-node:nth-child(3) {
+  right: max(36px, 12%);
+  bottom: 24px;
+}
+
+.mind-map-branch-node:nth-child(4) {
+  bottom: 24px;
+  left: max(36px, 12%);
+}
+
+.mind-map-branch-node:nth-child(5) {
+  top: 130px;
+  left: max(24px, 9%);
+}
+
+/* Four-branch maps use the four cardinal directions instead of leaving the
+ * upper-left part of the orbit empty. */
+.mind-map-branch-nodes.branch-count-4 .mind-map-branch-node:nth-child(3) {
+  right: auto;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mind-map-branch-nodes.branch-count-4 .mind-map-branch-node:nth-child(3):hover,
+.mind-map-branch-nodes.branch-count-4
+  .mind-map-branch-node:nth-child(3).is-active {
+  transform: translateX(-50%) scale(1.05);
+}
+
+.mind-map-branch-nodes.branch-count-4 .mind-map-branch-node:nth-child(4) {
+  top: 130px;
+  right: auto;
+  bottom: auto;
+  left: max(24px, 9%);
+}
+
+.mind-map-branch-nodes.branch-count-2 .mind-map-branch-node:nth-child(1) {
+  top: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mind-map-branch-nodes.branch-count-2 .mind-map-branch-node:nth-child(1):hover,
+.mind-map-branch-nodes.branch-count-2
+  .mind-map-branch-node:nth-child(1).is-active {
+  transform: translateX(-50%) scale(1.05);
+}
+
+.mind-map-branch-nodes.branch-count-2 .mind-map-branch-node:nth-child(2) {
+  top: auto;
+  right: auto;
+  bottom: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mind-map-branch-nodes.branch-count-2 .mind-map-branch-node:nth-child(2):hover,
+.mind-map-branch-nodes.branch-count-2
+  .mind-map-branch-node:nth-child(2).is-active {
+  transform: translateX(-50%) scale(1.05);
+}
+
+.mind-map-branch-nodes.branch-count-3 .mind-map-branch-node:nth-child(2) {
+  top: auto;
+  right: max(28px, 10%);
+  bottom: 42px;
+}
+
+.mind-map-branch-nodes.branch-count-3 .mind-map-branch-node:nth-child(3) {
+  right: auto;
+  bottom: 42px;
+  left: max(28px, 10%);
+}
+
+.mind-map-branch-node.is-violet {
+  color: #695ac9;
+}
+
+.mind-map-branch-node.is-rose {
+  color: #c65c7a;
+}
+
+.mind-map-branch-node.is-sun {
+  color: #b57916;
+}
+
+.mind-map-branch-node.is-sky {
+  color: #377fae;
+}
+
+.mind-map-branch-node.is-mint {
+  color: #2f9473;
+}
+
+.mind-map-branch-detail {
+  padding: 22px;
+  border: 1px solid #e7e3f2;
+  border-radius: 22px;
+  background: #fff;
+}
+
+.mind-map-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mind-map-detail-heading > span {
+  display: grid;
+  width: 47px;
+  height: 47px;
+  flex: none;
+  place-items: center;
+  border-radius: 15px;
+  background: #f0edff;
+  font-size: 1.35rem;
+}
+
+.mind-map-detail-heading > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.mind-map-detail-heading p,
+.mind-map-detail-heading h4,
+.mind-map-detail-heading small {
+  margin: 0;
+}
+
+.mind-map-detail-heading p {
+  color: #8b84a7;
+  font-size: 0.67rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.mind-map-detail-heading h4 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+  color: #343044;
+  font-size: 1.15rem;
+}
+
+.mind-map-detail-heading h4 small {
+  color: #8d859b;
+  font-size: 0.72em;
+}
+
+.mind-map-branch-pronunciation {
+  color: #766b8d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.67em;
+  font-weight: 700;
+}
+
+.mind-map-detail-heading em {
+  flex: none;
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: #f5f2ff;
+  color: #675abc;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.mind-map-branch-prompt {
+  margin: 16px 0 0;
+  color: #77718a;
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.mind-map-study-note-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.mind-map-study-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid #e5e0f1;
+  border-radius: 12px;
+  background: #faf9fd;
+}
+
+.mind-map-study-note > strong {
+  flex: none;
+  padding: 4px 6px;
+  border-radius: 7px;
+  background: #eee8fb;
+  color: #725aa2;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+}
+
+.mind-map-study-note > div {
+  min-width: 0;
+}
+
+.mind-map-study-note > div > span,
+.mind-map-study-note > div > small {
+  display: block;
+  margin: 0;
+}
+
+.mind-map-study-note > div > span {
+  color: #554b6c;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.mind-map-study-note > div > small {
+  margin-top: 3px;
+  color: #857d91;
+  font-size: 0.71rem;
+  line-height: 1.4;
+}
+
+.mind-map-leaf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(116px, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.mind-map-leaf {
+  display: grid;
+  min-height: 70px;
+  align-content: center;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid #e6e1f0;
+  border-radius: 13px;
+  background: #fcfbff;
+  color: #514a66;
+  font: inherit;
+  text-align: left;
+}
+
+.mind-map-leaf:hover,
+.mind-map-leaf.is-active {
+  border-color: #8d7ddd;
+  background: #f0edff;
+}
+
+.mind-map-leaf strong {
+  color: #4b4274;
+  font-size: 0.91rem;
+}
+
+.mind-map-leaf small {
+  color: #837d92;
+  font-size: 0.74rem;
+}
+
+.mind-map-leaf-focus {
+  display: grid;
+  grid-template-columns: minmax(0, auto) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 15px;
+  background: #f5f3fb;
+}
+
+.mind-map-leaf-focus p,
+.mind-map-leaf-focus h5,
+.mind-map-leaf-focus span,
+.mind-map-leaf-focus blockquote,
+.mind-map-leaf-focus blockquote small {
+  display: block;
+  margin: 0;
+}
+
+.mind-map-leaf-focus p {
+  color: #8179a1;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.mind-map-leaf-focus h5 {
+  margin-top: 3px;
+  color: #453d69;
+  font-size: 1.08rem;
+}
+
+.mind-map-leaf-focus > div > span {
+  margin-top: 3px;
+  color: #797287;
+  font-size: 0.75rem;
+}
+
+.mind-map-leaf-pronunciation {
+  display: block;
+  margin-top: 4px;
+  color: #665a7a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.mind-map-listen {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: #dfdafb;
+  color: #594ac4;
+}
+
+.mind-map-leaf-learning-note {
+  min-width: 0;
+  padding-left: 14px;
+  border-left: 2px solid #d4ccef;
+}
+
+.mind-map-leaf-focus blockquote {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: #5f5870;
+}
+
+.mind-map-leaf-focus blockquote span {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.91rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.mind-map-leaf-focus blockquote small {
+  margin-top: 3px;
+  color: #888192;
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.mind-map-leaf-memory {
+  display: block;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 11px;
+  background: #eee8fb;
+}
+
+.mind-map-leaf-memory strong,
+.mind-map-leaf-memory span {
+  display: block;
+}
+
+.mind-map-leaf-memory strong {
+  color: #745aa5;
+  font-size: 0.67rem;
+  letter-spacing: 0.06em;
+}
+
+.mind-map-leaf-memory span {
+  margin-top: 4px;
+  color: #625875;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.48;
+}
+
+.mind-map-recall {
+  padding: 21px 22px;
+  border: 1px dashed #cfc5e6;
+  border-radius: 20px;
+  background: #fffcf4;
+}
+
+.mind-map-recall p,
+.mind-map-recall h4,
+.mind-map-recall span {
+  margin: 0;
+}
+
+.mind-map-recall p {
+  color: #a57d32;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.mind-map-recall h4 {
+  margin-top: 8px;
+  color: #554c3c;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.mind-map-recall span {
+  margin-top: 12px;
+  color: #786a4b;
+  font-size: 0.87rem;
+  line-height: 1.6;
+}
+
+.mind-map-recall button {
+  margin-top: 13px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #f0e4bd;
+  color: #87611c;
+  font: inherit;
+  font-size: 0.79rem;
+  font-weight: 800;
+}
+
+@media (max-width: 560px) {
+  .mind-map-lesson-hero {
+    padding: 19px;
+  }
+
+  .mind-map-lesson-hero > strong {
+    width: 75px;
+  }
+
+  .mind-map-center-memory {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mind-map-canvas {
+    min-height: 410px;
+  }
+
+  .mind-map-branch-node {
+    width: 106px;
+    min-height: 69px;
+  }
+
+  .mind-map-branch-node:nth-child(2) {
+    right: 11px;
+  }
+
+  .mind-map-branch-node:nth-child(3) {
+    right: 22px;
+  }
+
+  .mind-map-branch-node:nth-child(4) {
+    left: 22px;
+  }
+
+  .mind-map-branch-node:nth-child(5) {
+    left: 11px;
+  }
+
+  .mind-map-leaf-focus {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .mind-map-leaf-learning-note {
+    grid-column: 1 / -1;
+    padding-top: 4px;
+  }
+}

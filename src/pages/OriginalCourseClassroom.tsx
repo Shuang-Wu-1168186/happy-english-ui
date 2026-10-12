@@ -372,15 +372,17 @@ export function OriginalCourseClassroom({
           {...commonProps}
         />
       )}
-      <CourseAccessPanel
-        activeLesson={activeLesson}
-        course={course}
-        isPreview={isPreview}
-        lessons={lessons}
-        onLockLesson={onLockLesson}
-        onSelectLesson={onSelectLesson}
-        previewCount={previewCount}
-      />
+      {resource !== "textbook" && (
+        <CourseAccessPanel
+          activeLesson={activeLesson}
+          course={course}
+          isPreview={isPreview}
+          lessons={lessons}
+          onLockLesson={onLockLesson}
+          onSelectLesson={onSelectLesson}
+          previewCount={previewCount}
+        />
+      )}
       <UpgradeDialog lesson={lockedLesson} onClose={onCloseUpgrade} />
     </>
   );

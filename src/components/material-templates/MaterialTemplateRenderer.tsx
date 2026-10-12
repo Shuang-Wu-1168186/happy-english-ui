@@ -1,5 +1,6 @@
 import { PutAsideStyleCourseware } from "../courseware/PutAsideStyleCourseware";
 import { CommuteLessonFlow } from "../commute/CommuteLessonFlow";
+import { MindMapLesson } from "./MindMapLesson";
 import { DialogueLessonContent } from "../study/Dialogue";
 import { Speak } from "../study/Speech";
 import { entries, value } from "../../lib/api";
@@ -479,6 +480,8 @@ export function MaterialTemplateRenderer({
       <p className="course-content-empty">这节课还没有可展示的课件区块。</p>
     );
   }
+  if (template.code === "mind-map")
+    return <MindMapLesson content={content} key={String(lesson.id)} />;
   if (template.code === "dialogue") {
     const items = entries(content || { id: 0 }, "items");
     return items.length ? (

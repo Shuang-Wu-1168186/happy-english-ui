@@ -1,4 +1,4 @@
-import { ArrowRight, Award, BookOpen, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Award, BookOpen, Settings2, ShieldCheck, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const shortcuts = [
@@ -33,6 +33,14 @@ const shortcuts = [
     action: "查看登录记录",
     icon: ShieldCheck,
     tone: "security",
+  },
+  {
+    to: "/admin/private-zone",
+    title: "私人专区",
+    description: "配置个人笔记、课本、课本单词和家庭共享入口。",
+    action: "配置私人专区",
+    icon: Settings2,
+    tone: "private-zone",
   },
 ];
 

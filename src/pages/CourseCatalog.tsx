@@ -19,14 +19,6 @@ function Message({ children }: { children: React.ReactNode }) {
 }
 
 const personalNotesTopicCode = "my-english-notes";
-const privateZoneDescription = "集中查看你的学习笔记、重点卡片和复习内容。";
-
-const fallbackPersonalNotesTopic: Entry = {
-  id: 0,
-  topic_code: personalNotesTopicCode,
-  title: "我的英语笔记",
-  description: "整理个人学习笔记、卡片和复习内容。",
-};
 
 function isPersonalNotesTopic(topic: Entry) {
   return value(topic, "topic_code") === personalNotesTopicCode;
@@ -144,15 +136,8 @@ export function CourseModuleCatalog() {
     };
   }, [id]);
 
-  const topics = useMemo(
-    () => (module ? entries(module, "topics") : []),
-    [module],
-  );
+  const topics = useMemo(() => (module ? entries(module, "topics") : []), [module]);
   const isPrivateZone = value(module, "module_code") === "private-zone";
-  const displayTopics =
-    isPrivateZone && !topics.some(isPersonalNotesTopic)
-      ? [fallbackPersonalNotesTopic, ...topics]
-      : topics;
   if (error)
     return (
       <CatalogShell>
@@ -166,28 +151,23 @@ export function CourseModuleCatalog() {
         <Message>正在读取学习区域…</Message>
       </CatalogShell>
     );
+  if (isPrivateZone) return <Navigate replace to="/private-zone" />;
   return (
     <CatalogShell>
       <BackButton className="course-back" />
       <section className="course-catalog-hero">
         <p>LEARNING AREA</p>
         <h1>{value(module, "name")}</h1>
-        <span>
-          {isPrivateZone
-            ? privateZoneDescription
-            : value(module, "description") || "选择一个专题，再进入教材课程。"}
-        </span>
+        <span>{value(module, "description") || "选择一个专题，再进入教材课程。"}</span>
       </section>
       <section aria-labelledby="module-topics-title">
         <div className="course-catalog-heading">
           <p>TOPICS</p>
-          <h2 id="module-topics-title">
-            {isPrivateZone ? "选择你的私人内容" : "选择学习专题"}
-          </h2>
+          <h2 id="module-topics-title">选择学习专题</h2>
         </div>
-        {displayTopics.length ? (
+        {topics.length ? (
           <div className="course-catalog-grid">
-            {displayTopics.map((topic) => (
+            {topics.map((topic) => (
               <Link
                 className="course-catalog-card"
                 key={topic.id}
@@ -197,7 +177,7 @@ export function CourseModuleCatalog() {
                   {isPersonalNotesTopic(topic) ? "📝" : "🧭"}
                 </span>
                 <span className="course-catalog-kicker">
-                  {isPersonalNotesTopic(topic) ? "私人内容" : "学习专题"}
+                  {isPersonalNotesTopic(topic) ? "学习笔记" : "学习专题"}
                 </span>
                 <strong>{value(topic, "title")}</strong>
                 <small>

@@ -107,11 +107,11 @@ const fallbackAreas: LearningArea[] = [
     code: "private-zone",
     title: "私人专区",
     english: "Private Zone",
-    description: "集中查看你的学习笔记、重点卡片和复习内容。",
-    icon: "🔒",
+    description: "收藏课程、常用学习入口和个人笔记，都放在这里。",
+    icon: "✦",
     color: "#64748b",
     resource: "private",
-    path: "/course-modules/6",
+    path: "/private-zone",
   },
 ];
 
@@ -228,10 +228,18 @@ function areaFromCatalog(entry: Entry, index: number): LearningArea {
         ? "/foundation"
         : code === "elementary-english"
           ? "/daily-speaking"
-          : catalogId
-            ? `/course-modules/${catalogId}`
-            : fallback.path,
+          : code === "private-zone"
+            ? "/private-zone"
+            : catalogId
+              ? `/course-modules/${catalogId}`
+              : fallback.path,
   };
+}
+
+function withPrivateZone(areas: LearningArea[]) {
+  if (areas.some((area) => area.code === "private-zone")) return areas;
+  const privateZone = fallbackAreas.find((area) => area.code === "private-zone");
+  return privateZone ? [...areas, privateZone] : areas;
 }
 
 function courseFromCatalog(entry: Entry, index: number): CourseCard | null {
@@ -348,7 +356,7 @@ export function Home() {
       );
       const seconds = Number(todaySummary?.active_seconds || 0);
 
-      setAreas(catalogAreas.length ? catalogAreas : fallbackAreas);
+      setAreas(withPrivateZone(catalogAreas.length ? catalogAreas : fallbackAreas));
       setCourses(catalogCourses.length ? catalogCourses : starterCourses);
       setContinueCard(
         continueFromCourse(resume) ||

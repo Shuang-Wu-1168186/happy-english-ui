@@ -3,6 +3,7 @@ import {
   BookOpen,
   BookCopy,
   Award,
+  ChevronRight,
   Eye,
   FilePenLine,
   LayoutDashboard,
@@ -10,6 +11,7 @@ import {
   Menu,
   ShieldCheck,
   Smartphone,
+  Settings2,
   Users,
   X,
 } from "lucide-react";
@@ -60,6 +62,11 @@ const contentNavigation = [
     label: "课时管理",
     icon: FilePenLine,
   },
+  {
+    to: "/admin/private-zone",
+    label: "私人专区入口",
+    icon: Settings2,
+  },
   { to: "/admin/content/course-preview", label: "课程预览", icon: Eye },
   {
     to: "/admin/content/note-to-courseware",
@@ -78,11 +85,63 @@ const contentNavigation = [
   },
 ];
 
+function ContentNavigationGroup({
+  active,
+  onNavigate,
+}: {
+  active: boolean;
+  onNavigate: () => void;
+}) {
+  const [expanded, setExpanded] = useState(active);
+
+  return (
+    <div
+      className={`admin-nav-group${active ? " is-active" : ""}${expanded ? " is-expanded" : ""}`}
+    >
+      <button
+        aria-controls="admin-content-submenu"
+        aria-expanded={expanded}
+        aria-label={expanded ? "收起内容管理菜单" : "展开内容管理菜单"}
+        className="admin-nav-parent"
+        onClick={() => setExpanded((current) => !current)}
+        type="button"
+      >
+        <BookOpen aria-hidden="true" size={18} strokeWidth={2.25} />
+        <span>内容管理</span>
+        <ChevronRight
+          aria-hidden="true"
+          className="admin-nav-chevron"
+          size={18}
+          strokeWidth={2.25}
+        />
+      </button>
+      {expanded && (
+        <div className="admin-nav-submenu" id="admin-content-submenu">
+          {contentNavigation.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                className={({ isActive }) =>
+                  `admin-nav-sublink${isActive ? " is-active" : ""}`
+                }
+                key={item.to}
+                onClick={onNavigate}
+                to={item.to}
+              >
+                <Icon aria-hidden="true" size={16} strokeWidth={2.25} />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AdminLayout() {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState("");
   const contentPageTitle = contentNavigation.find((item) =>
     [item.to, ...(item.aliases || [])].some(
       (path) => pathname === path || pathname.startsWith(`${path}/`),
@@ -91,7 +150,8 @@ export function AdminLayout() {
   const contentIsActive =
     pathname === "/admin/content" ||
     pathname.startsWith("/admin/content/") ||
-    pathname.startsWith("/admin/learning/");
+    pathname.startsWith("/admin/learning/") ||
+    pathname.startsWith("/admin/private-zone");
   const pageTitle =
     contentPageTitle ||
     navigation.find(
@@ -100,6 +160,8 @@ export function AdminLayout() {
         (item.to !== "/admin" && pathname.startsWith(`${item.to}/`)),
     )?.label ||
     "管理中心";
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
 
   useLayoutEffect(() => {
     const previousClassName = document.body.className;
@@ -150,36 +212,11 @@ export function AdminLayout() {
 
         <nav aria-label="后台菜单" className="admin-nav">
           <p className="admin-nav-label">工作空间</p>
-          <div
-            className={`admin-nav-group${contentIsActive ? " is-active" : ""}`}
-          >
-            <NavLink
-              className="admin-nav-parent"
-              onClick={() => setOpen(false)}
-              to="/admin/content/notes"
-            >
-              <BookOpen aria-hidden="true" size={18} strokeWidth={2.25} />
-              <span>内容管理</span>
-            </NavLink>
-            <div className="admin-nav-submenu">
-              {contentNavigation.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    className={({ isActive }) =>
-                      `admin-nav-sublink${isActive ? " is-active" : ""}`
-                    }
-                    key={item.to}
-                    onClick={() => setOpen(false)}
-                    to={item.to}
-                  >
-                    <Icon aria-hidden="true" size={16} strokeWidth={2.25} />
-                    <span>{item.label}</span>
-                  </NavLink>
-                );
-              })}
-            </div>
-          </div>
+          <ContentNavigationGroup
+            active={contentIsActive}
+            key={contentIsActive ? "content-active" : "content-inactive"}
+            onNavigate={() => setOpen(false)}
+          />
           {navigation.map((item) => {
             const Icon = item.icon;
             return (

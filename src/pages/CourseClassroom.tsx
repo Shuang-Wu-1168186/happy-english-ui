@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
 import { HomeNavigation } from "../components/Layout";
+import { PrivateZoneFavorite } from "../components/PrivateZoneFavorite";
 import { Speak } from "../components/study/Speech";
 import { api, entries, value } from "../lib/api";
 import type { Entry } from "../lib/api";
@@ -10,6 +11,7 @@ import { CommuteCourseClassroom } from "./CommuteCourseClassroom";
 import { InterviewCourseClassroom } from "./InterviewCourseClassroom";
 import { OriginalCourseClassroom } from "./OriginalCourseClassroom";
 import { PutAsideStyleCourseware } from "../components/courseware/PutAsideStyleCourseware";
+import { MaterialTemplateRenderer } from "../components/material-templates/MaterialTemplateRenderer";
 import { resolveMaterialTemplate } from "../lib/material-templates";
 
 type OriginalCourseResource =
@@ -258,17 +260,20 @@ export function CourseClassroom() {
 
   if (activeLesson && activeTemplate.code === "commute")
     return (
-      <CommuteCourseClassroom
-        activeLesson={activeLesson}
-        course={course}
-        isPreview={isPreview}
-        lessons={lessons}
-        lockedLesson={lockedLesson}
-        onCloseUpgrade={() => setLockedLesson(null)}
-        onLockLesson={setLockedLesson}
-        onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
-        previewCount={previewCount}
-      />
+      <>
+        <CommuteCourseClassroom
+          activeLesson={activeLesson}
+          course={course}
+          isPreview={isPreview}
+          lessons={lessons}
+          lockedLesson={lockedLesson}
+          onCloseUpgrade={() => setLockedLesson(null)}
+          onLockLesson={setLockedLesson}
+          onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
+          previewCount={previewCount}
+        />
+        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+      </>
     );
 
   if (
@@ -277,49 +282,58 @@ export function CourseClassroom() {
     activeDialogueItems.length
   )
     return (
-      <DialogueCourseClassroom
-        activeLesson={activeLesson}
-        course={course}
-        isPreview={isPreview}
-        items={activeDialogueItems}
-        lessons={lessons}
-        lockedLesson={lockedLesson}
-        onCloseUpgrade={() => setLockedLesson(null)}
-        onLockLesson={setLockedLesson}
-        onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
-        previewCount={previewCount}
-      />
+      <>
+        <DialogueCourseClassroom
+          activeLesson={activeLesson}
+          course={course}
+          isPreview={isPreview}
+          items={activeDialogueItems}
+          lessons={lessons}
+          lockedLesson={lockedLesson}
+          onCloseUpgrade={() => setLockedLesson(null)}
+          onLockLesson={setLockedLesson}
+          onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
+          previewCount={previewCount}
+        />
+        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+      </>
     );
 
   if (activeLesson && activeInterviewLesson)
     return (
-      <InterviewCourseClassroom
-        activeLesson={activeLesson}
-        course={course}
-        isPreview={isPreview}
-        lessons={lessons}
-        lockedLesson={lockedLesson}
-        onCloseUpgrade={() => setLockedLesson(null)}
-        onLockLesson={setLockedLesson}
-        onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
-        previewCount={previewCount}
-      />
+      <>
+        <InterviewCourseClassroom
+          activeLesson={activeLesson}
+          course={course}
+          isPreview={isPreview}
+          lessons={lessons}
+          lockedLesson={lockedLesson}
+          onCloseUpgrade={() => setLockedLesson(null)}
+          onLockLesson={setLockedLesson}
+          onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
+          previewCount={previewCount}
+        />
+        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+      </>
     );
 
   if (activeLesson && activeOriginalCourseResource)
     return (
-      <OriginalCourseClassroom
-        activeLesson={activeLesson}
-        course={course}
-        isPreview={isPreview}
-        lessons={lessons}
-        lockedLesson={lockedLesson}
-        onCloseUpgrade={() => setLockedLesson(null)}
-        onLockLesson={setLockedLesson}
-        onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
-        previewCount={previewCount}
-        resource={activeOriginalCourseResource}
-      />
+      <>
+        <OriginalCourseClassroom
+          activeLesson={activeLesson}
+          course={course}
+          isPreview={isPreview}
+          lessons={lessons}
+          lockedLesson={lockedLesson}
+          onCloseUpgrade={() => setLockedLesson(null)}
+          onLockLesson={setLockedLesson}
+          onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
+          previewCount={previewCount}
+          resource={activeOriginalCourseResource}
+        />
+        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+      </>
     );
 
   return (
@@ -427,7 +441,14 @@ export function CourseClassroom() {
                   {read(activeLesson, "summary")}
                 </p>
               )}
-              {activeLesson && (activeCoursewareBlocks.length ? <PutAsideStyleCourseware blocks={activeCoursewareBlocks} /> : <LessonBody lesson={activeLesson} />)}
+              {activeLesson &&
+                (activeTemplate.code === "mind-map" ? (
+                  <MaterialTemplateRenderer lesson={activeLesson} />
+                ) : activeCoursewareBlocks.length ? (
+                  <PutAsideStyleCourseware blocks={activeCoursewareBlocks} />
+                ) : (
+                  <LessonBody lesson={activeLesson} />
+                ))}
             </article>
           </section>
         ) : (
@@ -436,6 +457,8 @@ export function CourseClassroom() {
           </p>
         )}
       </main>
+
+      <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
 
       {lockedLesson && (
         <div className="course-upgrade-backdrop" role="presentation">

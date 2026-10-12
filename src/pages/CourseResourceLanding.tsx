@@ -2,14 +2,22 @@ import { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { api, value } from "../lib/api";
 import type { Entry } from "../lib/api";
+import {
+  courseLandingPath,
+  usesOriginalStudyPage,
+} from "../lib/course-routes";
 
 type CatalogResponse = { items?: Entry[] };
 
 export function CourseResourceLanding() {
   const { resource = "" } = useParams();
   const [destination, setDestination] = useState("");
+  const originalStudyPath = usesOriginalStudyPage(resource)
+    ? courseLandingPath(resource)
+    : "";
 
   useEffect(() => {
+    if (originalStudyPath) return;
     let active = true;
     api<CatalogResponse>("/learning/modules")
       .then((result) => {
@@ -23,8 +31,9 @@ export function CourseResourceLanding() {
     return () => {
       active = false;
     };
-  }, [resource]);
+  }, [resource, originalStudyPath]);
 
+  if (originalStudyPath) return <Navigate replace to={originalStudyPath} />;
   if (destination) return <Navigate replace to={destination} />;
   return <div className="empty">正在打开课程专区…</div>;
 }

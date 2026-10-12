@@ -18,7 +18,7 @@ test("learning homepage dashboard and login", async ({ page }) => {
     path: "test-results/home-desktop.png",
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Logout" }).click();
+  await page.getByRole("button", { name: "退出登录", exact: true }).click();
   await login(page, "learner_test");
   await expect(page.locator(".learning-area-card")).toHaveCount(6);
   await expect(
@@ -144,29 +144,407 @@ test("daily speaking separates daily practice and spoken dialogues", async ({
     page.getByRole("link", { name: /日常口语对话专区/ }),
   ).toHaveAttribute("href", "/learn/dialogues");
 });
-test("private zone contains the personal learning notes entry", async ({
-  page,
-}) => {
+test("private zone keeps its home entry while favorites remain below family learning", async ({ page }) => {
+  const textbookTemplate = { code: "textbook", version: 1, renderer: "textbook.v1" };
+  const textbookLessons = [
+    {
+      id: 701,
+      title: "这个暑假你做了什么？",
+      title_en: "What did you do this summer?",
+      sort_order: 101,
+      source_resource: "textbook",
+      is_locked: false,
+      access_state: "available",
+      source_content: {
+        id: 1,
+        unit_name: "Unit 1",
+        lesson_name: "Lesson 1",
+        title: "What did you do this summer?",
+        title_cn: "这个暑假你做了什么？",
+        sentences: [
+          { id: 1, english_text: "Yangyang: I went swimming.", chinese_text: "阳阳：我去游泳了。" },
+        ],
+      },
+    },
+    {
+      id: 702,
+      title: "我们都度过了一个有意义的暑假",
+      title_en: "All of Us Had a Meaningful Summer Holiday",
+      sort_order: 102,
+      source_resource: "textbook",
+      is_locked: false,
+      access_state: "available",
+      source_content: {
+        id: 4,
+        unit_name: "Unit 1",
+        lesson_name: "Lesson 2",
+        title: "All of Us Had a Meaningful Summer Holiday",
+        title_cn: "我们都度过了一个有意义的暑假",
+        sentences: [
+          { id: 4, english_text: "Guoguo: Did you travel this summer holiday?", chinese_text: "果果：这个暑假你去旅行了吗？" },
+        ],
+      },
+    },
+  ];
+  await page.route("**/api/learning/materials/77**", async (route) => {
+    const includeContent = new URL(route.request().url()).searchParams.has("include_lesson_content");
+    await route.fulfill({
+      json: {
+        id: 77,
+        title: "小学英语教材",
+        topic_id: 1,
+        template: textbookTemplate,
+        access_state: "available",
+        lessons: includeContent
+          ? textbookLessons
+          : textbookLessons.map(({ source_content, ...lesson }) => lesson),
+      },
+    });
+  });
+  await page.route("**/api/learning/private-zone", async (route) => {
+    await route.fulfill({
+      json: {
+        favorite_course_count: 1,
+        personal_note_count: 1,
+        public_entries: [
+          {
+            id: 11,
+            feature_code: "my-english-notes",
+            title: "公共英语笔记",
+            target_url: "/learn/notes",
+            description: "所有学习者都可以查看原有英语笔记。",
+            icon: "notebook",
+          },
+        ],
+        shortcuts: [
+          {
+            id: 18,
+            title: "小学英语教材 · Guoguo 对话",
+            target_url: "/learning-materials/77",
+            description: "从 Guoguo、Lingling、Maomao 的情景对话开始学习。",
+            icon: "📖",
+            family_group_name: "学习小家",
+          },
+          {
+            id: 19,
+            title: "小学英语单词",
+            target_url: "/learn/kids-cards",
+            description: "打开原有的小学英语词卡，从 northeast 开始学习。",
+            icon: "🔤",
+          },
+          {
+            id: 20,
+            title: "数学练习",
+            target_url: "/learn/math-cards",
+            description: "打开原有的数学知识卡和练习。",
+            icon: "➗",
+          },
+        ],
+        recent_personal_notes: [
+          { id: 6, title: "周末计划", content: "复习两节英语课。", color: "violet" },
+        ],
+        items: [
+          {
+            id: 91,
+            resource_type: "material",
+            resource_id: 77,
+            source: { scope_type: "personal", label: "个人" },
+            resource: {
+              id: 77,
+              resource_type: "material",
+              title: "小学英语教材 · Guoguo 对话",
+              summary: "从第一课开始学习。",
+            },
+            access: { access_state: "available" },
+          },
+        ],
+      },
+    });
+  });
+  await page.route("**/api/content/kids-cards**", async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname.endsWith("/kids-cards/1")) {
+      await route.fulfill({
+        json: {
+          id: 1,
+          word: "northeast",
+          translation: "东北部",
+          category: "Unit 1 · 1",
+          level: "Core",
+          phonics: "/ˌnɔːrθˈiːst/",
+          part_of_speech: "noun",
+          image_url: "",
+          tip: "拆分为 north 和 east。",
+          examples: [],
+          word_family: [],
+        },
+      });
+      return;
+    }
+    await route.fulfill({
+      json: {
+        items: [
+          {
+            id: 1,
+            word: "northeast",
+            translation: "东北部",
+            category: "Unit 1 · 1",
+            level: "Core",
+            phonics: "/ˌnɔːrθˈiːst/",
+            part_of_speech: "noun",
+            image_url: "",
+            tip: "拆分为 north 和 east。",
+          },
+        ],
+        page: 1,
+        total_pages: 1,
+        total: 1,
+      },
+    });
+  });
+  await page.route("**/api/content/math-cards**", async (route) => {
+    await route.fulfill({
+      json: {
+        items: [
+          {
+            id: 1,
+            category: "分数计算",
+            title: "分数乘法",
+            summary: "分子乘分子，分母乘分母。",
+            key_points: "先约分，再相乘。",
+            common_mistakes: "不要把分母相加。",
+            example_question: "计算 2/7 × 3/5。",
+            example_answer: "6/35。",
+          },
+        ],
+        page: 1,
+        total_pages: 1,
+        total: 1,
+      },
+    });
+  });
+  await page.route("**/api/learning/private-zone/favorite-courses", async (route) => {
+    await route.fulfill({
+      json: {
+        items: [
+          {
+            id: 92,
+            resource_type: "course",
+            resource_id: 88,
+            source: { scope_type: "personal", label: "个人" },
+            resource: { id: 88, resource_type: "course", title: "自然拼读入门" },
+            access: { access_state: "available" },
+          },
+        ],
+      },
+    });
+  });
   await login(page);
-  const privateZone = page
-    .locator(".learning-area-card")
-    .filter({ hasText: "私人专区" });
-  await expect(privateZone).toHaveAttribute("href", "/course-modules/6");
-  await privateZone.click();
-  await expect(page).toHaveURL(/\/course-modules\/6$/);
+  await expect(
+    page.locator(".learning-area-card").filter({ hasText: "私人专区" }),
+  ).toHaveCount(1);
+  await page.getByRole("link", { name: /私人专区/ }).click();
+  await expect(page).toHaveURL(/\/private-zone$/);
+  await expect(page.getByRole("heading", { name: "私人专区", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "生活英语", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Rolleston Food Bar Menu/ })).toHaveAttribute(
+    "href",
+    "/roleston-menu/index.html",
+  );
+  await expect(page.getByRole("heading", { name: "公共学习入口", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "家庭常用入口", exact: true })).toBeVisible();
+  await expect(page.getByText("家庭 · 学习小家", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "+ 添加入口", exact: true })).toHaveCount(0);
+  await expect(page.locator(".private-zone-shortcut-actions")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /小学英语单词/ })).toHaveAttribute(
+    "href",
+    "/learn/kids-cards",
+  );
+  await expect(page.getByRole("link", { name: /数学练习/ })).toHaveAttribute(
+    "href",
+    "/learn/math-cards",
+  );
+  await expect(page.getByRole("link", { name: /小学英语教材 · Guoguo 对话/ })).toHaveAttribute("href", "/learning-materials/77");
+  await page.getByRole("link", { name: /小学英语教材 · Guoguo 对话/ }).click();
+  await expect(page).toHaveURL(/\/learning-materials\/77$/);
+  await expect(page.getByRole("heading", { name: "英语教材课文", exact: true })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Unit 1/ })).toBeVisible();
+  await page.getByRole("tab", { name: /Lesson 2/ }).click();
+  await expect(page.getByText("Did you travel this summer holiday?", { exact: true })).toBeVisible();
+  await page.goto("/learn/kids-cards");
+  await expect(page).toHaveURL(/\/learn\/kids-cards$/);
+  await expect(page.getByRole("heading", { name: "northeast", exact: true })).toBeVisible();
+  await page.goto("/learn/math-cards");
+  await expect(page).toHaveURL(/\/learn\/math-cards$/);
+  await expect(page.getByRole("heading", { name: "数学知识点卡", exact: true })).toBeVisible();
+  await page.goto("/private-zone");
+  await page.getByRole("link", { name: /收藏课程/ }).click();
+  await expect(page).toHaveURL(/\/private-zone\/favorite-courses$/);
+  await expect(
+    page.locator(".private-zone-course-link").filter({ hasText: "自然拼读入门" }),
+  ).toHaveAttribute("href", "/courses/88");
+  await page.getByRole("link", { name: "我的", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "我的收藏", exact: true }),
+  ).toBeVisible();
+  const favorite = page
+    .locator(".my-space-favorite-card")
+    .filter({ hasText: "小学英语教材 · Guoguo 对话" });
+  await expect(
+    favorite.getByRole("link", { name: "打开 小学英语教材 · Guoguo 对话" }),
+  ).toHaveAttribute("href", "/learning-materials/77");
+  await page.goto("/private-zone");
+  await expect(page).toHaveURL(/\/private-zone$/);
   await expect(
     page.getByRole("heading", { name: "私人专区", exact: true }),
   ).toBeVisible();
+  await page.goto("/course-modules/6");
+  await expect(page).toHaveURL(/\/private-zone$/);
+  await page.getByRole("link", { name: /Rolleston Food Bar Menu/ }).click();
+  await expect(page).toHaveURL(/\/roleston-menu\/index\.html$/);
+  await expect(page).toHaveTitle("Rolleston Food Bar | Menu");
+});
 
-  const notes = page.getByRole("link", { name: /我的英语笔记/ });
-  await expect(notes).toHaveAttribute("href", "/learn/notes");
-  await notes.click();
-  await expect(page).toHaveURL(/\/learn\/notes$/);
+test("private zone keeps public entries hidden while personal notes remain available", async ({ page }) => {
+  const publicEntries: Record<string, unknown>[] = [
+    {
+      id: 301,
+      title: "小学英语单词",
+      target_url: "/learn/kids-cards",
+      description: "从 northeast 开始学习。",
+      icon: "🔤",
+    },
+  ];
+  const notes: Record<string, unknown>[] = [];
+  await page.route("**/api/learning/private-zone", async (route) => {
+    await route.fulfill({
+      json: {
+        items: [],
+        favorite_course_count: 0,
+        public_entries: publicEntries,
+        shortcuts: [],
+        personal_note_count: notes.length,
+        recent_personal_notes: notes.slice(0, 3),
+      },
+    });
+  });
+  await page.route("**/api/learning/private-zone/personal-notes", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ json: { items: notes } });
+      return;
+    }
+    if (route.request().method() === "POST") {
+      const payload = route.request().postDataJSON() as Record<string, unknown>;
+      const note = { id: 401, ...payload, updated_at: "2026-10-10T00:00:00" };
+      notes.unshift(note);
+      await route.fulfill({ status: 201, json: note });
+      return;
+    }
+    return route.fallback();
+  });
+
+  await login(page, "learner_test");
+  await page.goto("/private-zone");
+  await expect(page.getByRole("heading", { name: "公共学习入口", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "家庭常用入口", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /小学英语单词/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "+ 添加家庭入口", exact: true })).toHaveCount(0);
+  await expect(page.locator(".private-zone-shortcut-actions")).toHaveCount(0);
+
+  await page.getByRole("link", { name: /个人笔记/ }).click();
+  await expect(page).toHaveURL(/\/private-zone\/personal-notes$/);
+  await page.getByRole("button", { name: "+ 写笔记", exact: true }).click();
+  await page.getByLabel("标题").fill("周末学习计划");
+  await page.getByLabel("内容").fill("复习两节英语课。 ");
+  await page.getByRole("button", { name: "保存笔记", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "周末学习计划", exact: true })).toBeVisible();
+  await expect(page.getByText("复习两节英语课。", { exact: true })).toBeVisible();
+});
+
+test("admin private-zone entry management keeps public entries hidden", async ({ page }) => {
+  const shortcuts: Record<string, unknown>[] = [];
+  let createdShortcut: Record<string, unknown> | undefined;
+  await page.route("**/api/learning/family-groups", async (route) => {
+    await route.fulfill({
+      json: { items: [{ id: 77, name: "学习小家", member_role: "owner" }] },
+    });
+  });
+  await page.route("**/api/admin/private-zone/shortcuts", async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ json: { items: shortcuts } });
+      return;
+    }
+    if (route.request().method() === "POST") {
+      const payload = route.request().postDataJSON() as Record<string, unknown>;
+      createdShortcut = payload;
+      const shortcut = { id: 501, family_group_name: "学习小家", ...payload };
+      shortcuts.push(shortcut);
+      await route.fulfill({ status: 201, json: shortcut });
+      return;
+    }
+    return route.fallback();
+  });
+
+  await login(page);
+  await page.setViewportSize({ width: 949, height: 583 });
+  await page.goto("/admin/private-zone");
+  await expect(page.getByRole("heading", { name: "私人专区入口", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "公共学习入口", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "+ 添加公共入口", exact: true })).toHaveCount(0);
+  await expect(page.getByText("匹配规则 JSON", { exact: true })).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect(page.getByRole("heading", { name: "家庭常用入口", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "+ 添加家庭入口", exact: true }).click();
+  await page.getByLabel("共享家庭", { exact: true }).selectOption("77");
+  await page.getByRole("textbox", { name: "名称", exact: true }).fill("小学英语单词");
+  await page.getByRole("textbox", { name: "跳转链接", exact: true }).fill("/learn/kids-cards");
+  await page.getByRole("button", { name: "保存入口", exact: true }).click();
+  await expect(page.getByText("小学英语单词", { exact: true })).toBeVisible();
+  await expect(page.locator(".private-zone-admin-shortcut code")).toHaveText("/learn/kids-cards");
+  expect(createdShortcut?.family_group_id).toBe(77);
+});
+
+test("my learning space keeps family sharing in a consumer flow", async ({ page }) => {
+  await login(page, "learner_test");
+  await page.getByRole("link", { name: "我的", exact: true }).click();
+  await expect(page).toHaveURL(/\/me$/);
+  await expect(page.getByRole("heading", { name: /你好，/ })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Study Notes", exact: true }),
+    page.getByRole("heading", { name: "家庭共学", exact: true }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: "test-results/my-space-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: "test-results/my-space-mobile.png",
+    fullPage: true,
+  });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.getByRole("button", { name: "创建家庭", exact: true }).click();
+  await page.getByPlaceholder("例如：我们家").fill("学习小家");
+  await page
+    .getByRole("button", { name: "创建家庭", exact: true })
+    .last()
+    .click();
+  await expect(page.getByText("学习小家", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "邀请家人", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "邀请家人加入", exact: true }),
   ).toBeVisible();
   await expect(
-    page.locator(".note-card").filter({ hasText: "Daily practice" }),
+    page.getByRole("button", { name: "复制邀请码", exact: true }),
   ).toBeVisible();
 });
 test("homepage management shortcut opens the separate admin workspace on desktop and mobile", async ({
@@ -194,7 +572,25 @@ test("homepage management shortcut opens the separate admin workspace on desktop
         .getByRole("button", { name: "Toggle admin navigation" })
         .click();
     const adminNav = page.getByRole("navigation", { name: "后台菜单" });
-    await adminNav.getByRole("link", { name: "内容管理", exact: true }).click();
+    const contentToggle = adminNav.getByRole("button", {
+      name: "展开内容管理菜单",
+      exact: true,
+    });
+    await expect(contentToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(
+      adminNav.getByRole("link", { name: "学习笔记", exact: true }),
+    ).toHaveCount(0);
+    await adminNav.getByText("内容管理", { exact: true }).click();
+    await expect(
+      adminNav.getByRole("button", {
+        name: "收起内容管理菜单",
+        exact: true,
+      }),
+    ).toHaveAttribute("aria-expanded", "true");
+    await expect(
+      adminNav.getByRole("link", { name: "学习笔记", exact: true }),
+    ).toBeVisible();
+    await adminNav.getByRole("link", { name: "学习笔记", exact: true }).click();
     await expect(page.getByLabel("Module", { exact: true })).toBeVisible();
     if (width < 981)
       await page
