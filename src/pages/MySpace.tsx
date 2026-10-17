@@ -31,7 +31,7 @@ type InviteCode = {
   expires_at: string | null;
 };
 
-type FamilyAction = "create" | "join" | null;
+type FamilyAction = "create" | "join" | "rename" | null;
 
 function nestedValue(raw: unknown, key: string) {
   if (!raw || typeof raw !== "object") return "";
@@ -136,6 +136,7 @@ export function MySpace() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [familyAction, setFamilyAction] = useState<FamilyAction>(null);
+  const [familyActionGroup, setFamilyActionGroup] = useState<FamilyGroup | null>(null);
   const [formValue, setFormValue] = useState("");
   const [invite, setInvite] = useState<InviteCode | null>(null);
 
@@ -166,8 +167,23 @@ export function MySpace() {
   function openFamilyAction(action: Exclude<FamilyAction, null>) {
     setMessage("");
     setError("");
+    setFamilyActionGroup(null);
     setFormValue("");
     setFamilyAction(action);
+  }
+
+  function openFamilyRename(group: FamilyGroup) {
+    setMessage("");
+    setError("");
+    setFamilyActionGroup(group);
+    setFormValue(value(group, "name"));
+    setFamilyAction("rename");
+  }
+
+  function closeFamilyAction() {
+    setFamilyAction(null);
+    setFamilyActionGroup(null);
+    setFormValue("");
   }
 
   async function submitFamilyAction(event: FormEvent<HTMLFormElement>) {
@@ -175,18 +191,26 @@ export function MySpace() {
     const input = formValue.trim();
     if (!input || !familyAction) return;
     const isCreate = familyAction === "create";
+    const isRename = familyAction === "rename";
+    const groupId = Number(familyActionGroup?.id);
+    if (isRename && !groupId) {
+      setError("家庭信息已失效，请刷新后重试。");
+      return;
+    }
     setBusy(familyAction);
     setError("");
     try {
       if (isCreate) {
         await api("/learning/family-groups", "POST", { name: input });
         setMessage("家庭已创建。现在可以生成邀请码，邀请家人一起学习。");
+      } else if (isRename) {
+        await api("/learning/family-groups/" + groupId, "PUT", { name: input });
+        setMessage("家庭名称已更新。");
       } else {
         await api("/learning/family-groups/join", "POST", { invite_code: input });
         setMessage("你已加入家庭，现在可以看到家庭共享的学习内容。");
       }
-      setFamilyAction(null);
-      setFormValue("");
+      closeFamilyAction();
       await load();
     } catch (reason) {
       setError((reason as Error).message);
@@ -274,6 +298,7 @@ export function MySpace() {
             <div className="my-space-family-list">
               {groups.map((group) => {
                 const role = value(group, "member_role") || "member";
+                const canRename = role === "owner";
                 const canInvite = role === "owner" || role === "admin";
                 const members = group.members || [];
                 return (
@@ -293,15 +318,29 @@ export function MySpace() {
                       {members.length > 5 && <em>+{members.length - 5}</em>}
                     </div>
                     <p className="my-space-family-note">家庭中的成员可查看共享的课程、教材和家庭常用入口。</p>
-                    {canInvite && (
-                      <button
-                        className="my-space-primary-button"
-                        disabled={busy === "invite-" + group.id}
-                        onClick={() => void createInvite(group)}
-                        type="button"
-                      >
-                        {busy === "invite-" + group.id ? "正在生成…" : "邀请家人"}
-                      </button>
+                    {(canRename || canInvite) && (
+                      <div className="my-space-family-card-actions">
+                        {canRename && (
+                          <button
+                            className="my-space-secondary-button"
+                            disabled={busy !== ""}
+                            onClick={() => openFamilyRename(group)}
+                            type="button"
+                          >
+                            修改名称
+                          </button>
+                        )}
+                        {canInvite && (
+                          <button
+                            className="my-space-primary-button"
+                            disabled={busy === "invite-" + group.id}
+                            onClick={() => void createInvite(group)}
+                            type="button"
+                          >
+                            {busy === "invite-" + group.id ? "正在生成…" : "邀请家人"}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </article>
                 );
@@ -396,19 +435,28 @@ export function MySpace() {
       {familyAction && (
         <div className="my-space-modal-backdrop" role="presentation">
           <section aria-labelledby="family-action-title" aria-modal="true" className="my-space-modal" role="dialog">
-            <button aria-label="关闭" className="my-space-modal-close" onClick={() => setFamilyAction(null)} type="button">×</button>
-            <span className="my-space-modal-icon">{familyAction === "create" ? "🏠" : "✉️"}</span>
-            <h2 id="family-action-title">{familyAction === "create" ? "创建你的家庭" : "加入家人的家庭"}</h2>
-            <p>{familyAction === "create" ? "给家庭起一个容易辨认的名字，之后可以随时分享课程收藏。" : "输入家人发给你的 8 位邀请码，例如 ABCD-EFGH。"}</p>
+            <button aria-label="关闭" className="my-space-modal-close" onClick={closeFamilyAction} type="button">×</button>
+            <span className="my-space-modal-icon">{familyAction === "create" ? "🏠" : familyAction === "rename" ? "✏️" : "✉️"}</span>
+            <h2 id="family-action-title">
+              {familyAction === "create" ? "创建你的家庭" : familyAction === "rename" ? "修改家庭名称" : "加入家人的家庭"}
+            </h2>
+            <p>
+              {familyAction === "create"
+                ? "给家庭起一个容易辨认的名字，之后可以随时分享课程收藏。"
+                : familyAction === "rename"
+                  ? "更新后的名称会显示给所有家庭成员。"
+                  : "输入家人发给你的 8 位邀请码，例如 ABCD-EFGH。"}
+            </p>
             <form onSubmit={(event) => void submitFamilyAction(event)}>
               <input
                 autoFocus
+                maxLength={familyAction === "join" ? undefined : 120}
                 onChange={(event) => setFormValue(event.target.value)}
-                placeholder={familyAction === "create" ? "例如：我们家" : "输入邀请码"}
+                placeholder={familyAction === "join" ? "输入邀请码" : "例如：我们家"}
                 value={formValue}
               />
               <button className="my-space-primary-button" disabled={busy === familyAction} type="submit">
-                {busy === familyAction ? "请稍候…" : familyAction === "create" ? "创建家庭" : "加入家庭"}
+                {busy === familyAction ? "请稍候…" : familyAction === "create" ? "创建家庭" : familyAction === "rename" ? "保存名称" : "加入家庭"}
               </button>
             </form>
           </section>

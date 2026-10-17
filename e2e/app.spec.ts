@@ -539,6 +539,14 @@ test("my learning space keeps family sharing in a consumer flow", async ({ page 
     .last()
     .click();
   await expect(page.getByText("学习小家", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "修改名称", exact: true }).click();
+  const familyRenameDialog = page.getByRole("dialog");
+  await expect(
+    familyRenameDialog.getByRole("heading", { name: "修改家庭名称", exact: true }),
+  ).toBeVisible();
+  await familyRenameDialog.getByRole("textbox").fill("周末英语小家");
+  await familyRenameDialog.getByRole("button", { name: "保存名称", exact: true }).click();
+  await expect(page.getByText("周末英语小家", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "邀请家人", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "邀请家人加入", exact: true }),

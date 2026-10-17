@@ -386,6 +386,15 @@
   line-height: 1.5;
 }
 
+.my-space-family-card-actions {
+  display: flex;
+  gap: 9px;
+}
+
+.my-space-family-card-actions button {
+  flex: 1;
+}
+
 .my-space-primary-button,
 .my-space-secondary-button {
   min-height: 42px;
