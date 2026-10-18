@@ -97,6 +97,11 @@
   line-height: 0.98;
 }
 
+.put-aside-hero-copy h2.is-long {
+  font-size: clamp(2.1rem, 3.7vw, 3.25rem);
+  line-height: 1.02;
+}
+
 .put-aside-hero-copy > strong {
   display: block;
   max-width: 31rem;
@@ -575,6 +580,10 @@
 
   .put-aside-hero-copy h2 {
     font-size: 2.8rem;
+  }
+
+  .put-aside-hero-copy h2.is-long {
+    font-size: 2.25rem;
   }
 
   .put-aside-contrast-grid {
