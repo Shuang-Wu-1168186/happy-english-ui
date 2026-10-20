@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
-import { api, value } from "../lib/api";
+import { api, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 import {
   courseLandingPath,
@@ -25,7 +25,7 @@ export function CourseResourceLanding() {
         const module = (result.items || []).find(
           (item) => value(item, "route_key") === resource,
         );
-        setDestination(module ? `/course-modules/${module.id}` : "/");
+        setDestination(module ? `/course-modules/${idValue(module)}` : "/");
       })
       .catch(() => active && setDestination("/"));
     return () => {

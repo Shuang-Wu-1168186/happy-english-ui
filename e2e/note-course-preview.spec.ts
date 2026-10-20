@@ -13,7 +13,11 @@ test("admin can preview note cards in the course classroom layout", async ({
 }) => {
   await login(page);
   await page.goto("/admin");
-  await page.getByRole("link", { name: "课程预览", exact: true }).click();
+  const adminNav = page.getByRole("navigation", { name: "后台菜单" });
+  await adminNav
+    .getByRole("button", { name: "展开内容管理菜单", exact: true })
+    .click();
+  await adminNav.getByRole("link", { name: "课程预览", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/content\/course-preview$/);
 
   await expect(

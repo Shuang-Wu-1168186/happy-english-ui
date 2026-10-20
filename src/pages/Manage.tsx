@@ -2,8 +2,8 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingImage } from "../components/LoadingImage";
-import { api, asset, entries, request, value } from "../lib/api";
-import type { Entry } from "../lib/api";
+import { api, asset, entries, idValue, request, value } from "../lib/api";
+import type { ApiId, Entry } from "../lib/api";
 import {
   NOTE_REGISTER_OPTIONS,
   NOTE_SCENARIO_OPTIONS,
@@ -13,7 +13,7 @@ import { useStudyCatalog, useStudyItem } from "../lib/study";
 import { Speak } from "../components/study/Speech";
 const INTERVIEW_EDITOR_PATH = "/admin/content/interviews";
 
-function managementPath(resource: string, id?: number) {
+function managementPath(resource: string, id?: ApiId) {
   if (resource === "interviews")
     return `${INTERVIEW_EDITOR_PATH}${id ? `?id=${id}` : ""}`;
   const params = new URLSearchParams({ resource });
@@ -73,7 +73,7 @@ function Editor({
         difficulty_level: "1",
         share_status: "0",
         priority_order: "0",
-        note_id: params.get("parent_id") || String(notes[0]?.id || ""),
+        note_id: params.get("parent_id") || idValue(notes[0]),
         note_date: new Date().toLocaleDateString("en-CA"),
       };
       if (initial)
@@ -96,7 +96,7 @@ function Editor({
         data.examples = data.example_sentence || "";
         data.raw_text = data.extra_note || "";
       }
-      for (const s of entries(initial || { id: 0 }, "sections")) {
+      for (const s of entries(initial || { id: "local-empty" }, "sections")) {
         data[`${s.section_type}_en`] = value(s, "content_en");
         data[`${s.section_type}_cn`] = value(s, "content_cn");
       }
@@ -188,7 +188,7 @@ function Editor({
     setError("");
     setMessage("");
     try {
-      await api(`/content/${resource}/${initial.id}`, "DELETE");
+      await api(`/content/${resource}/${idValue(initial)}`, "DELETE");
       navigate(managementPath(resource));
     } catch (e) {
       setError((e as Error).message);
@@ -245,7 +245,7 @@ function Editor({
         ])
           data[key] =
             key === "example_image_url" ? noteImageUrl : form[key] || "";
-        data.note_id = Number(form.note_id);
+        data.note_id = form.note_id;
         data.priority_order = Number(form.priority_order || 0);
         data.share_status = Number(form.share_status || 0);
         if (form.language_register)
@@ -272,8 +272,8 @@ function Editor({
           "keywords",
         ])
           data[key] = form[key] || "";
+        data.category_id = form.category_id;
         for (const key of [
-          "category_id",
           "difficulty_level",
           "share_status",
           "priority_order",
@@ -297,7 +297,7 @@ function Editor({
         "value",
       );
       const saved = await api<Entry>(
-        `/content/${resource}${initial ? `/${initial.id}` : ""}`,
+        `/content/${resource}${initial ? `/${idValue(initial)}` : ""}`,
         initial ? "PUT" : "POST",
         data,
       );
@@ -317,9 +317,9 @@ function Editor({
         }));
       } else if (!initial && resource === "notes") {
         navigate(
-          `/admin/content/notes?resource=note-items&parent_id=${saved.id}`,
+          `/admin/content/notes?resource=note-items&parent_id=${idValue(saved)}`,
         );
-      } else navigate(managementPath(resource, saved.id));
+      } else navigate(managementPath(resource, idValue(saved)));
     } catch (e) {
       setError((e as Error).message);
     } finally {

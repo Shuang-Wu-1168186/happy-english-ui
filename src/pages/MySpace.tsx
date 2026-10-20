@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { HomeNavigation } from "../components/Layout";
-import { api, value } from "../lib/api";
-import type { Entry } from "../lib/api";
+import { api, idValue, value } from "../lib/api";
+import type { ApiId, Entry } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
 
 type FamilyGroup = Entry & {
@@ -25,7 +25,7 @@ type FavoriteResponse = {
 };
 
 type InviteCode = {
-  family_group_id: number;
+  family_group_id: ApiId;
   family_group_name: string;
   invite_code: string;
   expires_at: string | null;
@@ -37,11 +37,6 @@ function nestedValue(raw: unknown, key: string) {
   if (!raw || typeof raw !== "object") return "";
   const value = (raw as Record<string, unknown>)[key];
   return value == null ? "" : String(value);
-}
-
-function numberValue(entry: Entry | undefined, key: string) {
-  const number = Number(entry?.[key]);
-  return Number.isFinite(number) ? number : 0;
 }
 
 function memberName(member: Entry) {
@@ -83,14 +78,14 @@ function favoriteDescription(item: FavoriteItem) {
 
 function favoritePath(item: FavoriteItem) {
   const resource = item.resource;
-  const resourceId = numberValue(resource, "id") || numberValue(item, "resource_id");
+  const resourceId = idValue(resource) || idValue(item, "resource_id");
   const resourceType = value(item, "resource_type") || value(resource, "resource_type");
   if (!resourceId) return "";
   if (resourceType === "course") return "/courses/" + resourceId;
   if (resourceType === "material") return "/learning-materials/" + resourceId;
   if (resourceType === "note") return "/learn/notes/" + resourceId;
   if (resourceType === "note_item") {
-    const noteId = numberValue(resource, "note_id");
+    const noteId = idValue(resource, "note_id");
     return noteId ? "/learn/notes/" + noteId : "/learn/note-items/" + resourceId;
   }
   return "";
@@ -192,7 +187,7 @@ export function MySpace() {
     if (!input || !familyAction) return;
     const isCreate = familyAction === "create";
     const isRename = familyAction === "rename";
-    const groupId = Number(familyActionGroup?.id);
+    const groupId = idValue(familyActionGroup);
     if (isRename && !groupId) {
       setError("家庭信息已失效，请刷新后重试。");
       return;
@@ -220,7 +215,7 @@ export function MySpace() {
   }
 
   async function createInvite(group: FamilyGroup) {
-    const groupId = Number(group.id);
+    const groupId = idValue(group);
     if (!groupId) return;
     setBusy("invite-" + groupId);
     setError("");
@@ -248,7 +243,7 @@ export function MySpace() {
     }
   }
 
-  async function removeFavorite(itemId: number) {
+  async function removeFavorite(itemId: ApiId) {
     if (!itemId) return;
     setBusy("favorite-" + itemId);
     setError("");
@@ -302,7 +297,7 @@ export function MySpace() {
                 const canInvite = role === "owner" || role === "admin";
                 const members = group.members || [];
                 return (
-                  <article className="my-space-family-card" key={group.id}>
+                  <article className="my-space-family-card" key={idValue(group)}>
                     <div className="my-space-family-card-top">
                       <span className="my-space-family-mark">家</span>
                       <div>
@@ -313,7 +308,7 @@ export function MySpace() {
                     </div>
                     <div className="my-space-members" aria-label="家庭成员">
                       {members.slice(0, 5).map((member) => (
-                        <span key={member.id}>{memberName(member).slice(0, 2)}</span>
+                        <span key={idValue(member)}>{memberName(member).slice(0, 2)}</span>
                       ))}
                       {members.length > 5 && <em>+{members.length - 5}</em>}
                     </div>
@@ -333,11 +328,11 @@ export function MySpace() {
                         {canInvite && (
                           <button
                             className="my-space-primary-button"
-                            disabled={busy === "invite-" + group.id}
+                            disabled={busy === "invite-" + idValue(group)}
                             onClick={() => void createInvite(group)}
                             type="button"
                           >
-                            {busy === "invite-" + group.id ? "正在生成…" : "邀请家人"}
+                            {busy === "invite-" + idValue(group) ? "正在生成…" : "邀请家人"}
                           </button>
                         )}
                       </div>
@@ -377,7 +372,7 @@ export function MySpace() {
             <div className="my-space-favorite-grid">
               {favorites.map((item) => {
                 const href = favoritePath(item);
-                const itemId = numberValue(item, "id");
+                const itemId = idValue(item);
                 const sourceScope = nestedValue(item.source, "scope_type") || "personal";
                 const sourceLabel = sourceScope === "family" ? "来自家庭" : "来自个人";
                 const familyName = nestedValue(item.source, "family_group_name");
@@ -392,7 +387,7 @@ export function MySpace() {
                   </>
                 );
                 return (
-                  <article className="my-space-favorite-card" key={item.id}>
+                  <article className="my-space-favorite-card" key={itemId}>
                     {href ? (
                       <Link aria-label={`打开 ${favoriteTitle(item)}`} className="my-space-favorite-main" to={href}>
                         {main}

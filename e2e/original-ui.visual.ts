@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { firstApiItemId } from "./opaque";
 const screens: Record<string, [string, string]> = {
   home: ["/", ".home-dashboard"],
   sentences: ["/learn/sentences", ".card"],
@@ -8,7 +9,7 @@ const screens: Record<string, [string, string]> = {
   dialogues: ["/learn/dialogues", ".lesson-content"],
   "math-cards": ["/learn/math-cards", ".math-card"],
   notes: ["/learn/notes", ".note-meta"],
-  "note-items": ["/learn/notes/1", ".dictation-box"],
+  "note-items": ["/learn/notes", ".dictation-box"],
   vocabulary: ["/learn/vocabulary", ".card"],
   interviews: ["/learn/interviews", ".interview-card"],
 };
@@ -28,7 +29,11 @@ for (const [name, [path, ready]] of Object.entries({
       await page.getByLabel("Password", { exact: true }).fill("Testing123!");
       await page.getByRole("button", { name: "Login", exact: true }).click();
       await expect(page.locator(".home-dashboard")).toBeVisible();
-      await page.goto(path);
+      const destination =
+        name === "note-items"
+          ? `/learn/notes/${await firstApiItemId(page, "/api/content/note-items")}`
+          : path;
+      await page.goto(destination);
     }
     await expect(page.locator(ready).first()).toBeVisible();
     if (name === "notes")

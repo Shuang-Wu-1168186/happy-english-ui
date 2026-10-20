@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
 import { HomeNavigation } from "../components/Layout";
-import { api, value } from "../lib/api";
+import { api, idValue, value } from "../lib/api";
 import { courseLandingPath } from "../lib/course-routes";
-import type { Entry } from "../lib/api";
+import type { ApiId, Entry } from "../lib/api";
 
 type CatalogResponse = { items?: Entry[] };
 
 type TopicZoneTopic = {
   code: string;
-  catalogId?: number;
+  catalogId?: ApiId;
   title: string;
   english: string;
   description: string;
@@ -54,7 +54,7 @@ function topicFromCatalog(
   };
   return {
     code,
-    catalogId: entry.id,
+    catalogId: idValue(entry),
     title: value(entry, "title") || fallback.title,
     english: value(entry, "title_en") || fallback.english,
     description: value(entry, "description") || fallback.description,
@@ -76,7 +76,7 @@ export function TopicZone({ config }: { config: TopicZoneConfig }) {
           (item) => value(item, "module_code") === config.moduleCode,
         );
         if (!module) return;
-        const detail = await api<Entry>(`/learning/modules/${module.id}`);
+        const detail = await api<Entry>(`/learning/modules/${idValue(module)}`);
         const catalogTopics = Array.isArray(detail.topics)
           ? (detail.topics as Entry[])
           : [];

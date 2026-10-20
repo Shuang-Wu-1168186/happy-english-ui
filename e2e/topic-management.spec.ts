@@ -14,7 +14,11 @@ test("administrator can open topic maintenance from the content menu", async ({
 }) => {
   await login(page);
   await page.goto("/admin");
-  await page.getByRole("link", { name: "专题维护", exact: true }).click();
+  const adminNav = page.getByRole("navigation", { name: "后台菜单" });
+  await adminNav
+    .getByRole("button", { name: "展开内容管理菜单", exact: true })
+    .click();
+  await adminNav.getByRole("link", { name: "专题维护", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/content\/topics$/);
   await expect(
     page.getByRole("heading", { name: "专题维护", exact: true }),
@@ -48,31 +52,6 @@ test("administrator can open topic maintenance from the content menu", async ({
 
   const session = await (await page.request.get("/api/auth/session")).json();
   const headers = { "X-CSRF-Token": session.csrf_token };
-  /*
-  const topicResponse = await page.request.get(
-    \`/api/admin/learning-topics?q=\${encodeURIComponent(title)}\`,
-  );
-  expect(topicResponse.ok()).toBeTruthy();
-  const createdTopic = (await topicResponse.json()).items.find(
-    (topic: { topic_code: string }) =>
-      topic.topic_code.startsWith("browser-topic-"),
-  );
-  expect(createdTopic).toBeTruthy();
-  const associatedCourseTitle = \`浏览器待关联课程 \${Date.now()}\`;
-  const associatedCourseResponse = await page.request.post(
-    "/api/admin/learning/courses",
-    {
-      headers,
-      data: {
-        topic_id: 2,
-        course_code: \`browser-association-\${Date.now()}\`,
-        title: associatedCourseTitle,
-        sort_order: 10,
-      },
-    },
-  );
-  expect(associatedCourseResponse.ok()).toBeTruthy();
-  */
   const topicResponse = await page.request.get(
     "/api/admin/learning-topics?q=" + encodeURIComponent(title),
   );
@@ -149,21 +128,21 @@ test("administrator can open topic maintenance from the content menu", async ({
   expect(associatedCourseStillExists.ok()).toBeTruthy();
   expect(
     (await associatedCourseStillExists.json()).items.some(
-      (course: { id: number }) => course.id === associatedCourseId,
+      (course: { id: string }) => course.id === associatedCourseId,
     ),
   ).toBeTruthy();
   await page.getByRole("button", { name: "关闭", exact: true }).click();
 
-  const createdCourseIds: number[] = [];
-  const createdMaterialIds: number[] = [];
+  const createdCourseIds: string[] = [];
+  const createdMaterialIds: string[] = [];
   const materialLabels: Array<{
     title: string;
     code: string;
     courseTitle: string;
   }> = [];
-  const courseTitleByCourseId = new Map<number, string>();
-  const materialIdByCourseId = new Map<number, number>();
-  const materialTitleById = new Map<number, string>();
+  const courseTitleByCourseId = new Map<string, string>();
+  const materialIdByCourseId = new Map<string, string>();
+  const materialTitleById = new Map<string, string>();
   const runId = Date.now();
   for (const [index, materialTitle] of [
     "排序教材一",
@@ -232,18 +211,18 @@ test("administrator can open topic maintenance from the content menu", async ({
   await expect(courseItems.nth(0)).not.toContainText(materialLabels[0].title);
   await expect(courseItems.nth(0)).not.toContainText(materialLabels[0].code);
   const initialOrder = await courseItems.evaluateAll((items) =>
-    items.map((item) => Number(item.getAttribute("data-course-id"))),
+    items.map((item) => item.getAttribute("data-course-id") || ""),
   );
   await courseItems.nth(0).dragTo(courseItems.nth(2));
   await expect
     .poll(async () =>
       courseItems.evaluateAll((items) =>
-        items.map((item) => Number(item.getAttribute("data-course-id"))),
+        items.map((item) => item.getAttribute("data-course-id") || ""),
       ),
     )
     .not.toEqual(initialOrder);
   const expectedOrder = await courseItems.evaluateAll((items) =>
-    items.map((item) => Number(item.getAttribute("data-course-id"))),
+    items.map((item) => item.getAttribute("data-course-id") || ""),
   );
   await orderDialog
     .getByRole("button", { name: "保存顺序", exact: true })
@@ -255,7 +234,7 @@ test("administrator can open topic maintenance from the content menu", async ({
   expect(orderedTopicResponse.ok()).toBeTruthy();
   expect(
     (await orderedTopicResponse.json()).courses.map(
-      (course: { id: number }) => course.id,
+      (course: { id: string }) => course.id,
     ),
   ).toEqual(expectedOrder);
 
@@ -264,16 +243,16 @@ test("administrator can open topic maintenance from the content menu", async ({
   await expect(materialCards).toHaveCount(3);
   expect(
     await materialCards.evaluateAll((cards) =>
-      cards.map((card) => Number(card.getAttribute("data-material-id"))),
+      cards.map((card) => card.getAttribute("data-material-id") || ""),
     ),
   ).toEqual(expectedOrder.map((courseId) => materialIdByCourseId.get(courseId)));
   expect(await materialCards.locator("strong").allTextContents()).toEqual(
     expectedOrder.map((courseId) =>
-      materialTitleById.get(materialIdByCourseId.get(courseId) || 0),
+      materialTitleById.get(materialIdByCourseId.get(courseId) || ""),
     ),
   );
   await materialCards.nth(0).click();
-  await expect(page).toHaveURL(/\/learning-materials\/\d+$/);
+  await expect(page).toHaveURL(/\/learning-materials\/hei1_[A-Za-z0-9_-]+$/);
   await expect(page.locator(".material-learning-space")).toBeVisible();
 
   await page.goto("/admin/content/topics");
@@ -310,7 +289,7 @@ test("administrator can open topic maintenance from the content menu", async ({
   expect(afterRemoval.ok()).toBeTruthy();
   expect(
     (await afterRemoval.json()).courses.map(
-      (course: { id: number }) => course.id,
+      (course: { id: string }) => course.id,
     ),
   ).not.toContain(removedCourseId);
   await removalDialog

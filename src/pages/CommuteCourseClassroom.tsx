@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CommuteLessonFlow } from "../components/commute/CommuteLessonFlow";
-import { asset, entries, value } from "../lib/api";
+import { asset, entries, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 
 type Props = {
@@ -40,9 +40,9 @@ function generatedCommuteIllustration(lesson: Entry) {
 export function CommuteCourseLoading({ course }: Pick<Props, "course">) {
   const navigate = useNavigate();
   const topic = useMemo(() => entries(course, "topics")[0] || null, [course]);
-  const topicId = Number(course.topic_id || topic?.id || 0);
+  const topicId = idValue(course, "topic_id") || idValue(topic);
   const fallbackTo =
-    Number.isInteger(topicId) && topicId > 0
+    topicId
       ? `/course-topics/${topicId}`
       : "/learning";
 
@@ -97,9 +97,9 @@ export function CommuteCourseClassroom({
     lessons.findIndex((lesson) => lesson.id === activeLesson.id),
   );
   const topic = useMemo(() => entries(course, "topics")[0] || null, [course]);
-  const topicId = Number(course.topic_id || topic?.id || 0);
+  const topicId = idValue(course, "topic_id") || idValue(topic);
   const fallbackTo =
-    Number.isInteger(topicId) && topicId > 0
+    topicId
       ? `/course-topics/${topicId}`
       : "/learning";
   const previousLesson = lessons[activeIndex - 1];

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Speak } from "../components/study/Speech";
-import { api, asset, entries, value } from "../lib/api";
-import type { Entry, Page } from "../lib/api";
+import { api, asset, entries, idValue, value } from "../lib/api";
+import type { ApiId, Entry, Page } from "../lib/api";
 import {
   NOTE_REGISTER_LABELS,
   NOTE_SCENARIO_LABELS,
@@ -175,14 +175,14 @@ function NoteWordCard({
 
 export function NoteCoursePreview() {
   const [notes, setNotes] = useState<Entry[]>([]);
-  const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
+  const [selectedNoteId, setSelectedNoteId] = useState<ApiId | null>(null);
   const [selectedNote, setSelectedNote] = useState<Entry | null>(null);
-  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [selectedCardId, setSelectedCardId] = useState<ApiId | null>(null);
   const [noteQuery, setNoteQuery] = useState("");
   const [englishVisible, setEnglishVisible] = useState(true);
   const [loading, setLoading] = useState(true);
   const [noteReloadKey, setNoteReloadKey] = useState(0);
-  const [failedNoteId, setFailedNoteId] = useState<number | null>(null);
+  const [failedNoteId, setFailedNoteId] = useState<ApiId | null>(null);
   const [error, setError] = useState("");
 
   const refresh = useCallback(async () => {
@@ -194,9 +194,9 @@ export function NoteCoursePreview() {
       const nextNotes = await loadAllNotes();
       setNotes(nextNotes);
       setSelectedNoteId((current) =>
-        current && nextNotes.some((note) => note.id === current)
+        current && nextNotes.some((note) => idValue(note) === current)
           ? current
-          : nextNotes[0]?.id || null,
+          : idValue(nextNotes[0]) || null,
       );
     } catch (reason) {
       setError((reason as Error).message);
@@ -220,7 +220,7 @@ export function NoteCoursePreview() {
       .then((note) => {
         if (!active) return;
         setSelectedNote(note);
-        setSelectedCardId(entries(note, "items")[0]?.id || null);
+        setSelectedCardId(idValue(entries(note, "items")[0]) || null);
         setFailedNoteId(null);
       })
       .catch((reason: Error) => {
@@ -236,12 +236,14 @@ export function NoteCoursePreview() {
 
   const cards = useMemo(
     () =>
-      selectedNote?.id === selectedNoteId ? entries(selectedNote, "items") : [],
+      selectedNote && idValue(selectedNote) === selectedNoteId
+        ? entries(selectedNote, "items")
+        : [],
     [selectedNote, selectedNoteId],
   );
   const loadingDetail =
     selectedNoteId !== null &&
-    selectedNote?.id !== selectedNoteId &&
+    idValue(selectedNote) !== selectedNoteId &&
     failedNoteId !== selectedNoteId;
   const activeCardIndex = Math.max(
     0,
@@ -259,8 +261,9 @@ export function NoteCoursePreview() {
   }, [noteQuery, notes]);
 
   function selectNote(note: Entry) {
-    if (note.id === selectedNoteId) return;
-    setSelectedNoteId(note.id);
+    const noteId = idValue(note);
+    if (!noteId || noteId === selectedNoteId) return;
+    setSelectedNoteId(noteId);
     setSelectedNote(null);
     setSelectedCardId(null);
     setFailedNoteId(null);
@@ -269,7 +272,7 @@ export function NoteCoursePreview() {
   }
 
   function selectCard(card: Entry) {
-    setSelectedCardId(card.id);
+    setSelectedCardId(idValue(card));
     setEnglishVisible(true);
   }
 

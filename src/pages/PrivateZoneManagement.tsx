@@ -14,9 +14,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { api } from "../lib/api";
+import type { ApiId } from "../lib/api";
 
 type PublicEntry = {
-  id: number;
+  id: ApiId;
   feature_code: string;
   title: string;
   title_en?: string | null;
@@ -42,8 +43,8 @@ type PublicEntryDraft = {
 };
 
 type Shortcut = {
-  id: number;
-  family_group_id: number;
+  id: ApiId;
+  family_group_id: ApiId;
   family_group_name?: string | null;
   title: string;
   target_url: string;
@@ -53,7 +54,7 @@ type Shortcut = {
 };
 
 type ShortcutDraft = {
-  family_group_id: number;
+  family_group_id: ApiId | "";
   title: string;
   target_url: string;
   description: string;
@@ -62,7 +63,7 @@ type ShortcutDraft = {
 };
 
 type FamilyGroup = {
-  id: number;
+  id: ApiId;
   name: string;
   member_role?: string;
 };
@@ -79,7 +80,7 @@ const publicEntryIcons: Record<string, LucideIcon> = {
 const PUBLIC_ENTRIES_VISIBLE = false;
 
 const emptyShortcut: ShortcutDraft = {
-  family_group_id: 0,
+  family_group_id: "",
   title: "",
   target_url: "",
   description: "",
@@ -99,11 +100,11 @@ const emptyPublicEntry: PublicEntryDraft = {
   is_enabled: 1,
 };
 
-function sortedEntries<T extends { id: number; sort_order: number }>(items: T[]) {
+function sortedEntries<T extends { id: ApiId; sort_order: number }>(items: T[]) {
   return [...items].sort(
     (left, right) =>
       Number(left.sort_order || 0) - Number(right.sort_order || 0) ||
-      Number(left.id || 0) - Number(right.id || 0),
+      left.id.localeCompare(right.id),
   );
 }
 
@@ -121,10 +122,10 @@ function publicEntryDraft(entry: PublicEntry): PublicEntryDraft {
   };
 }
 
-function shortcutDraft(shortcut?: Shortcut, defaultFamilyGroupId = 0): ShortcutDraft {
+function shortcutDraft(shortcut?: Shortcut, defaultFamilyGroupId: ApiId | "" = ""): ShortcutDraft {
   if (!shortcut) return { ...emptyShortcut, family_group_id: defaultFamilyGroupId };
   return {
-    family_group_id: Number(shortcut.family_group_id || defaultFamilyGroupId),
+    family_group_id: shortcut.family_group_id || defaultFamilyGroupId,
     title: shortcut.title,
     target_url: shortcut.target_url,
     description: shortcut.description || "",
@@ -147,7 +148,7 @@ export function PrivateZoneManagement() {
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
   const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
   const [shortcutEditor, setShortcutEditor] = useState<ShortcutDraft | null>(null);
-  const [editingShortcutId, setEditingShortcutId] = useState(0);
+  const [editingShortcutId, setEditingShortcutId] = useState<ApiId | "">("");
   const [loading, setLoading] = useState(true);
   const [publicBusy, setPublicBusy] = useState(false);
   const [shortcutBusy, setShortcutBusy] = useState(false);
@@ -187,7 +188,7 @@ export function PrivateZoneManagement() {
     setError("");
     setMessage("");
     setShortcutEditor(null);
-    setEditingShortcutId(0);
+    setEditingShortcutId("");
     setEditingFeatureCode(entry.feature_code);
     setPublicEditor(publicEntryDraft(entry));
   }
@@ -196,7 +197,7 @@ export function PrivateZoneManagement() {
     setError("");
     setMessage("");
     setShortcutEditor(null);
-    setEditingShortcutId(0);
+    setEditingShortcutId("");
     setEditingFeatureCode("");
     setPublicEditor({ ...emptyPublicEntry });
   }
@@ -243,16 +244,16 @@ export function PrivateZoneManagement() {
     setMessage("");
     setPublicEditor(null);
     setEditingFeatureCode("");
-    setEditingShortcutId(shortcut?.id || 0);
+    setEditingShortcutId(shortcut?.id || "");
     setShortcutEditor(
-      shortcutDraft(shortcut, manageableFamilies.length === 1 ? manageableFamilies[0].id : 0),
+      shortcutDraft(shortcut, manageableFamilies.length === 1 ? manageableFamilies[0].id : ""),
     );
   }
 
   function closeShortcutEditor() {
     if (shortcutBusy) return;
     setShortcutEditor(null);
-    setEditingShortcutId(0);
+    setEditingShortcutId("");
   }
 
   async function saveShortcut(event: FormEvent<HTMLFormElement>) {
@@ -281,7 +282,7 @@ export function PrivateZoneManagement() {
         ),
       );
       setShortcutEditor(null);
-      setEditingShortcutId(0);
+      setEditingShortcutId("");
       setMessage(editingShortcutId ? "家庭常用入口已更新。" : "家庭常用入口已添加。");
     } catch (requestError) {
       setError((requestError as Error).message);
@@ -300,7 +301,7 @@ export function PrivateZoneManagement() {
       setShortcuts((current) => current.filter((item) => item.id !== shortcut.id));
       if (editingShortcutId === shortcut.id) {
         setShortcutEditor(null);
-        setEditingShortcutId(0);
+        setEditingShortcutId("");
       }
       setMessage("家庭常用入口已删除。");
     } catch (requestError) {
@@ -447,8 +448,8 @@ export function PrivateZoneManagement() {
             <div className="row g-3">
               <div className="col-md-6">
                 <label className="form-label" htmlFor="private-shortcut-family">共享家庭</label>
-                <select className="form-control" id="private-shortcut-family" onChange={(event) => setShortcutEditor((current) => current ? { ...current, family_group_id: Number(event.target.value) || 0 } : current)} required value={shortcutEditor.family_group_id}>
-                  <option value={0}>请选择家庭</option>
+                <select className="form-control" id="private-shortcut-family" onChange={(event) => setShortcutEditor((current) => current ? { ...current, family_group_id: event.target.value } : current)} required value={shortcutEditor.family_group_id}>
+                  <option value="">请选择家庭</option>
                   {manageableFamilies.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
                 </select>
               </div>

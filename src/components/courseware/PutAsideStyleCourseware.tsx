@@ -6,7 +6,7 @@ import type { Entry } from "../../lib/api";
 function data(input: unknown): Entry {
   return input && typeof input === "object" && !Array.isArray(input)
     ? (input as Entry)
-    : { id: 0 };
+    : { id: "local-empty" };
 }
 
 function textItems(input: Entry, key: string) {

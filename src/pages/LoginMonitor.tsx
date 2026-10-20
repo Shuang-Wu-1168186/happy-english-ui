@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
+import type { ApiId } from "../lib/api";
 
 type LoginAudit = {
-  id: number;
-  user_id: number | null;
+  id: ApiId;
+  user_id: ApiId | null;
   username: string;
   full_name: string | null;
   login_ip: string | null;

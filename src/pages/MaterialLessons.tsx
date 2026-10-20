@@ -10,7 +10,7 @@ import { LessonBody } from "./CourseClassroom";
 import { OriginalCourseClassroom } from "./OriginalCourseClassroom";
 import { HomeNavigation } from "../components/Layout";
 import { MaterialTemplateRenderer } from "../components/material-templates/MaterialTemplateRenderer";
-import { api, entries, value } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 import { resolveMaterialTemplate } from "../lib/material-templates";
 
@@ -56,7 +56,7 @@ function usesWordlyWiseLayout(material: Entry | null | undefined) {
 
 export function MaterialLessons() {
   const { materialId = "" } = useParams();
-  const id = Number(materialId);
+  const id = materialId;
   const [material, setMaterial] = useState<Entry | null>(null);
   const [lessons, setLessons] = useState<Entry[]>([]);
   const [activeLesson, setActiveLesson] = useState<Entry | null>(null);
@@ -73,7 +73,7 @@ export function MaterialLessons() {
     setLockedLesson(null);
     setLessonLoading(false);
     setError("");
-    if (!Number.isInteger(id) || id < 1) {
+    if (!id) {
       setError("教材地址无效。");
       return;
     }
@@ -116,7 +116,7 @@ export function MaterialLessons() {
     setError("");
     try {
       const detail = await api<Entry>(
-        `/learning/materials/${material.id}/lessons/${lesson.id}`,
+        `/learning/materials/${idValue(material)}/lessons/${idValue(lesson)}`,
       );
       if (isLocked(detail)) {
         setLockedLesson(lesson);
@@ -184,7 +184,7 @@ export function MaterialLessons() {
           previewCount={previewCount}
         />
         <PrivateZoneFavorite
-          resourceId={Number(material.id)}
+          resourceId={idValue(material)}
           resourceType="material"
         />
       </>
@@ -207,7 +207,7 @@ export function MaterialLessons() {
           resource="phonics"
         />
         <PrivateZoneFavorite
-          resourceId={Number(material.id)}
+          resourceId={idValue(material)}
           resourceType="material"
         />
       </>
@@ -229,7 +229,7 @@ export function MaterialLessons() {
           resource="textbook"
         />
         <PrivateZoneFavorite
-          resourceId={Number(material.id)}
+          resourceId={idValue(material)}
           resourceType="material"
         />
       </>
@@ -353,7 +353,7 @@ export function MaterialLessons() {
       </main>
       {material && (
         <PrivateZoneFavorite
-          resourceId={Number(material.id)}
+          resourceId={idValue(material)}
           resourceType="material"
         />
       )}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { entries, value } from "../lib/api";
+import { entries, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 
 type Props = {
@@ -108,9 +108,9 @@ function InterviewLessonCard({
                   <p className="tip-text">{value(content, "answer_tip")}</p>
                 </div>
               )}
-              {entries(content || { id: 0 }, "sections").length > 0 && (
+              {entries(content || { id: "local-empty" }, "sections").length > 0 && (
                 <div className="star-grid">
-                  {entries(content || { id: 0 }, "sections").map(
+                  {entries(content || { id: "local-empty" }, "sections").map(
                     (section, index) => (
                       <div className="star-box" key={section.id || index}>
                         <div className="star-title">
@@ -153,9 +153,9 @@ export function InterviewCourseClassroom({
   const [query, setQuery] = useState("");
   const [activeLessonId, setActiveLessonId] = useState(activeLesson.id);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const topicId = Number(course.topic_id);
+  const topicId = idValue(course, "topic_id");
   const fallbackTo =
-    Number.isInteger(topicId) && topicId > 0
+    topicId
       ? `/course-topics/${topicId}`
       : "/workplace";
   const visibleLessons = useMemo(() => {
@@ -269,7 +269,8 @@ export function InterviewCourseClassroom({
                     : current,
                 null,
               );
-              if (nearest) setActiveLessonId(Number(nearest.dataset.lessonId));
+              if (nearest?.dataset.lessonId)
+                setActiveLessonId(nearest.dataset.lessonId);
             }}
           >
             <div className="carousel">

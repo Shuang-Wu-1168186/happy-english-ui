@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { api, value } from "../lib/api";
-import type { Entry } from "../lib/api";
+import { api, idValue, value } from "../lib/api";
+import type { ApiId, Entry } from "../lib/api";
 
 type Props = {
-  resourceId: number;
+  resourceId: ApiId;
   resourceType: "course" | "material";
 };
 
@@ -29,7 +29,7 @@ export function PrivateZoneFavorite({ resourceId, resourceType }: Props) {
     }
   }
 
-  async function save(scopeType: "personal" | "family", familyGroupId?: number) {
+  async function save(scopeType: "personal" | "family", familyGroupId?: ApiId) {
     const key = scopeType === "family" ? "family-" + familyGroupId : "personal";
     setBusy(key);
     setMessage("");
@@ -64,7 +64,8 @@ export function PrivateZoneFavorite({ resourceId, resourceType }: Props) {
             {busy === "personal" ? "收藏中…" : "个人收藏"}
           </button>
           {groups.map((group) => {
-            const groupId = Number(group.id);
+            const groupId = idValue(group);
+            if (!groupId) return null;
             const key = "family-" + groupId;
             return (
               <button

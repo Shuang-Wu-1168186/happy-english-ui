@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { HomeNavigation } from "../components/Layout";
-import { api, value } from "../lib/api";
-import type { Entry } from "../lib/api";
+import { api, idValue, value } from "../lib/api";
+import type { ApiId, Entry } from "../lib/api";
 
 type FavoriteCourse = Entry & {
   source?: {
@@ -48,7 +48,7 @@ const emptyNote: PersonalNoteDraft = {
 
 const everydayEnglishEntries: Entry[] = [
   {
-    id: -1,
+    id: "local-food-menu",
     title: "Rolleston Food Bar Menu",
     description: "Open the English menu and listen to each item.",
     icon: "🍽️",
@@ -130,7 +130,7 @@ function EntryGrid({ entries }: { entries: Entry[] }) {
           </>
         );
         return (
-          <article className="private-zone-shortcut" key={entry.id}>
+          <article className="private-zone-shortcut" key={idValue(entry) || String(entry.id)}>
             {isInternal && !useDocumentNavigation ? (
               <Link className="private-zone-shortcut-link" to={target}>{label}</Link>
             ) : (
@@ -391,7 +391,7 @@ export function PrivateZoneFavoriteCourses() {
   const [items, setItems] = useState<FavoriteCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(0);
+  const [busy, setBusy] = useState<ApiId | null>(null);
 
   async function load() {
     try {
@@ -410,7 +410,7 @@ export function PrivateZoneFavoriteCourses() {
   }, []);
 
   async function remove(item: FavoriteCourse) {
-    const itemId = numberValue(item, "id");
+    const itemId = idValue(item);
     if (!itemId || item.source?.scope_type !== "personal" || !window.confirm(`移除“${courseTitle(item)}”吗？`)) return;
     setBusy(itemId);
     try {
@@ -419,7 +419,7 @@ export function PrivateZoneFavoriteCourses() {
     } catch (reason) {
       setError((reason as Error).message);
     } finally {
-      setBusy(0);
+      setBusy(null);
     }
   }
 
@@ -437,9 +437,9 @@ export function PrivateZoneFavoriteCourses() {
         {loading ? <div className="private-zone-loading">正在读取收藏课程…</div> : items.length ? (
           <div className="private-zone-course-list">
             {items.map((item) => {
-              const courseId = numberValue(item.resource, "id") || numberValue(item, "resource_id");
+              const courseId = idValue(item.resource) || idValue(item, "resource_id");
               return (
-                <article className="private-zone-course-card" key={item.id}>
+                <article className="private-zone-course-card" key={idValue(item)}>
                   <Link className="private-zone-course-link" to={`/courses/${courseId}`}>
                     <span className="private-zone-course-icon">▸</span>
                     <div>
@@ -454,8 +454,8 @@ export function PrivateZoneFavoriteCourses() {
                     <span className="private-zone-course-arrow">›</span>
                   </Link>
                   {item.source?.scope_type === "personal" && (
-                    <button disabled={busy === Number(item.id)} onClick={() => void remove(item)} type="button">
-                      {busy === Number(item.id) ? "移除中…" : "移除收藏"}
+                    <button disabled={busy === idValue(item)} onClick={() => void remove(item)} type="button">
+                      {busy === idValue(item) ? "移除中…" : "移除收藏"}
                     </button>
                   )}
                 </article>
@@ -478,9 +478,9 @@ export function PrivateZonePersonalNotes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<PersonalNoteDraft | null>(null);
-  const [editingId, setEditingId] = useState(0);
+  const [editingId, setEditingId] = useState<ApiId | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [deleting, setDeleting] = useState(0);
+  const [deleting, setDeleting] = useState<ApiId | null>(null);
 
   async function load() {
     try {
@@ -499,7 +499,7 @@ export function PrivateZonePersonalNotes() {
   }, []);
 
   function openEditor(note?: PersonalNote) {
-    setEditingId(note ? numberValue(note, "id") : 0);
+    setEditingId(note ? idValue(note) : null);
     setDraft(note ? {
       title: value(note, "title"),
       content: value(note, "content"),
@@ -529,7 +529,7 @@ export function PrivateZonePersonalNotes() {
   }
 
   async function remove(note: PersonalNote) {
-    const id = numberValue(note, "id");
+    const id = idValue(note);
     if (!id || !window.confirm(`删除“${value(note, "title")}”吗？`)) return;
     setDeleting(id);
     try {
@@ -538,7 +538,7 @@ export function PrivateZonePersonalNotes() {
     } catch (reason) {
       setError((reason as Error).message);
     } finally {
-      setDeleting(0);
+      setDeleting(null);
     }
   }
 
@@ -559,7 +559,7 @@ export function PrivateZonePersonalNotes() {
         {loading ? <div className="private-zone-loading">正在读取个人笔记…</div> : notes.length ? (
           <div className="private-zone-notes-grid">
             {notes.map((note) => (
-              <article className={`private-zone-note-card color-${value(note, "color") || "violet"}`} key={note.id}>
+              <article className={`private-zone-note-card color-${value(note, "color") || "violet"}`} key={idValue(note)}>
                 <button className="private-zone-note-open" onClick={() => openEditor(note)} type="button">
                   <div className="private-zone-note-card-meta"><span>{numberValue(note, "is_pinned") ? "置顶" : "个人记录"}</span><time>{noteDate(note)}</time></div>
                   <h2>{value(note, "title")}</h2>
@@ -568,8 +568,8 @@ export function PrivateZonePersonalNotes() {
                 </button>
                 <div className="private-zone-note-card-actions">
                   <button onClick={() => openEditor(note)} type="button">编辑</button>
-                  <button className="is-danger" disabled={deleting === Number(note.id)} onClick={() => void remove(note)} type="button">
-                    {deleting === Number(note.id) ? "删除中…" : "删除"}
+                  <button className="is-danger" disabled={deleting === idValue(note)} onClick={() => void remove(note)} type="button">
+                    {deleting === idValue(note) ? "删除中…" : "删除"}
                   </button>
                 </div>
               </article>

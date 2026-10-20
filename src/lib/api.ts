@@ -1,6 +1,11 @@
-export type Entry = { id: number; [key: string]: unknown };
+/** A server-issued, encrypted database identifier. Treat it as an opaque string. */
+export type ApiId = string;
+
+// Some renderer-only entries are assembled in the browser and use a local
+// numeric index. Any identifier returned by the API is an ApiId string.
+export type Entry = { id: ApiId | number; [key: string]: unknown };
 export type User = {
-  id: number;
+  id: ApiId;
   username: string;
   full_name: string;
   email: string | null;
@@ -26,6 +31,10 @@ export const asset = (path: string) =>
   path.startsWith("/static/") ? `${base}${path}` : path;
 export const value = (entry: Entry | null | undefined, key: string) =>
   entry?.[key] == null ? "" : String(entry[key]);
+export const idValue = (entry: Entry | null | undefined, key = "id"): ApiId => {
+  const raw = entry?.[key];
+  return typeof raw === "string" ? raw : "";
+};
 export const entries = (entry: Entry, key: string): Entry[] =>
   Array.isArray(entry[key]) ? (entry[key] as Entry[]) : [];
 

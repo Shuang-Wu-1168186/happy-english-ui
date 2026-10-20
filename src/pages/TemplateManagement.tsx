@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, RefreshCw, Save, Trash2, X } from "lucide-react";
-import { api, value } from "../lib/api";
-import type { Entry } from "../lib/api";
+import { api, idValue, value } from "../lib/api";
+import type { ApiId, Entry } from "../lib/api";
 import {
   MATERIAL_TEMPLATE_CHOICES,
   type MaterialTemplateCode,
@@ -37,7 +37,7 @@ function configText(input: unknown) {
 export function TemplateManagement() {
   const [templates, setTemplates] = useState<Entry[]>([]);
   const [draft, setDraft] = useState<Draft>(() => emptyDraft());
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<ApiId | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -76,7 +76,7 @@ export function TemplateManagement() {
 
   function startEdit(template: Entry) {
     const code = value(template, "code") || value(template, "template_code");
-    setEditingId(template.id);
+    setEditingId(idValue(template));
     setDraft({
       code,
       name: value(template, "name"),
@@ -150,8 +150,9 @@ export function TemplateManagement() {
     setSaving(true);
     setError("");
     try {
-      await api(`/admin/learning-templates/${template.id}`, "DELETE");
-      if (editingId === template.id) {
+      const templateId = idValue(template);
+      await api(`/admin/learning-templates/${templateId}`, "DELETE");
+      if (editingId === templateId) {
         setEditorOpen(false);
         setEditingId(null);
       }

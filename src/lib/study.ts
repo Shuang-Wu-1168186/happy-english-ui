@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
-import type { Entry, Page } from "./api";
+import type { ApiId, Entry, Page } from "./api";
 
 // The original learning screens expose full lesson menus and unit filters.
 // Read all API pages so those menus are not limited to the first 20 records.
@@ -46,7 +46,7 @@ export function useStudyCatalog(
   return { items, error };
 }
 
-export function useStudyItem(resource: string, id?: number | string) {
+export function useStudyItem(resource: string, id?: ApiId) {
   const [result, setResult] = useState<{
     key: string;
     item?: Entry;

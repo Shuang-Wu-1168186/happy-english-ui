@@ -10,7 +10,7 @@ async function login(page: Page) {
 }
 
 const wordlyWiseLesson = {
-  id: 3321,
+  id: "hei1_e2e_wordly_lesson",
   title: "Unit 1 · Lesson 1",
   title_en: "Vacation Time · Word List",
   access_state: "available",
@@ -49,16 +49,17 @@ const wordlyWiseLesson = {
 test("a Wordly Wise material opened from the catalogue uses the word-card lesson view", async ({
   page,
 }) => {
+  const materialId = "hei1_e2e_wordly_material";
   await login(page);
   let requestedLessonContent = false;
-  await page.route("**/api/learning/materials/128**", async (route) => {
+  await page.route(`**/api/learning/materials/${materialId}**`, async (route) => {
     const includeLessonContent = new URL(
       route.request().url(),
     ).searchParams.has("include_lesson_content");
     requestedLessonContent ||= includeLessonContent;
     await route.fulfill({
       json: {
-        id: 128,
+        id: materialId,
         material_code: "wordlywise-3000",
         title: "Wordly Wise 1 · 单词教材",
         title_en: "Wordly Wise 3000 Book 1",
@@ -76,7 +77,7 @@ test("a Wordly Wise material opened from the catalogue uses the word-card lesson
     });
   });
 
-  await page.goto("/learning-materials/128");
+  await page.goto(`/learning-materials/${materialId}`);
 
   await expect(page.locator(".course-vocabulary--wordly-wise")).toBeVisible();
   await expect(

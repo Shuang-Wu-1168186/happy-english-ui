@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingImage } from "../LoadingImage";
-import { asset, entries, value } from "../../lib/api";
+import { asset, entries, idValue, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useStudyItem } from "../../lib/study";
 import { CourseLockedContent, isCourseLocked } from "./CourseLock";
@@ -57,7 +57,7 @@ function KidsCard({
 }) {
   const detail = useStudyItem(
     "kids-cards",
-    embedded || !active ? undefined : item.id,
+    embedded || !active ? undefined : idValue(item),
   );
   const full = embedded ? item : detail?.item || item;
   const [visibility, setVisibility] = useState(
@@ -230,7 +230,7 @@ export function Kids({
   onLockedLesson,
 }: {
   items: Entry[];
-  initialId?: number;
+  initialId?: Entry["id"];
   backTo?: string;
   embedded?: boolean;
   onLockedLesson?: (item: Entry) => void;

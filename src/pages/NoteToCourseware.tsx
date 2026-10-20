@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, entries, value } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 import { PutAsideStyleCourseware } from "../components/courseware/PutAsideStyleCourseware";
 
@@ -23,7 +23,7 @@ export function NoteToCourseware() {
       setNotes(sourceNotes.items);
       setTopics(sourceTopics.items);
       const phraseTopic = sourceTopics.items.find((topic) => value(topic, "topic_code") === "phrase-courseware");
-      setTopicId(String(phraseTopic?.id || sourceTopics.items[0]?.id || ""));
+      setTopicId(idValue(phraseTopic) || idValue(sourceTopics.items[0]));
     }).catch((reason: Error) => setError(reason.message));
   }, []);
 
@@ -40,7 +40,7 @@ export function NoteToCourseware() {
     setItemId(nextId); setPreview(null); setMessage("");
     if (!nextId) return;
     setBusy(true); setError("");
-    try { setPreview(await api<Entry>("/admin/courseware/note-preview", "POST", { note_item_id: Number(nextId) })); }
+    try { setPreview(await api<Entry>("/admin/courseware/note-preview", "POST", { note_item_id: nextId })); }
     catch (reason) { setError((reason as Error).message); }
     finally { setBusy(false); }
   }
@@ -49,7 +49,7 @@ export function NoteToCourseware() {
     if (!itemId || !topicId) return;
     setBusy(true); setError("");
     try {
-      const result = await api<Entry>("/admin/courseware/from-note-item", "POST", { note_item_id: Number(itemId), topic_id: Number(topicId) });
+      const result = await api<Entry>("/admin/courseware/from-note-item", "POST", { note_item_id: itemId, topic_id: topicId });
       const generatedLessons = entries(result, "lessons");
       const splitLabels = generatedLessons.map((lesson) => value(lesson, "phrase")).filter(Boolean);
       if (splitLabels.length > 1) {
@@ -65,20 +65,20 @@ export function NoteToCourseware() {
     finally { setBusy(false); }
   }
 
-  const blocks = entries(preview || { id: 0 }, "blocks");
-  const previewEntries = entries(preview || { id: 0 }, "entries");
+  const blocks = entries(preview || { id: "local-empty" }, "blocks");
+  const previewEntries = entries(preview || { id: "local-empty" }, "entries");
   const coursewarePreviews = previewEntries.length
     ? previewEntries
-    : [{ id: 0, phrase: "", blocks } as Entry];
+    : [{ id: "local-preview", phrase: "", blocks } as Entry];
   return <main className="note-to-courseware">
     <header><p>CONTENT WORKBENCH</p><h1>笔记转教材</h1><span>选择笔记词条，确认右侧课件预览后生成教材、课时和可追溯的课件区块。</span></header>
     {error && <p className="error">{error}</p>}
     {message && <p className="note-courseware-success">{message}</p>}
     <div className="note-courseware-grid">
       <section className="note-courseware-controls">
-        <label>选择笔记<select value={noteId} onChange={(event) => void selectNote(event.target.value)}><option value="">请选择笔记</option>{notes.map((note) => <option key={note.id} value={note.id}>{value(note, "title") || `笔记 #${note.id}`}</option>)}</select></label>
-        <label>选择词条<select disabled={!noteId} value={itemId} onChange={(event) => void selectItem(event.target.value)}><option value="">请选择词条</option>{items.map((item) => <option key={item.id} value={item.id}>{value(item, "english_text") || value(item, "raw_text") || value(item, "item_title")}</option>)}</select></label>
-        <label>生成到专题<select value={topicId} onChange={(event) => setTopicId(event.target.value)}><option value="">请选择专题</option>{topics.map((topic) => <option key={topic.id} value={topic.id}>{value(topic, "title")}</option>)}</select></label>
+        <label>选择笔记<select value={noteId} onChange={(event) => void selectNote(event.target.value)}><option value="">请选择笔记</option>{notes.map((note) => <option key={idValue(note)} value={idValue(note)}>{value(note, "title") || `笔记 #${idValue(note)}`}</option>)}</select></label>
+        <label>选择词条<select disabled={!noteId} value={itemId} onChange={(event) => void selectItem(event.target.value)}><option value="">请选择词条</option>{items.map((item) => <option key={idValue(item)} value={idValue(item)}>{value(item, "english_text") || value(item, "raw_text") || value(item, "item_title")}</option>)}</select></label>
+        <label>生成到专题<select value={topicId} onChange={(event) => setTopicId(event.target.value)}><option value="">请选择专题</option>{topics.map((topic) => <option key={idValue(topic)} value={idValue(topic)}>{value(topic, "title")}</option>)}</select></label>
         <button disabled={!preview || busy || !topicId} onClick={() => void generate()} type="button">{busy ? "正在生成…" : `确认生成${coursewarePreviews.length > 1 ? ` ${coursewarePreviews.length} 条课时` : "教材"}`}</button>
         <small>确认后会创建 `learning_material`、`learning_material_lesson`、`courseware_block`、`courseware_block_source` 与学习课程记录。</small>
       </section>

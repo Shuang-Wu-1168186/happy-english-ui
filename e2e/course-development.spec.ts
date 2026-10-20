@@ -23,9 +23,9 @@ test("course development saves an ordered multi-material membership course", asy
   const materialOneTitle = `课程教材一 ${runId}`;
   const materialTwoTitle = `课程教材二 ${runId}`;
   const courseTitle = `多教材会员课程 ${runId}`;
-  let topicId = 0;
-  const materialIds: number[] = [];
-  let courseId = 0;
+  let topicId = "";
+  const materialIds: string[] = [];
+  let courseId = "";
 
   try {
     const topicResponse = await page.request.post(
@@ -131,7 +131,7 @@ test("course development saves an ordered multi-material membership course", asy
       `/api/admin/learning-courses?q=${encodeURIComponent(courseTitle)}`,
     );
     const updatedCourse = (await updatedCoursesResponse.json()).items.find(
-      (item: { id: number }) => item.id === courseId,
+      (item: { id: string }) => item.id === courseId,
     );
     expect(updatedCourse.access_policy).toBe("free");
   } finally {

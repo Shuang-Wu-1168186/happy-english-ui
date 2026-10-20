@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { HomeNavigation } from "../components/Layout";
-import { api } from "../lib/api";
+import { api, idValue } from "../lib/api";
 import { courseLandingPath, isCourseResource } from "../lib/course-routes";
 import type { Entry } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
@@ -78,7 +78,7 @@ const fallbackAreas: LearningArea[] = [
     icon: "📘",
     color: "#4f8dd8",
     resource: "intermediate",
-    path: "/course-modules/3",
+    path: "/learning",
   },
   {
     id: "advanced-english",
@@ -89,7 +89,7 @@ const fallbackAreas: LearningArea[] = [
     icon: "🚀",
     color: "#8b5cf6",
     resource: "advanced",
-    path: "/course-modules/4",
+    path: "/learning",
   },
   {
     id: "higher-english",
@@ -100,7 +100,7 @@ const fallbackAreas: LearningArea[] = [
     icon: "🏅",
     color: "#d69a2d",
     resource: "higher",
-    path: "/course-modules/5",
+    path: "/learning",
   },
   {
     id: "private-zone",
@@ -178,9 +178,9 @@ function contentPath(entry: Entry | null | undefined) {
     read(entry, "course_content_resource") || read(entry, "content_resource");
   if (!supportedResources.has(resource)) return "";
   const id =
-    readNumber(entry, "last_item_id") ||
-    readNumber(entry, "course_content_reference_id") ||
-    readNumber(entry, "content_reference_id");
+    idValue(entry, "last_item_id") ||
+    idValue(entry, "course_content_reference_id") ||
+    idValue(entry, "content_reference_id");
   return isCourseResource(resource)
     ? courseLandingPath(resource)
     : `/learn/${resource}${id ? `/${id}` : ""}`;
@@ -188,13 +188,13 @@ function contentPath(entry: Entry | null | undefined) {
 
 function reviewFromEntry(entry: Entry): ReviewCard | null {
   const resource = read(entry, "resource");
-  const itemId = readNumber(entry, "item_id");
+  const itemId = idValue(entry, "item_id");
   const prompt = read(entry, "prompt");
   const answer = read(entry, "answer");
   if (!supportedResources.has(resource) || !itemId || !prompt || !answer)
     return null;
   return {
-    id: `review-${entry.id}`,
+    id: `review-${idValue(entry)}`,
     label: read(entry, "label") || "近 7 天复习",
     prompt,
     answer,
@@ -210,9 +210,9 @@ function areaFromCatalog(entry: Entry, index: number): LearningArea {
     fallbackAreas[index % fallbackAreas.length];
   const code = read(entry, "module_code") || fallback.code;
   const resource = read(entry, "route_key") || fallback.resource;
-  const catalogId = readNumber(entry, "id");
+  const catalogId = idValue(entry);
   return {
-    id: `area-${entry.id}`,
+    id: `area-${idValue(entry)}`,
     code,
     title: read(entry, "name") || fallback.title,
     english: read(entry, "name_en") || fallback.english,
@@ -243,12 +243,12 @@ function withPrivateZone(areas: LearningArea[]) {
 }
 
 function courseFromCatalog(entry: Entry, index: number): CourseCard | null {
-  const courseId = readNumber(entry, "id");
+  const courseId = idValue(entry);
   if (!courseId) return null;
   const fallback = starterCourses[index % starterCourses.length];
   const minutes = readNumber(entry, "estimated_minutes");
   return {
-    id: `course-${entry.id}`,
+    id: `course-${courseId}`,
     title: read(entry, "title") || fallback.title,
     subtitle: read(entry, "summary") || fallback.subtitle,
     meta: `${read(entry, "difficulty_code") || read(entry, "course_type") || "课程"}${minutes ? ` · 约 ${minutes} 分钟` : ""}`,
@@ -259,7 +259,7 @@ function courseFromCatalog(entry: Entry, index: number): CourseCard | null {
 
 function continueFromCourse(entry: Entry | null) {
   if (!entry) return null;
-  const courseId = readNumber(entry, "course_id");
+  const courseId = idValue(entry, "course_id");
   const path = courseId ? `/courses/${courseId}` : contentPath(entry);
   if (!path) return null;
   const total = readNumber(entry, "total_item_count");
@@ -278,7 +278,7 @@ function continueFromLegacy(entry: Entry | undefined) {
   if (!entry) return null;
   const resource =
     read(entry, "content_type") === "english_note" ? "note-items" : "sentences";
-  const itemId = readNumber(entry, "item_id");
+  const itemId = idValue(entry, "item_id");
   if (!itemId) return null;
   return {
     title: resource === "note-items" ? "继续复习学习笔记" : "继续日常英语练习",

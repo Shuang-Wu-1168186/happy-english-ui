@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { BackButton } from "../components/BackButton";
 import { HomeNavigation } from "../components/Layout";
-import { api, entries, value } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 
 function CatalogShell({ children }: { children: React.ReactNode }) {
@@ -27,7 +27,7 @@ function isPersonalNotesTopic(topic: Entry) {
 function topicPath(topic: Entry) {
   return isPersonalNotesTopic(topic)
     ? "/learn/notes"
-    : `/course-topics/${topic.id}`;
+    : `/course-topics/${idValue(topic)}`;
 }
 
 function MaterialCards({ materials }: { materials: Entry[] }) {
@@ -52,7 +52,7 @@ function MaterialCards({ materials }: { materials: Entry[] }) {
             className="course-catalog-card"
             data-material-id={material.id}
             key={material.id}
-            to={`/learning-materials/${material.id}`}
+            to={`/learning-materials/${idValue(material)}`}
           >
             {card}
           </Link>
@@ -64,12 +64,12 @@ function MaterialCards({ materials }: { materials: Entry[] }) {
 
 export function CourseTopicCatalog() {
   const { topicId = "" } = useParams();
-  const id = Number(topicId);
+  const id = topicId;
   const [topic, setTopic] = useState<Entry | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!Number.isInteger(id) || id < 1) {
+    if (!id) {
       setError("专题地址无效。");
       return;
     }
@@ -118,12 +118,12 @@ export function CourseTopicCatalog() {
 
 export function CourseModuleCatalog() {
   const { moduleId = "" } = useParams();
-  const id = Number(moduleId);
+  const id = moduleId;
   const [module, setModule] = useState<Entry | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!Number.isInteger(id) || id < 1) {
+    if (!id) {
       setError("学习区域地址无效。");
       return;
     }

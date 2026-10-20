@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { LoadingImage } from "../LoadingImage";
-import { api, asset, entries, value } from "../../lib/api";
+import { api, asset, entries, idValue, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
 import {
@@ -207,7 +207,7 @@ function AdminDeleteButton({
 }: {
   item: Entry;
   resource: string;
-  onDeleted: (itemId: number) => void;
+  onDeleted: (itemId: Entry["id"]) => void;
 }) {
   const { user } = useAuth();
   const [deleting, setDeleting] = useState(false);
@@ -222,11 +222,13 @@ function AdminDeleteButton({
     "这张卡片";
   async function remove() {
     if (deleting || !window.confirm(`确定删除“${label}”吗？`)) return;
+    const itemId = idValue(item);
+    if (!itemId) return;
     setDeleting(true);
     setError("");
     try {
-      await api(`/content/${resource}/${item.id}`, "DELETE");
-      onDeleted(item.id);
+      await api(`/content/${resource}/${itemId}`, "DELETE");
+      onDeleted(itemId);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "删除失败，请稍后重试。");
     } finally {
@@ -261,7 +263,7 @@ function SentenceBody({
   item: Entry;
   resource: string;
   onComplete?: () => Promise<unknown>;
-  onDelete?: (itemId: number) => void;
+  onDelete?: (itemId: Entry["id"]) => void;
 }) {
   const [english, setEnglish] = useState(false);
   const [frequencyCount, setFrequencyCount] = useState(() =>
@@ -284,7 +286,7 @@ function SentenceBody({
     setFrequencyError("");
     try {
       const result = await api<{ frequency_count: number }>(
-        `/content/note-items/${item.id}/frequency`,
+        `/content/note-items/${idValue(item)}/frequency`,
         "POST",
       );
       const next = Number(result.frequency_count);
@@ -484,12 +486,12 @@ function InterviewCard({
   item: Entry;
   active: boolean;
   categories: Entry[];
-  onDelete: (itemId: number) => void;
+  onDelete: (itemId: Entry["id"]) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const detail = useStudyItem(
     "interviews",
-    active || expanded ? item.id : undefined,
+    active || expanded ? idValue(item) : undefined,
   );
   return (
     <article className="interview-card" data-card-id={item.id}>
@@ -570,7 +572,7 @@ export function OriginalCards({
 }: {
   items: Entry[];
   resource: string;
-  initialId?: number;
+  initialId?: Entry["id"];
   note?: Entry;
   categories?: Entry[];
   searchResults?: boolean;
@@ -586,7 +588,7 @@ export function OriginalCards({
   const q = query.toLowerCase(),
     category = params.get("category") || "",
     languageRegister = params.get("language_register") || "";
-  const [deletedIds, setDeletedIds] = useState<Set<number>>(() => new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<Entry["id"]>>(() => new Set());
   const visible = items.filter(
     (i) =>
       !deletedIds.has(i.id) &&
@@ -607,9 +609,9 @@ export function OriginalCards({
     [error, setError] = useState("");
   const [bookGeneration, setBookGeneration] = useState(0);
   const wrap = useRef<HTMLDivElement>(null);
-  const parent = note?.id || Number(items[0]?.note_id) || 0;
+  const parent = idValue(note) || idValue(items[0], "note_id") || 0;
   const parentFor = useCallback(
-    (item: Entry) => note?.id || Number(item.note_id) || 0,
+    (item: Entry) => idValue(note) || idValue(item, "note_id") || 0,
     [note],
   );
   useEffect(() => {
@@ -629,8 +631,8 @@ export function OriginalCards({
       (p) =>
         p.content_type ===
           (resource === "sentences" ? "everyday_sentence" : "english_note") &&
-        Number(p.item_id) === item.id &&
-        Number(p.parent_id || 0) ===
+        idValue(p, "item_id") === idValue(item) &&
+        (idValue(p, "parent_id") || (p.parent_id === 0 ? 0 : "")) ===
           (resource === "note-items" ? parentFor(item) : parent),
     ),
   )?.id;
@@ -639,7 +641,7 @@ export function OriginalCards({
     undefined,
   );
   const progressQueue = useRef<Promise<unknown>>(Promise.resolve());
-  function handleCardDeleted(itemId: number) {
+  function handleCardDeleted(itemId: Entry["id"]) {
     const deletedIndex = visible.findIndex((item) => item.id === itemId);
     if (deletedIndex < 0) return;
     const remaining = visible.length - 1;
@@ -729,7 +731,7 @@ export function OriginalCards({
       ? languageRegisterLabel && !query
         ? languageRegisterLabel
         : "Search Results"
-      : value(note || { id: 0 }, "title") || "English Notes"
+      : value(note || { id: "local-empty" }, "title") || "English Notes"
     : resource === "sentences"
       ? "Everyday English Cards"
       : resource === "interviews"
@@ -1086,7 +1088,7 @@ export function NoteCollections({ items }: { items: Entry[] }) {
               item={item}
               progress={progress.find(
                 (p) =>
-                  Number(p.parent_id) === item.id &&
+                  idValue(p, "parent_id") === idValue(item) &&
                   p.content_type === "english_note",
               )}
             />
@@ -1144,7 +1146,7 @@ export function NoteSearchResults({ items }: { items: Entry[] }) {
   return <OriginalCards items={items} resource="note-items" searchResults />;
 }
 function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
-  const detail = useStudyItem("notes", item.id);
+  const detail = useStudyItem("notes", idValue(item));
   return (
     <article className="note-card">
       <div className="note-top">
@@ -1182,7 +1184,7 @@ function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
               Continue Study
             </Link>
           )}
-          <Link className="btn primary" to={`/learn/notes/${item.id}`}>
+          <Link className="btn primary" to={`/learn/notes/${idValue(item)}`}>
             Open Cards
           </Link>
         </div>

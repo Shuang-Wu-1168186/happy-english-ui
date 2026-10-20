@@ -173,7 +173,7 @@ export function Dialogue({
   initialId,
 }: {
   items: Entry[];
-  initialId?: number;
+  initialId?: Entry["id"];
 }) {
   const [params, setParams] = useSearchParams(),
     [query, setQuery] = useState("");

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { apiItems, firstApiItemId, mockOpaqueId } from "./opaque";
 async function login(page: Page, username = "admin_test") {
   await page.goto("/login");
   await page.getByLabel("Username", { exact: true }).fill(username);
@@ -36,14 +37,16 @@ test("learning homepage dashboard and login", async ({ page }) => {
   ).toBeTruthy();
 });
 test("homepage reveals a recently learned phrase", async ({ page }) => {
+  const reviewId = mockOpaqueId("review-101");
+  const noteItemId = mockOpaqueId("note-item-1");
   await page.route("**/api/learning/review-items**", async (route) => {
     await route.fulfill({
       json: {
         items: [
           {
-            id: 101,
-            resource: "sentences",
-            item_id: 1,
+            id: reviewId,
+            resource: "notes",
+            item_id: noteItemId,
             label: "日常短语",
             prompt: "Thank you.",
             answer: "谢谢。",
@@ -65,32 +68,24 @@ test("homepage reveals a recently learned phrase", async ({ page }) => {
   await expect(page.getByText("谢谢。", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /回到内容/ })).toHaveAttribute(
     "href",
-    "/learn/sentences/1",
+    `/learn/notes/${noteItemId}`,
   );
 });
-test("foundation learning separates textbook, phonics, and textbook vocabulary", async ({
+test("foundation learning opens its opaque phonics topic", async ({
   page,
 }) => {
   await login(page);
   await page
     .locator(".learning-area-card")
-    .filter({ hasText: "基础学习" })
+    .filter({ hasText: "入门英语" })
     .click();
   await expect(page).toHaveURL(/\/foundation$/);
   await expect(
-    page.getByRole("heading", { name: "选择一个基础学习专区", exact: true }),
+    page.getByRole("heading", { name: "选择自然拼读专区", exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: /英文课本/ })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: /自然拼读专区/ })).toHaveAttribute(
     "href",
-    "/learn/textbook",
-  );
-  await expect(page.getByRole("link", { name: /自然拼读/ })).toHaveAttribute(
-    "href",
-    "/learn/phonics",
-  );
-  await expect(page.getByRole("link", { name: /课本单词/ })).toHaveAttribute(
-    "href",
-    "/learn/kids-cards",
+    /\/course-topics\/hei1_[A-Za-z0-9_-]+$/,
   );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
@@ -103,52 +98,41 @@ test("foundation learning separates textbook, phonics, and textbook vocabulary",
     ),
   ).toBeTruthy();
 });
-test("workplace learning separates interview English and professional vocabulary", async ({
+test("advanced learning opens its opaque catalogue route", async ({
   page,
 }) => {
   await login(page);
   await page
     .locator(".learning-area-card")
-    .filter({ hasText: "职场专区" })
+    .filter({ hasText: "进阶英语" })
     .click();
-  await expect(page).toHaveURL(/\/workplace$/);
-  await expect(
-    page.getByRole("heading", { name: "选择一个职场学习专区", exact: true }),
-  ).toBeVisible();
-  await expect(page.getByRole("link", { name: /面试英语/ })).toHaveAttribute(
-    "href",
-    "/learn/interviews",
-  );
-  await expect(page.getByRole("link", { name: /专业词汇/ })).toHaveAttribute(
-    "href",
-    "/learn/vocabulary",
-  );
+  await expect(page).toHaveURL(/\/course-modules\/hei1_[A-Za-z0-9_-]+$/);
 });
-test("daily speaking separates daily practice and spoken dialogues", async ({
+test("daily speaking opens its opaque dialogue topic", async ({
   page,
 }) => {
   await login(page);
   await page
     .locator(".learning-area-card")
-    .filter({ hasText: "日常开口" })
+    .filter({ hasText: "初级英语" })
     .click();
   await expect(page).toHaveURL(/\/daily-speaking$/);
   await expect(
-    page.getByRole("heading", { name: "选择一个日常开口专区", exact: true }),
+    page.getByRole("heading", { name: "选择日常口语专区", exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: /每日口语/ })).toHaveAttribute(
-    "href",
-    "/learn/sentences",
-  );
   await expect(
-    page.getByRole("link", { name: /日常口语对话专区/ }),
-  ).toHaveAttribute("href", "/learn/dialogues");
+    page.getByRole("link", { name: /日常口语专区/ }),
+  ).toHaveAttribute("href", /\/course-topics\/hei1_[A-Za-z0-9_-]+$/);
 });
 test("private zone keeps its home entry while favorites remain below family learning", async ({ page }) => {
+  const materialId = mockOpaqueId("material-77");
+  const courseId = mockOpaqueId("course-88");
+  const kidsCardId = mockOpaqueId("kids-card-1");
+  const mathCardId = mockOpaqueId("math-card-1");
   const textbookTemplate = { code: "textbook", version: 1, renderer: "textbook.v1" };
   const textbookLessons = [
     {
-      id: 701,
+      id: mockOpaqueId("textbook-lesson-701"),
       title: "这个暑假你做了什么？",
       title_en: "What did you do this summer?",
       sort_order: 101,
@@ -156,18 +140,22 @@ test("private zone keeps its home entry while favorites remain below family lear
       is_locked: false,
       access_state: "available",
       source_content: {
-        id: 1,
+        id: mockOpaqueId("textbook-source-1"),
         unit_name: "Unit 1",
         lesson_name: "Lesson 1",
         title: "What did you do this summer?",
         title_cn: "这个暑假你做了什么？",
         sentences: [
-          { id: 1, english_text: "Yangyang: I went swimming.", chinese_text: "阳阳：我去游泳了。" },
+          {
+            id: mockOpaqueId("textbook-sentence-1"),
+            english_text: "Yangyang: I went swimming.",
+            chinese_text: "阳阳：我去游泳了。",
+          },
         ],
       },
     },
     {
-      id: 702,
+      id: mockOpaqueId("textbook-lesson-702"),
       title: "我们都度过了一个有意义的暑假",
       title_en: "All of Us Had a Meaningful Summer Holiday",
       sort_order: 102,
@@ -175,29 +163,35 @@ test("private zone keeps its home entry while favorites remain below family lear
       is_locked: false,
       access_state: "available",
       source_content: {
-        id: 4,
+        id: mockOpaqueId("textbook-source-4"),
         unit_name: "Unit 1",
         lesson_name: "Lesson 2",
         title: "All of Us Had a Meaningful Summer Holiday",
         title_cn: "我们都度过了一个有意义的暑假",
         sentences: [
-          { id: 4, english_text: "Guoguo: Did you travel this summer holiday?", chinese_text: "果果：这个暑假你去旅行了吗？" },
+          {
+            id: mockOpaqueId("textbook-sentence-4"),
+            english_text: "Guoguo: Did you travel this summer holiday?",
+            chinese_text: "果果：这个暑假你去旅行了吗？",
+          },
         ],
       },
     },
   ];
-  await page.route("**/api/learning/materials/77**", async (route) => {
+  await page.route(`**/api/learning/materials/${materialId}**`, async (route) => {
     const includeContent = new URL(route.request().url()).searchParams.has("include_lesson_content");
     await route.fulfill({
       json: {
-        id: 77,
+        id: materialId,
         title: "小学英语教材",
-        topic_id: 1,
+        topic_id: mockOpaqueId("topic-1"),
         template: textbookTemplate,
         access_state: "available",
         lessons: includeContent
           ? textbookLessons
-          : textbookLessons.map(({ source_content, ...lesson }) => lesson),
+          : textbookLessons.map(
+              ({ source_content: _source_content, ...lesson }) => lesson,
+            ),
       },
     });
   });
@@ -208,7 +202,7 @@ test("private zone keeps its home entry while favorites remain below family lear
         personal_note_count: 1,
         public_entries: [
           {
-            id: 11,
+            id: mockOpaqueId("public-entry-11"),
             feature_code: "my-english-notes",
             title: "公共英语笔记",
             target_url: "/learn/notes",
@@ -218,22 +212,22 @@ test("private zone keeps its home entry while favorites remain below family lear
         ],
         shortcuts: [
           {
-            id: 18,
+            id: mockOpaqueId("shortcut-18"),
             title: "小学英语教材 · Guoguo 对话",
-            target_url: "/learning-materials/77",
+            target_url: `/learning-materials/${materialId}`,
             description: "从 Guoguo、Lingling、Maomao 的情景对话开始学习。",
             icon: "📖",
             family_group_name: "学习小家",
           },
           {
-            id: 19,
+            id: mockOpaqueId("shortcut-19"),
             title: "小学英语单词",
             target_url: "/learn/kids-cards",
             description: "打开原有的小学英语词卡，从 northeast 开始学习。",
             icon: "🔤",
           },
           {
-            id: 20,
+            id: mockOpaqueId("shortcut-20"),
             title: "数学练习",
             target_url: "/learn/math-cards",
             description: "打开原有的数学知识卡和练习。",
@@ -241,16 +235,21 @@ test("private zone keeps its home entry while favorites remain below family lear
           },
         ],
         recent_personal_notes: [
-          { id: 6, title: "周末计划", content: "复习两节英语课。", color: "violet" },
+          {
+            id: mockOpaqueId("personal-note-6"),
+            title: "周末计划",
+            content: "复习两节英语课。",
+            color: "violet",
+          },
         ],
         items: [
           {
-            id: 91,
+            id: mockOpaqueId("private-item-91"),
             resource_type: "material",
-            resource_id: 77,
+            resource_id: materialId,
             source: { scope_type: "personal", label: "个人" },
             resource: {
-              id: 77,
+              id: materialId,
               resource_type: "material",
               title: "小学英语教材 · Guoguo 对话",
               summary: "从第一课开始学习。",
@@ -263,10 +262,10 @@ test("private zone keeps its home entry while favorites remain below family lear
   });
   await page.route("**/api/content/kids-cards**", async (route) => {
     const pathname = new URL(route.request().url()).pathname;
-    if (pathname.endsWith("/kids-cards/1")) {
+    if (pathname.endsWith(`/kids-cards/${kidsCardId}`)) {
       await route.fulfill({
         json: {
-          id: 1,
+          id: kidsCardId,
           word: "northeast",
           translation: "东北部",
           category: "Unit 1 · 1",
@@ -285,7 +284,7 @@ test("private zone keeps its home entry while favorites remain below family lear
       json: {
         items: [
           {
-            id: 1,
+            id: kidsCardId,
             word: "northeast",
             translation: "东北部",
             category: "Unit 1 · 1",
@@ -307,7 +306,7 @@ test("private zone keeps its home entry while favorites remain below family lear
       json: {
         items: [
           {
-            id: 1,
+            id: mathCardId,
             category: "分数计算",
             title: "分数乘法",
             summary: "分子乘分子，分母乘分母。",
@@ -328,11 +327,11 @@ test("private zone keeps its home entry while favorites remain below family lear
       json: {
         items: [
           {
-            id: 92,
+            id: mockOpaqueId("favorite-course-92"),
             resource_type: "course",
-            resource_id: 88,
+            resource_id: courseId,
             source: { scope_type: "personal", label: "个人" },
-            resource: { id: 88, resource_type: "course", title: "自然拼读入门" },
+            resource: { id: courseId, resource_type: "course", title: "自然拼读入门" },
             access: { access_state: "available" },
           },
         ],
@@ -364,9 +363,9 @@ test("private zone keeps its home entry while favorites remain below family lear
     "href",
     "/learn/math-cards",
   );
-  await expect(page.getByRole("link", { name: /小学英语教材 · Guoguo 对话/ })).toHaveAttribute("href", "/learning-materials/77");
+  await expect(page.getByRole("link", { name: /小学英语教材 · Guoguo 对话/ })).toHaveAttribute("href", `/learning-materials/${materialId}`);
   await page.getByRole("link", { name: /小学英语教材 · Guoguo 对话/ }).click();
-  await expect(page).toHaveURL(/\/learning-materials\/77$/);
+  await expect(page).toHaveURL(new RegExp(`/learning-materials/${materialId}$`));
   await expect(page.getByRole("heading", { name: "英语教材课文", exact: true })).toBeVisible();
   await expect(page.getByRole("tab", { name: /Unit 1/ })).toBeVisible();
   await page.getByRole("tab", { name: /Lesson 2/ }).click();
@@ -382,7 +381,7 @@ test("private zone keeps its home entry while favorites remain below family lear
   await expect(page).toHaveURL(/\/private-zone\/favorite-courses$/);
   await expect(
     page.locator(".private-zone-course-link").filter({ hasText: "自然拼读入门" }),
-  ).toHaveAttribute("href", "/courses/88");
+  ).toHaveAttribute("href", `/courses/${courseId}`);
   await page.getByRole("link", { name: "我的", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "我的收藏", exact: true }),
@@ -392,13 +391,17 @@ test("private zone keeps its home entry while favorites remain below family lear
     .filter({ hasText: "小学英语教材 · Guoguo 对话" });
   await expect(
     favorite.getByRole("link", { name: "打开 小学英语教材 · Guoguo 对话" }),
-  ).toHaveAttribute("href", "/learning-materials/77");
+  ).toHaveAttribute("href", `/learning-materials/${materialId}`);
   await page.goto("/private-zone");
   await expect(page).toHaveURL(/\/private-zone$/);
   await expect(
     page.getByRole("heading", { name: "私人专区", exact: true }),
   ).toBeVisible();
-  await page.goto("/course-modules/6");
+  const privateZoneModule = (await apiItems(page, "/api/learning/modules")).find(
+    (module) => module.module_code === "private-zone",
+  );
+  if (!privateZoneModule) throw new Error("Private-zone module was not returned");
+  await page.goto(`/course-modules/${privateZoneModule.id}`);
   await expect(page).toHaveURL(/\/private-zone$/);
   await page.getByRole("link", { name: /Rolleston Food Bar Menu/ }).click();
   await expect(page).toHaveURL(/\/roleston-menu\/index\.html$/);
@@ -406,9 +409,11 @@ test("private zone keeps its home entry while favorites remain below family lear
 });
 
 test("private zone keeps public entries hidden while personal notes remain available", async ({ page }) => {
+  const publicEntryId = mockOpaqueId("public-entry-301");
+  const personalNoteId = mockOpaqueId("personal-note-401");
   const publicEntries: Record<string, unknown>[] = [
     {
-      id: 301,
+      id: publicEntryId,
       title: "小学英语单词",
       target_url: "/learn/kids-cards",
       description: "从 northeast 开始学习。",
@@ -435,7 +440,7 @@ test("private zone keeps public entries hidden while personal notes remain avail
     }
     if (route.request().method() === "POST") {
       const payload = route.request().postDataJSON() as Record<string, unknown>;
-      const note = { id: 401, ...payload, updated_at: "2026-10-10T00:00:00" };
+      const note = { id: personalNoteId, ...payload, updated_at: "2026-10-10T00:00:00" };
       notes.unshift(note);
       await route.fulfill({ status: 201, json: note });
       return;
@@ -462,11 +467,13 @@ test("private zone keeps public entries hidden while personal notes remain avail
 });
 
 test("admin private-zone entry management keeps public entries hidden", async ({ page }) => {
+  const familyGroupId = mockOpaqueId("family-group-77");
+  const shortcutId = mockOpaqueId("shortcut-501");
   const shortcuts: Record<string, unknown>[] = [];
   let createdShortcut: Record<string, unknown> | undefined;
   await page.route("**/api/learning/family-groups", async (route) => {
     await route.fulfill({
-      json: { items: [{ id: 77, name: "学习小家", member_role: "owner" }] },
+      json: { items: [{ id: familyGroupId, name: "学习小家", member_role: "owner" }] },
     });
   });
   await page.route("**/api/admin/private-zone/shortcuts", async (route) => {
@@ -477,7 +484,7 @@ test("admin private-zone entry management keeps public entries hidden", async ({
     if (route.request().method() === "POST") {
       const payload = route.request().postDataJSON() as Record<string, unknown>;
       createdShortcut = payload;
-      const shortcut = { id: 501, family_group_name: "学习小家", ...payload };
+      const shortcut = { id: shortcutId, family_group_name: "学习小家", ...payload };
       shortcuts.push(shortcut);
       await route.fulfill({ status: 201, json: shortcut });
       return;
@@ -500,13 +507,13 @@ test("admin private-zone entry management keeps public entries hidden", async ({
   await page.setViewportSize({ width: 1280, height: 720 });
   await expect(page.getByRole("heading", { name: "家庭常用入口", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "+ 添加家庭入口", exact: true }).click();
-  await page.getByLabel("共享家庭", { exact: true }).selectOption("77");
+  await page.getByLabel("共享家庭", { exact: true }).selectOption(familyGroupId);
   await page.getByRole("textbox", { name: "名称", exact: true }).fill("小学英语单词");
   await page.getByRole("textbox", { name: "跳转链接", exact: true }).fill("/learn/kids-cards");
   await page.getByRole("button", { name: "保存入口", exact: true }).click();
   await expect(page.getByText("小学英语单词", { exact: true })).toBeVisible();
   await expect(page.locator(".private-zone-admin-shortcut code")).toHaveText("/learn/kids-cards");
-  expect(createdShortcut?.family_group_id).toBe(77);
+  expect(createdShortcut?.family_group_id).toBe(familyGroupId);
 });
 
 test("my learning space keeps family sharing in a consumer flow", async ({ page }) => {
@@ -662,10 +669,11 @@ test("interview question entry remains available from the admin menu", async ({
 }) => {
   await login(page);
   await page.goto("/admin");
-  await page
-    .getByRole("navigation", { name: "后台菜单" })
-    .getByRole("link", { name: "面试题录入", exact: true })
+  const adminNav = page.getByRole("navigation", { name: "后台菜单" });
+  await adminNav
+    .getByRole("button", { name: "展开内容管理菜单", exact: true })
     .click();
+  await adminNav.getByRole("link", { name: "面试题录入", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/content\/interviews$/);
   await expect(
     page.getByRole("heading", {
@@ -675,37 +683,13 @@ test("interview question entry remains available from the admin menu", async ({
   ).toBeVisible();
   await expect(page.getByLabel("Question", { exact: true })).toBeVisible();
 });
-test("daily card blur, search, jump and automatic study progress", async ({
+test("legacy daily-card route redirects to the course catalogue", async ({
   page,
 }) => {
   await login(page);
   await page.goto("/learn/sentences");
-  await expect(page.locator(".card")).toHaveCount(2);
-  await expect(page.locator(".english").first()).toBeHidden();
-  await page
-    .getByRole("button", { name: "Show or hide English" })
-    .first()
-    .click();
-  await expect(page.locator(".english").first()).toBeVisible();
-  await page.getByRole("button", { name: "1 / 2", exact: true }).click();
-  await page.getByRole("spinbutton", { name: "Card number" }).fill("2");
-  await page.getByRole("button", { name: "Go", exact: true }).click();
-  await expect(page.locator(".bottom-counter")).toHaveText("2 / 2");
-  await expect
-    .poll(async () => {
-      const r = await page.request.get("/api/progress");
-      return (await r.json()).find(
-        (p: { content_type: string }) => p.content_type === "everyday_sentence",
-      )?.item_id;
-    })
-    .toBe(2);
-  await page.getByRole("searchbox", { name: "Search cards" }).fill("Hello");
-  await page.getByRole("searchbox", { name: "Search cards" }).press("Enter");
-  await expect(page.locator(".card")).toHaveCount(1);
-  await page.screenshot({
-    path: "test-results/sentences-desktop.png",
-    fullPage: true,
-  });
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator(".learning-area-card")).toHaveCount(6);
 });
 test("study note search includes card text", async ({ page }) => {
   await login(page);
@@ -737,17 +721,18 @@ test("study note search includes card text", async ({ page }) => {
 });
 test("study note cards record a manual encounter frequency", async ({ page }) => {
   await login(page);
+  const noteItemId = await firstApiItemId(page, "/api/content/note-items");
   const before = await (
-    await page.request.get("/api/content/note-items/1")
+    await page.request.get(`/api/content/note-items/${noteItemId}`)
   ).json();
   const currentCount = Number(before.frequency_count || 0);
-  await page.goto("/learn/notes/1");
+  await page.goto(`/learn/notes/${noteItemId}`);
   const frequencyButton = page.getByRole("button", { name: /记录遇到一次/ });
   await expect(frequencyButton).toBeVisible();
   const frequencyResponse = page.waitForResponse((response) => {
     const url = new URL(response.url());
     return (
-      url.pathname === "/api/content/note-items/1/frequency" &&
+      url.pathname === `/api/content/note-items/${noteItemId}/frequency` &&
       response.request().method() === "POST" &&
       response.status() === 200
     );
@@ -758,21 +743,22 @@ test("study note cards record a manual encounter frequency", async ({ page }) =>
     `已记录 ${currentCount + 1} 次`,
   );
 });
-test("all original learning layouts and page flip survive navigation", async ({
+test("original study layouts and page flip survive navigation", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await login(page);
+  const noteItems = await apiItems(page, "/api/content/note-items");
+  const noteItemId = noteItems[0]?.id;
+  const noteId = noteItems[0]?.note_id;
+  if (!noteItemId || typeof noteId !== "string") {
+    throw new Error("The browser test API did not return a note item and parent note ID");
+  }
   for (const [resource, selector] of [
     ["kids-cards", ".kids-card"],
-    ["phonics", ".lesson-card"],
-    ["textbook", ".lesson-article"],
-    ["dialogues", ".lesson-content"],
     ["math-cards", ".math-card"],
     ["notes", ".note-card"],
-    ["vocabulary", ".card"],
-    ["interviews", ".interview-card"],
   ]) {
     await page.goto(`/learn/${resource}`);
     await expect(page.locator(selector).first()).toBeVisible();
@@ -781,9 +767,6 @@ test("all original learning layouts and page flip survive navigation", async ({
       fullPage: true,
     });
   }
-  await page.goto("/learn/phonics/1");
-  await page.getByRole("button", { name: "cat", exact: true }).click();
-  await expect(page.locator(".quiz-feedback")).toContainText("答对了");
   await page.goto("/learn/kids-cards");
   await expect(page.locator(".kids-card").first()).toBeVisible();
   await page.getByRole("button", { name: "Mark apple as learned" }).click();
@@ -795,7 +778,7 @@ test("all original learning layouts and page flip survive navigation", async ({
     "filter",
     "none",
   );
-  await page.goto("/learn/notes/1");
+  await page.goto(`/learn/notes/${noteItemId}`);
   await expect(page.locator(".dictation-input")).toBeVisible();
   await page.locator(".dictation-input").fill("Good morning");
   await page.getByRole("button", { name: "检查", exact: true }).click();
@@ -804,8 +787,8 @@ test("all original learning layouts and page flip survive navigation", async ({
     .poll(async () => {
       const records = await (await page.request.get("/api/progress")).json();
       return records.find(
-        (p: { content_type: string; parent_id: number }) =>
-          p.content_type === "english_note" && p.parent_id === 1,
+        (p: { content_type: string; parent_id: string }) =>
+          p.content_type === "english_note" && p.parent_id === noteId,
       )?.completed;
     })
     .toBe(1);
@@ -824,6 +807,7 @@ test("old note links retain forward and backward page flips", async ({
   const session = await (await page.request.get("/api/auth/session")).json();
   const headers = { "X-CSRF-Token": session.csrf_token };
   const previewImage = "/static/uploads/english_note_item/lightbox-test.png";
+  const noteId = await firstApiItemId(page, "/api/content/notes");
   await page.route(`**${previewImage}`, (route) =>
     route.fulfill({
       body: `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"><rect width="1280" height="720" fill="#2563eb"/><text x="640" y="360" fill="white" font-family="Arial" font-size="72" font-weight="700" text-anchor="middle">Image preview</text></svg>`,
@@ -833,7 +817,7 @@ test("old note links retain forward and backward page flips", async ({
   const template = await page.request.post("/api/content/note-items", {
     headers,
     data: {
-      note_id: 1,
+      note_id: noteId,
       item_type: "knowledge",
       item_title: "Study Notes",
       raw_text: "Keep useful English in one place and review it regularly.",
@@ -851,7 +835,7 @@ test("old note links retain forward and backward page flips", async ({
   const created = await page.request.post("/api/content/note-items", {
     headers,
     data: {
-      note_id: 1,
+      note_id: noteId,
       item_type: "knowledge",
       item_title: "Second note",
       raw_text: "Second note",
@@ -872,8 +856,8 @@ test("old note links retain forward and backward page flips", async ({
         .filter({ hasText: "Daily practice" })
         .getByText("3 cards", { exact: true }),
     ).toBeVisible();
-    await page.goto("/english/note-cards?note_id=1");
-    await expect(page).toHaveURL(/\/learn\/notes\/1/);
+    await page.goto(`/english/note-cards?note_id=${noteId}`);
+    await expect(page).toHaveURL(new RegExp(`/learn/notes/${noteId}`));
     const next = page.getByRole("button", { name: "Next card", exact: true });
     const previous = page.getByRole("button", {
       name: "Previous card",

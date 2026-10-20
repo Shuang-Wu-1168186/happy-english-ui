@@ -14,7 +14,13 @@ test("admin can open the static put aside courseware sample", async ({
 }) => {
   await login(page);
   await page.goto("/admin");
-  await page.getByRole("link", { name: "put aside 样稿", exact: true }).click();
+  const adminNav = page.getByRole("navigation", { name: "后台菜单" });
+  await adminNav
+    .getByRole("button", { name: "展开内容管理菜单", exact: true })
+    .click();
+  await adminNav
+    .getByRole("link", { name: "put aside 样稿", exact: true })
+    .click();
   await expect(page).toHaveURL(/\/admin\/content\/put-aside-courseware$/);
 
   await expect(page.locator("#put-aside-title")).toBeVisible();

@@ -12,7 +12,11 @@ async function login(page: Page) {
 test("admin can open the put aside mini-program preview", async ({ page }) => {
   await login(page);
   await page.goto("/admin");
-  await page.getByRole("link", { name: "小程序样稿", exact: true }).click();
+  const adminNav = page.getByRole("navigation", { name: "后台菜单" });
+  await adminNav
+    .getByRole("button", { name: "展开内容管理菜单", exact: true })
+    .click();
+  await adminNav.getByRole("link", { name: "小程序样稿", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/content\/put-aside-mini-program$/);
 
   await expect(page.locator(".mini-course-phone")).toBeVisible();

@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { entries, value } from "../../lib/api";
+import { entries, idValue, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { useStudyItem } from "../../lib/study";
 import { CourseLockedContent, isCourseLocked } from "./CourseLock";
@@ -23,7 +23,7 @@ function Article({
   embedded?: boolean;
   onLockedLesson?: (lesson: Entry) => void;
 }) {
-  const detail = useStudyItem("textbook", embedded ? undefined : lesson.id);
+  const detail = useStudyItem("textbook", embedded ? undefined : idValue(lesson));
   const content = embedded ? lesson : detail?.item || lesson;
   const locked = isCourseLocked(lesson);
   const blocks: {
@@ -117,7 +117,7 @@ export function Textbook({
   onLockedLesson,
 }: {
   items: Entry[];
-  initialId?: number;
+  initialId?: Entry["id"];
   backTo?: string;
   embedded?: boolean;
   onLockedLesson?: (lesson: Entry) => void;
@@ -131,7 +131,7 @@ export function Textbook({
   const lessons = items.filter((i) => value(i, "unit_name") === unit);
   const lesson =
     lessons.find(
-      (i) => i.id === (Number(params.get("lesson_id")) || initialId),
+      (i) => i.id === (params.get("lesson_id") || initialId),
     ) || lessons[0];
   return (
     <div className="study-textbook">

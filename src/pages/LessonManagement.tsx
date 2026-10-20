@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { FilePenLine, Plus, RefreshCw, Trash2, X } from "lucide-react";
-import { api, entries, value } from "../lib/api";
-import type { Entry, Page } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
+import type { ApiId, Entry, Page } from "../lib/api";
 
 type SectionCode =
   | "core_vocabulary"
@@ -244,7 +244,7 @@ export function LessonManagement() {
   const [notice, setNotice] = useState("");
 
   const materialById = useMemo(
-    () => new Map(materials.map((material) => [material.id, material])),
+    () => new Map<ApiId, Entry>(materials.map((material) => [idValue(material), material])),
     [materials],
   );
 
@@ -326,7 +326,7 @@ export function LessonManagement() {
     }
     try {
       const response = await api<{ items: Entry[] }>(
-        `/admin/learning-material-lessons/${lesson.id}/sections`,
+        `/admin/learning-material-lessons/${idValue(lesson)}/sections`,
       );
       setForm(formFromLesson(lesson, response.items || []));
       setEditor({ lesson });
@@ -351,7 +351,7 @@ export function LessonManagement() {
 
   async function saveLesson(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const selectedMaterialId = Number(form.materialId);
+    const selectedMaterialId = form.materialId;
     if (!selectedMaterialId) {
       setEditorError("请先选择所属教材（material_id）。");
       return;
@@ -409,21 +409,21 @@ export function LessonManagement() {
       };
       const saved = await api<Entry>(
         editor?.lesson
-          ? `/admin/learning-material-lessons/${editor.lesson.id}`
+          ? `/admin/learning-material-lessons/${idValue(editor.lesson)}`
           : `/admin/learning-materials/${selectedMaterialId}/lessons`,
         editor?.lesson ? "PUT" : "POST",
         payload,
       );
       if (form.publish) {
         await api(
-          `/admin/learning-material-lessons/${saved.id}/publish`,
+          `/admin/learning-material-lessons/${idValue(saved)}/publish`,
           "POST",
         );
       }
-      setMaterialId(String(selectedMaterialId));
+      setMaterialId(selectedMaterialId);
       setEditor(null);
       setNotice(form.publish ? "课时已保存并发布。" : "课时草稿已保存。");
-      await loadLessons(String(selectedMaterialId));
+      await loadLessons(selectedMaterialId);
     } catch (reason) {
       setEditorError((reason as Error).message);
     } finally {
@@ -435,7 +435,7 @@ export function LessonManagement() {
     if (!window.confirm(`确定删除课时“${value(lesson, "title")}”？`)) return;
     setError("");
     try {
-      await api(`/admin/learning-material-lessons/${lesson.id}`, "DELETE");
+      await api(`/admin/learning-material-lessons/${idValue(lesson)}`, "DELETE");
       setNotice("课时已删除。");
       await loadLessons(materialId);
     } catch (reason) {
@@ -443,7 +443,7 @@ export function LessonManagement() {
     }
   }
 
-  const selectedMaterial = materialById.get(Number(materialId));
+  const selectedMaterial = materialById.get(materialId);
   return (
     <section className="container py-5 lesson-management-page">
       <header className="lesson-management-heading">
@@ -499,8 +499,8 @@ export function LessonManagement() {
           >
             <option value="">请选择教材</option>
             {materials.map((material) => (
-              <option key={material.id} value={material.id}>
-                #{material.id} · {value(material, "title")} (
+              <option key={idValue(material)} value={idValue(material)}>
+                #{idValue(material)} · {value(material, "title")} (
                 {value(material, "material_code")})
               </option>
             ))}

@@ -69,7 +69,7 @@ export function MathCards({
   onLockedLesson,
 }: {
   items: Entry[];
-  initialId?: number;
+  initialId?: Entry["id"];
   backTo?: string;
   onLockedLesson?: (item: Entry) => void;
 }) {

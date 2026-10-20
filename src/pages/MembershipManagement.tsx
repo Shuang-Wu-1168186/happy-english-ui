@@ -14,8 +14,8 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { api, entries, value } from "../lib/api";
-import type { Entry, Page } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
+import type { ApiId, Entry, Page } from "../lib/api";
 
 type ItemList = Page & { items: Entry[]; page_size?: number };
 type Tab = "plans" | "benefits" | "memberships";
@@ -107,10 +107,15 @@ function optionalNumber(raw: FormDataEntryValue | null) {
   return text ? Number(text) : null;
 }
 
-function bindingsForPlan(detail: Entry): Record<number, PlanBinding> {
+function optionalId(raw: FormDataEntryValue | null) {
+  const text = String(raw || "").trim();
+  return text || null;
+}
+
+function bindingsForPlan(detail: Entry): Record<ApiId, PlanBinding> {
   return Object.fromEntries(
     entries(detail, "benefits").map((item) => [
-      numberValue(item, "benefit_id"),
+      idValue(item, "benefit_id"),
       { enabled: isEnabled(item), grant: jsonText(item.grant_value) },
     ]),
   );
@@ -119,7 +124,7 @@ function bindingsForPlan(detail: Entry): Record<number, PlanBinding> {
 function bindingsForBenefit(detail: Entry): Record<string, CourseBinding> {
   return Object.fromEntries(
     entries(detail, "courses").map((item) => [
-      `${numberValue(item, "course_id")}:${value(item, "access_action")}`,
+      `${idValue(item, "course_id")}:${value(item, "access_action")}`,
       { enabled: isEnabled(item) },
     ]),
   );
@@ -571,7 +576,7 @@ function UserMembershipPicker({
       <label className="form-label" htmlFor={inputId}>
         用户
       </label>
-      <input name="user_id" type="hidden" value={selectedUser?.id || ""} />
+      <input name="user_id" type="hidden" value={idValue(selectedUser)} />
       {selectedUser ? (
         <div className="membership-user-picker-selected">
           <div>
@@ -861,7 +866,7 @@ function PlansPanel({
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const [benefitBindingPlan, setBenefitBindingPlan] = useState<Entry | null>(null);
   const [detail, setDetail] = useState<Entry | null>(null);
-  const [bindings, setBindings] = useState<Record<number, PlanBinding>>({});
+  const [bindings, setBindings] = useState<Record<ApiId, PlanBinding>>({});
   const [detailLoading, setDetailLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const { loading, reload, result } = usePagedList(
@@ -873,7 +878,7 @@ function PlansPanel({
   );
 
   const loadDetail = useCallback(
-    async (planId: number) => {
+    async (planId: ApiId) => {
       setDetailLoading(true);
       try {
         const next = await api<Entry>(`/admin/membership-plans/${planId}`);
@@ -895,7 +900,7 @@ function PlansPanel({
     setDialog({ mode, record });
     setDetail(record || null);
     setBindings({});
-    if (record) await loadDetail(record.id);
+    if (record) await loadDetail(idValue(record));
   }
 
   function closeDialog() {
@@ -910,7 +915,7 @@ function PlansPanel({
     setDetail(null);
     setBindings({});
     reportError("");
-    await loadDetail(record.id);
+    await loadDetail(idValue(record));
   }
 
   function closeBenefitBindings() {
@@ -926,7 +931,7 @@ function PlansPanel({
   async function savePlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const selectedId = numberValue(detail || dialog?.record, "id");
+    const selectedId = idValue(detail || dialog?.record);
     setBusy(true);
     reportError("");
     try {
@@ -960,17 +965,18 @@ function PlansPanel({
   }
 
   async function saveBindings() {
-    const selectedId = numberValue(detail, "id");
-    if (!selectedId || selectedId !== numberValue(benefitBindingPlan, "id")) return;
+    const selectedId = idValue(detail);
+    if (!selectedId || selectedId !== idValue(benefitBindingPlan)) return;
     setBusy(true);
     reportError("");
     try {
       const items = benefits.flatMap((benefit) => {
-        const binding = bindings[benefit.id];
+        const benefitId = idValue(benefit);
+        const binding = bindings[benefitId];
         if (!binding?.enabled) return [];
         return [
           {
-            benefit_id: benefit.id,
+            benefit_id: benefitId,
             grant_value: binding.grant.trim() ? JSON.parse(binding.grant) : null,
             is_enabled: true,
             sort_order: numberValue(benefit, "sort_order"),
@@ -996,7 +1002,7 @@ function PlansPanel({
     setBusy(true);
     reportError("");
     try {
-      await api(`/admin/membership-plans/${record.id}`, "DELETE");
+      await api(`/admin/membership-plans/${idValue(record)}`, "DELETE");
       closeDialog();
       if (result.items.length === 1 && page > 1) {
         await refreshSupport();
@@ -1013,7 +1019,7 @@ function PlansPanel({
 
   const selected = detail || dialog?.record || null;
   const benefitBindingReady = Boolean(
-    detail && numberValue(detail, "id") === numberValue(benefitBindingPlan, "id"),
+    detail && idValue(detail) === idValue(benefitBindingPlan),
   );
   return (
     <div className="membership-list-page">
@@ -1238,7 +1244,8 @@ function PlansPanel({
               </p>
               <div className="membership-binding-list">
                 {benefits.map((benefit) => {
-                  const binding = bindings[benefit.id] || { enabled: false, grant: "" };
+                  const benefitId = idValue(benefit);
+                  const binding = bindings[benefitId] || { enabled: false, grant: "" };
                   return (
                     <div className="membership-binding-row" key={benefit.id}>
                       <label className="membership-check">
@@ -1247,7 +1254,7 @@ function PlansPanel({
                           onChange={(event) =>
                             setBindings((current) => ({
                               ...current,
-                              [benefit.id]: { ...binding, enabled: event.target.checked },
+                              [benefitId]: { ...binding, enabled: event.target.checked },
                             }))
                           }
                           type="checkbox"
@@ -1263,7 +1270,7 @@ function PlansPanel({
                         onChange={(event) =>
                           setBindings((current) => ({
                             ...current,
-                            [benefit.id]: { ...binding, grant: event.target.value },
+                            [benefitId]: { ...binding, grant: event.target.value },
                           }))
                         }
                         placeholder="覆盖值 JSON（可留空）"
@@ -1318,7 +1325,7 @@ function BenefitsPanel({
   );
 
   const loadDetail = useCallback(
-    async (benefitId: number) => {
+    async (benefitId: ApiId) => {
       setDetailLoading(true);
       try {
         const next = await api<Entry>(`/admin/membership-benefits/${benefitId}`);
@@ -1340,7 +1347,7 @@ function BenefitsPanel({
     setDialog({ mode, record });
     setDetail(record || null);
     setBindings({});
-    if (record) await loadDetail(record.id);
+    if (record) await loadDetail(idValue(record));
   }
 
   function closeDialog() {
@@ -1356,7 +1363,7 @@ function BenefitsPanel({
     setDetail(null);
     setBindings({});
     reportError("");
-    await loadDetail(record.id);
+    await loadDetail(idValue(record));
   }
 
   function closeCourseAuthorization() {
@@ -1372,7 +1379,7 @@ function BenefitsPanel({
   async function saveBenefit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const selectedId = numberValue(detail || dialog?.record, "id");
+    const selectedId = idValue(detail || dialog?.record);
     setBusy(true);
     reportError("");
     try {
@@ -1404,16 +1411,17 @@ function BenefitsPanel({
   }
 
   async function saveBindings() {
-    const selectedId = numberValue(detail, "id");
-    if (!selectedId || selectedId !== numberValue(courseBindingBenefit, "id")) return;
+    const selectedId = idValue(detail);
+    if (!selectedId || selectedId !== idValue(courseBindingBenefit)) return;
     setBusy(true);
     reportError("");
     try {
       const items = courses.flatMap((course) =>
         ["study", "download"].flatMap((accessAction) => {
-          const binding = bindings[`${course.id}:${accessAction}`];
+          const courseId = idValue(course);
+          const binding = bindings[`${courseId}:${accessAction}`];
           return binding?.enabled
-            ? [{ course_id: course.id, access_action: accessAction, is_enabled: true, sort_order: numberValue(course, "sort_order") }]
+            ? [{ course_id: courseId, access_action: accessAction, is_enabled: true, sort_order: numberValue(course, "sort_order") }]
             : [];
         }),
       );
@@ -1432,7 +1440,7 @@ function BenefitsPanel({
     setBusy(true);
     reportError("");
     try {
-      await api(`/admin/membership-benefits/${record.id}`, "DELETE");
+      await api(`/admin/membership-benefits/${idValue(record)}`, "DELETE");
       closeDialog();
       if (result.items.length === 1 && page > 1) {
         await refreshSupport();
@@ -1449,12 +1457,12 @@ function BenefitsPanel({
 
   const selected = detail || dialog?.record || null;
   const courseBindingReady = Boolean(
-    detail && numberValue(detail, "id") === numberValue(courseBindingBenefit, "id"),
+    detail && idValue(detail) === idValue(courseBindingBenefit),
   );
-  const topicNames = new Map(topics.map((topic) => [String(topic.id), value(topic, "title")]));
+  const topicNames = new Map(topics.map((topic) => [idValue(topic), value(topic, "title")]));
   const isCourseAuthorized = (course: Entry) =>
     ["study", "download"].some(
-      (accessAction) => bindings[`${course.id}:${accessAction}`]?.enabled,
+      (accessAction) => bindings[`${idValue(course)}:${accessAction}`]?.enabled,
     );
   const filterTerm = courseFilters.q.trim().toLocaleLowerCase();
   const manageableCourses = courses.filter(
@@ -1481,7 +1489,7 @@ function BenefitsPanel({
     .sort((first, second) =>
       Number(isCourseAuthorized(second)) - Number(isCourseAuthorized(first)) ||
       numberValue(first, "sort_order") - numberValue(second, "sort_order") ||
-      first.id - second.id,
+      String(idValue(first)).localeCompare(String(idValue(second))),
     );
   return (
     <div className="membership-list-page">
@@ -1654,7 +1662,7 @@ function BenefitsPanel({
                     value={courseFilters.topic_id}
                   >
                     <option value="">全部专题</option>
-                    {topics.map((topic) => <option key={topic.id} value={topic.id}>{value(topic, "title")}</option>)}
+                    {topics.map((topic) => <option key={idValue(topic)} value={idValue(topic)}>{value(topic, "title")}</option>)}
                   </select>
                 </div>
                 <div className="col-md-2">
@@ -1684,15 +1692,17 @@ function BenefitsPanel({
                 </div>
               </div>
               <div className="membership-course-list">
-                {filteredCourses.map((course) => (
-                  <div className="membership-course-row" key={course.id}>
+                {filteredCourses.map((course) => {
+                  const courseId = idValue(course);
+                  return (
+                  <div className="membership-course-row" key={courseId}>
                     <div>
                       <strong>{value(course, "title")}</strong>
                       <small>{value(course, "course_code")} · {topicNames.get(value(course, "topic_id")) || "未归属专题"} · {isCourseAuthorized(course) ? "已授权" : "未授权"}</small>
                     </div>
                     <div className="membership-course-actions">
                       {["study", "download"].map((accessAction) => {
-                        const key = `${course.id}:${accessAction}`;
+                        const key = `${courseId}:${accessAction}`;
                         return (
                           <label className="membership-check" key={key}>
                             <input
@@ -1712,7 +1722,8 @@ function BenefitsPanel({
                       })}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
                 {!manageableCourses.length ? (
                   <p className="membership-empty">暂无可授权课程，请先将课程访问策略设为“会员权益”。</p>
                 ) : !filteredCourses.length ? (
@@ -1756,7 +1767,7 @@ function MaterialsPanel({
   );
 
   const loadDetail = useCallback(
-    async (materialId: number) => {
+    async (materialId: ApiId) => {
       setDetailLoading(true);
       try {
         const next = await api<Entry>(`/admin/learning-materials/${materialId}`);
@@ -1777,7 +1788,7 @@ function MaterialsPanel({
     setDetail(record || null);
     setLessonEditorOpen(false);
     setEditingLesson(null);
-    if (record) await loadDetail(record.id);
+    if (record) await loadDetail(idValue(record));
   }
 
   function closeDialog() {
@@ -1794,7 +1805,7 @@ function MaterialsPanel({
   async function saveMaterial(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const selectedId = numberValue(detail || dialog?.record, "id");
+    const selectedId = idValue(detail || dialog?.record);
     setBusy(true);
     reportError("");
     try {
@@ -1802,7 +1813,7 @@ function MaterialsPanel({
         `/admin/learning-materials${selectedId ? `/${selectedId}` : ""}`,
         selectedId ? "PUT" : "POST",
         {
-          template_id: optionalNumber(form.get("template_id")),
+          template_id: optionalId(form.get("template_id")),
           material_code: String(form.get("material_code") || "").trim().toLowerCase(),
           title: String(form.get("title") || ""),
           title_en: String(form.get("title_en") || ""),
@@ -1828,7 +1839,7 @@ function MaterialsPanel({
 
   async function saveLesson(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const selectedId = numberValue(detail || dialog?.record, "id");
+    const selectedId = idValue(detail || dialog?.record);
     if (!selectedId) return;
     const form = new FormData(event.currentTarget);
     setBusy(true);
@@ -1836,7 +1847,7 @@ function MaterialsPanel({
     try {
       await api(
         editingLesson
-          ? `/admin/learning-material-lessons/${editingLesson.id}`
+          ? `/admin/learning-material-lessons/${idValue(editingLesson)}`
           : `/admin/learning-materials/${selectedId}/lessons`,
         editingLesson ? "PUT" : "POST",
         {
@@ -1846,7 +1857,7 @@ function MaterialsPanel({
           summary: String(form.get("summary") || ""),
           lesson_format: String(form.get("lesson_format") || "source"),
           source_resource: String(form.get("source_resource") || ""),
-          source_reference_id: optionalNumber(form.get("source_reference_id")),
+          source_reference_id: optionalId(form.get("source_reference_id")),
           content: readJson(form.get("content"), "课时内容"),
           estimated_minutes: optionalNumber(form.get("estimated_minutes")),
           sort_order: Number(form.get("sort_order") || 0),
@@ -1868,7 +1879,7 @@ function MaterialsPanel({
     setBusy(true);
     reportError("");
     try {
-      await api(`/admin/learning-materials/${record.id}`, "DELETE");
+      await api(`/admin/learning-materials/${idValue(record)}`, "DELETE");
       closeDialog();
       if (result.items.length === 1 && page > 1) {
         await refreshSupport();
@@ -1888,8 +1899,8 @@ function MaterialsPanel({
     setBusy(true);
     reportError("");
     try {
-      await api(`/admin/learning-material-lessons/${lesson.id}`, "DELETE");
-      const selectedId = numberValue(detail || dialog?.record, "id");
+      await api(`/admin/learning-material-lessons/${idValue(lesson)}`, "DELETE");
+      const selectedId = idValue(detail || dialog?.record);
       if (selectedId) await loadDetail(selectedId);
     } catch (reason) {
       reportError((reason as Error).message);
@@ -1899,7 +1910,7 @@ function MaterialsPanel({
   }
 
   const selected = detail || dialog?.record || null;
-  const lessons = entries(detail || { id: 0 }, "lessons");
+  const lessons = entries(detail || { id: "local-empty" }, "lessons");
   const templateName = (material: Entry | null | undefined) => {
     const template = material?.template;
     if (template && typeof template === "object" && !Array.isArray(template)) {
@@ -1912,12 +1923,11 @@ function MaterialsPanel({
     (template) => value(template, "status") === "active",
   );
   const defaultTemplateId =
-    numberValue(selected, "template_id") ||
-    numberValue(
+    idValue(selected, "template_id") ||
+    idValue(
       activeTemplates.find((template) => value(template, "code") === "textbook"),
-      "id",
     ) ||
-    numberValue(activeTemplates[0], "id");
+    idValue(activeTemplates[0]);
   const showLessonEditor = dialog?.mode === "lessons" && lessonEditorOpen;
   return (
     <div className="membership-list-page">
@@ -1997,7 +2007,7 @@ function MaterialsPanel({
                 <FormInput defaultValue={value(selected, "title")} label="教材名称" name="title" required />
                 <FormInput defaultValue={value(selected, "title_en")} label="英文名称" name="title_en" />
                 <FormSelect defaultValue={value(selected, "material_type") || "textbook"} label="教材类型" name="material_type" options={materialTypes.map((item) => [item, item])} />
-                <FormSelect defaultValue={String(defaultTemplateId || "")} label="渲染模板" name="template_id" options={activeTemplates.map((template) => [String(template.id), `${value(template, "name")} · ${value(template, "renderer")}`])} />
+                <FormSelect defaultValue={defaultTemplateId} label="渲染模板" name="template_id" options={activeTemplates.map((template) => [idValue(template), `${value(template, "name")} · ${value(template, "renderer")}`])} />
                 <FormInput defaultValue={value(selected, "publisher")} label="出版社或来源" name="publisher" />
                 <FormInput defaultValue={value(selected, "version_name")} label="版本或册别" name="version_name" />
                 <FormInput defaultValue={value(selected, "difficulty_code")} label="难度编码" name="difficulty_code" />
@@ -2020,7 +2030,7 @@ function MaterialsPanel({
                         <FormInput defaultValue={value(editingLesson, "title")} label="课时标题" name="title" required />
                         <FormInput defaultValue={value(editingLesson, "title_en")} label="英文标题" name="title_en" />
                         <div className="col-md-6"><label className="form-label" htmlFor="lesson-source">来源资源</label><select className="form-select" defaultValue={value(editingLesson, "source_resource")} id="lesson-source" name="source_resource"><option value="">使用自包含内容</option>{sourceResources.map((resource) => <option key={resource}>{resource}</option>)}</select></div>
-                        <FormInput defaultValue={value(editingLesson, "source_reference_id")} label="来源根记录 ID" name="source_reference_id" type="number" />
+                        <FormInput defaultValue={value(editingLesson, "source_reference_id")} label="来源根记录 ID" name="source_reference_id" />
                         <FormInput defaultValue={value(editingLesson, "estimated_minutes")} label="预计学习分钟" name="estimated_minutes" type="number" />
                         <FormInput defaultValue={value(editingLesson, "sort_order") || "0"} label="课时排序" name="sort_order" type="number" />
                         <FormTextarea defaultValue={value(editingLesson, "summary")} label="课时简介" name="summary" />
@@ -2110,8 +2120,8 @@ function UserMembershipsPanel({
     const form = new FormData(event.currentTarget);
     const selected = dialog?.record;
     const userId = selected?.user_id
-      ? numberValue(selected, "user_id")
-      : numberValue(membershipUser, "id");
+      ? idValue(selected, "user_id")
+      : idValue(membershipUser);
     if (!userId) {
       reportError("请选择需要发放会员的用户。");
       return;
@@ -2120,7 +2130,7 @@ function UserMembershipsPanel({
     reportError("");
     try {
       const payload = {
-        membership_plan_id: Number(form.get("membership_plan_id")),
+        membership_plan_id: String(form.get("membership_plan_id") || ""),
         status: String(form.get("status") || "active"),
         source: String(form.get("source") || "manual"),
         starts_at: String(form.get("starts_at") || ""),
@@ -2130,7 +2140,7 @@ function UserMembershipsPanel({
         cancel_reason: String(form.get("cancel_reason") || ""),
       };
       await api(
-        `/admin/users/${userId}/memberships${selected ? `/${selected.id}` : ""}`,
+        `/admin/users/${userId}/memberships${selected ? `/${idValue(selected)}` : ""}`,
         selected ? "PUT" : "POST",
         payload,
       );
@@ -2149,7 +2159,7 @@ function UserMembershipsPanel({
     ? plans.filter(
         (plan) =>
           value(plan, "status") === "active" ||
-          numberValue(plan, "id") === numberValue(selected, "membership_plan_id"),
+          idValue(plan) === idValue(selected, "membership_plan_id"),
       )
     : activePlans;
   return (
@@ -2169,7 +2179,7 @@ function UserMembershipsPanel({
             }}
           >
             <div className="col-md-3"><label className="form-label" htmlFor="membership-user-query">用户信息</label><input className="form-control" id="membership-user-query" onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))} placeholder="姓名、用户名、邮箱或手机号" value={filters.q} /></div>
-            <div className="col-md-3"><label className="form-label" htmlFor="membership-plan-filter">会员等级</label><select className="form-select" id="membership-plan-filter" onChange={(event) => setFilters((current) => ({ ...current, membership_plan_id: event.target.value }))} value={filters.membership_plan_id}><option value="">全部等级</option>{plans.map((plan) => <option key={plan.id} value={plan.id}>{value(plan, "name")}</option>)}</select></div>
+            <div className="col-md-3"><label className="form-label" htmlFor="membership-plan-filter">会员等级</label><select className="form-select" id="membership-plan-filter" onChange={(event) => setFilters((current) => ({ ...current, membership_plan_id: event.target.value }))} value={filters.membership_plan_id}><option value="">全部等级</option>{plans.map((plan) => <option key={idValue(plan)} value={idValue(plan)}>{value(plan, "name")}</option>)}</select></div>
             <div className="col-md-2"><label className="form-label" htmlFor="membership-record-status">状态</label><select className="form-select" id="membership-record-status" onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))} value={filters.status}>{membershipStatusOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></div>
             <div className="col-md-2"><label className="form-label" htmlFor="membership-source">发放来源</label><select className="form-select" id="membership-source" onChange={(event) => setFilters((current) => ({ ...current, source: event.target.value }))} value={filters.source}><option value="">全部来源</option>{[["manual", "人工发放"], ["purchase", "购买"], ["trial", "试用"], ["gift", "赠送"], ["migration", "数据迁移"], ["signup", "注册赠送"]].map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></div>
             <FilterActions
@@ -2237,7 +2247,7 @@ function UserMembershipsPanel({
             <form className="row g-3 membership-dialog-form" key={selected?.id || "new-membership"} onSubmit={saveMembership}>
               {!selected && <UserMembershipPicker onChange={setMembershipUser} selectedUser={membershipUser} />}
               {selected && <div className="col-md-6"><label className="form-label">用户</label><p className="membership-readonly-field">{value(selected, "full_name") || value(selected, "username")} · #{value(selected, "user_id")}</p></div>}
-              <div className="col-md-6"><label className="form-label" htmlFor="membership-plan-id">会员等级</label><select className="form-select" defaultValue={value(selected, "membership_plan_id")} id="membership-plan-id" name="membership_plan_id" required><option value="">请选择会员等级</option>{selectablePlans.map((plan) => <option key={plan.id} value={plan.id}>{value(plan, "name")} · {value(plan, "plan_code")}{value(plan, "status") !== "active" ? "（未启用）" : ""}</option>)}</select></div>
+              <div className="col-md-6"><label className="form-label" htmlFor="membership-plan-id">会员等级</label><select className="form-select" defaultValue={value(selected, "membership_plan_id")} id="membership-plan-id" name="membership_plan_id" required><option value="">请选择会员等级</option>{selectablePlans.map((plan) => <option key={idValue(plan)} value={idValue(plan)}>{value(plan, "name")} · {value(plan, "plan_code")}{value(plan, "status") !== "active" ? "（未启用）" : ""}</option>)}</select></div>
               {!selected && <p className="col-12 membership-user-picker-hint">发放会员时仅可选择已启用的会员等级。</p>}
               <FormSelect defaultValue={value(selected, "status") || "active"} label="状态" name="status" options={membershipStatusOptions.slice(1)} />
               <FormSelect defaultValue={value(selected, "source") || "manual"} label="发放来源" name="source" options={[["manual", "人工发放"], ["purchase", "购买"], ["trial", "试用"], ["gift", "赠送"], ["migration", "数据迁移"], ["signup", "注册赠送"]]} />

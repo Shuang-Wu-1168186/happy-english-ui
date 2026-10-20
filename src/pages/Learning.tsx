@@ -1,6 +1,7 @@
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { useStudyCatalog, useStudyItem } from "../lib/study";
-import { entries } from "../lib/api";
+import { entries, idValue } from "../lib/api";
+import type { ApiId } from "../lib/api";
 import { Kids } from "../components/study/Kids";
 import { Phonics } from "../components/study/Phonics";
 import { Textbook } from "../components/study/Textbook";
@@ -28,12 +29,12 @@ export function Learning() {
   if (resource === "note-items" && id)
     return <NoteItemDetail key={id} id={id} />;
   if (resource === "interviews")
-    return <InterviewPage id={id ? Number(id) : undefined} />;
+    return <InterviewPage id={id} />;
   return (
     <LearningContent
       key={resource}
       resource={resource}
-      id={id ? Number(id) : undefined}
+      id={id}
     />
   );
 }
@@ -54,7 +55,7 @@ function Message({ error }: { error?: string }) {
   );
 }
 
-function NoteDetail({ id, initialId }: { id: string; initialId?: number }) {
+function NoteDetail({ id, initialId }: { id: ApiId; initialId?: ApiId }) {
   const result = useStudyItem("notes", id);
   if (!result?.item) return <Message error={result?.error} />;
   return (
@@ -66,10 +67,10 @@ function NoteDetail({ id, initialId }: { id: string; initialId?: number }) {
     />
   );
 }
-function NoteItemDetail({ id }: { id: string }) {
+function NoteItemDetail({ id }: { id: ApiId }) {
   const result = useStudyItem("note-items", id);
   if (!result?.item) return <Message error={result?.error} />;
-  return <NoteDetail id={String(result.item.note_id)} initialId={Number(id)} />;
+  return <NoteDetail id={idValue(result.item, "note_id")} initialId={id} />;
 }
 function NotesPage() {
   const [params] = useSearchParams();
@@ -104,7 +105,7 @@ function NotesPageContent({
     <NoteCollections items={items} />
   );
 }
-function InterviewPage({ id }: { id?: number }) {
+function InterviewPage({ id }: { id?: ApiId }) {
   const { items, error } = useStudyCatalog("interviews"),
     categories = useStudyCatalog("interview-categories");
   if (!items || !categories.items)
@@ -118,10 +119,10 @@ function InterviewPage({ id }: { id?: number }) {
     />
   );
 }
-function LearningContent({ resource, id }: { resource: string; id?: number }) {
+function LearningContent({ resource, id }: { resource: string; id?: ApiId }) {
   const { items, error } = useStudyCatalog(resource);
   if (error || !items) return <Message error={error} />;
-  if (id && !items.some((i) => i.id === id))
+  if (id && !items.some((i) => idValue(i) === id))
     return <Message error="未找到对应学习内容。" />;
   switch (resource) {
     case "kids-cards":

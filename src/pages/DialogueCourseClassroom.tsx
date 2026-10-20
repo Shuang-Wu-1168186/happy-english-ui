@@ -4,7 +4,7 @@ import {
   DialogueLessonContent,
   dialogueSections,
 } from "../components/study/Dialogue";
-import { value } from "../lib/api";
+import { idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 
 type Props = {
@@ -43,9 +43,9 @@ export function DialogueCourseClassroom({
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const sections = useMemo(() => dialogueSections(items), [items]);
-  const topicId = Number(course.topic_id);
+  const topicId = idValue(course, "topic_id");
   const fallbackTo =
-    Number.isInteger(topicId) && topicId > 0
+    topicId
       ? `/course-topics/${topicId}`
       : "/daily-speaking";
   const matchingLessons = lessons.filter((lesson) =>

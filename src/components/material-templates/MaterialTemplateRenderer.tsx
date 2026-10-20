@@ -68,12 +68,10 @@ function dialogueItem(
   values: Entry,
   suffix: string,
 ) {
-  const suffixId = [...suffix].reduce(
-    (total, character) => (total * 31 + character.charCodeAt(0)) % 997,
-    0,
-  );
   return {
-    id: entry.id * 1000 + suffixId,
+    // This is renderer-only data, never a database identifier. Keep it visibly
+    // separate from API-issued opaque IDs.
+    id: `local-dialogue-${String(entry.id)}-${suffix}`,
     section_code: sectionCode,
     section_title: sectionTitle,
     item_title:
@@ -104,12 +102,12 @@ function dialogueItem(
 }
 
 function legacyDialogueItems(content: Entry | null) {
-  const sections = entries(content || { id: 0 }, "sections");
+  const sections = entries(content || { id: "local-empty" }, "sections");
   const byCode = new Map(
     sections.map((section) => [read(section, "section_code"), section]),
   );
   const sectionItems = (code: string) =>
-    entries(byCode.get(code) || { id: 0 }, "items");
+    entries(byCode.get(code) || { id: "local-empty" }, "items");
   const result: Entry[] = [];
 
   for (const entry of sectionItems("core_vocabulary")) {

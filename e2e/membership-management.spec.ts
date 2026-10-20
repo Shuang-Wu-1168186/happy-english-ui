@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { firstApiItemId } from "./opaque";
 
 async function login(page: Page) {
   await page.goto("/login");
@@ -16,6 +17,7 @@ test("administrator can open a benefit's course authorization editor", async ({
 
   const session = await (await page.request.get("/api/auth/session")).json();
   const headers = { "X-CSRF-Token": session.csrf_token };
+  const topicId = await firstApiItemId(page, "/api/admin/learning-topics?page_size=1");
   const suffix = Date.now();
   const courseTitle = `会员授权课程 ${suffix}`;
   const courseResponse = await page.request.post(
@@ -23,7 +25,7 @@ test("administrator can open a benefit's course authorization editor", async ({
     {
       headers,
       data: {
-        topic_id: 1,
+        topic_id: topicId,
         course_code: `membership-course-${suffix}`,
         title: courseTitle,
         access_policy: "benefit",

@@ -125,14 +125,14 @@ export function Phonics({
   onSelectLesson,
 }: {
   items: Entry[];
-  initialId?: number;
+  initialId?: Entry["id"];
   backTo?: string;
   onLockedLesson?: (lesson: Entry) => void;
   onSelectLesson?: (lesson: Entry) => void;
 }) {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const id = Number(params.get("lesson")) || initialId || items[0]?.id;
+  const id = params.get("lesson") || initialId || items[0]?.id;
   const index = Math.max(
       0,
       items.findIndex((i) => i.id === id),

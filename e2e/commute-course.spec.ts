@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { mockOpaqueId } from "./opaque";
 
 async function login(page: Page) {
   await page.goto("/login");
@@ -52,8 +53,11 @@ const vocabulary = [
   },
 ];
 
+const commuteLessonId = mockOpaqueId("commute-lesson-2934");
+const commuteTopicId = mockOpaqueId("commute-topic-32");
+
 const commuteLesson = {
-  id: 2934,
+  id: commuteLessonId,
   title: "地铁上也能学 · 3 分钟自然接话",
   summary: "用四个短语完成自然回应。",
   illustration_url: "/static/images/image-loading.svg",
@@ -67,7 +71,7 @@ const commuteLesson = {
         {
           section_code: "core_vocabulary",
           items: vocabulary.map((payload, index) => ({
-            id: index + 1,
+            id: mockOpaqueId(`commute-item-${index + 1}`),
             item_code: `term-${index + 1}`,
             payload,
           })),
@@ -76,7 +80,7 @@ const commuteLesson = {
           section_code: "speaking_practice",
           items: [
             {
-              id: 9,
+              id: mockOpaqueId("commute-item-9"),
               item_code: "quick-reply",
               payload: {
                 question: "Choose the reply that fits the situation.",
@@ -108,13 +112,14 @@ test("commute micro lesson is usable in a narrow mobile viewport", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page);
 
-  await page.route("**/api/learning/courses/81/open", async (route) => {
+  const courseId = mockOpaqueId("commute-course-81");
+  await page.route(`**/api/learning/courses/${courseId}/open`, async (route) => {
     expect(route.request().method()).toBe("POST");
     await route.fulfill({
       json: {
-        id: 81,
+        id: courseId,
         title: "地铁通勤英语 · 第一站",
-        topics: [{ id: 32, topic_code: "commute-micro-english" }],
+        topics: [{ id: commuteTopicId, topic_code: "commute-micro-english" }],
         access_state: "available",
         materials: [],
         lessons: [commuteLesson],
@@ -122,7 +127,7 @@ test("commute micro lesson is usable in a narrow mobile viewport", async ({
     });
   });
 
-  await page.goto("/courses/81");
+  await page.goto(`/courses/${courseId}`);
   await expect(page.locator(".commute-course-app")).toBeVisible();
   await expect(
     page.getByRole("heading", {
@@ -181,18 +186,19 @@ test("generated commute lesson artwork works before the API process reloads", as
   page,
 }) => {
   await login(page);
-  await page.route("**/api/learning/courses/82/open", async (route) => {
+  const courseId = mockOpaqueId("commute-course-82");
+  await page.route(`**/api/learning/courses/${courseId}/open`, async (route) => {
     await route.fulfill({
       json: {
-        id: 82,
+        id: courseId,
         title: "地铁通勤英语 · 第2站",
-        topics: [{ id: 32, topic_code: "commute-micro-english" }],
+        topics: [{ id: commuteTopicId, topic_code: "commute-micro-english" }],
         access_state: "available",
         materials: [],
         lessons: [
           {
             ...commuteLesson,
-            id: 2942,
+            id: mockOpaqueId("commute-lesson-2942"),
             lesson_code: "commute-c02-l01-suggest-a-time",
             title: "提出时间",
             illustration_url: "",
@@ -202,7 +208,7 @@ test("generated commute lesson artwork works before the API process reloads", as
     });
   });
 
-  await page.goto("/courses/82");
+  await page.goto(`/courses/${courseId}`);
   await expect(
     page.getByRole("img", { name: "提出时间 的配图" }),
   ).toHaveAttribute(
@@ -223,9 +229,10 @@ test("the learning-material entry also uses the commute lesson screen", async ({
   const lessonRequested = new Promise<void>((resolve) => {
     markLessonRequested = resolve;
   });
-  await page.route("**/api/learning/materials/115**", async (route) => {
+  const materialId = mockOpaqueId("commute-material-115");
+  await page.route(`**/api/learning/materials/${materialId}**`, async (route) => {
     const pathname = new URL(route.request().url()).pathname;
-    if (pathname.endsWith("/lessons/2934")) {
+    if (pathname.endsWith(`/lessons/${commuteLessonId}`)) {
       markLessonRequested();
       await lessonResponseCanFinish;
       await route.fulfill({ json: commuteLesson });
@@ -233,11 +240,11 @@ test("the learning-material entry also uses the commute lesson screen", async ({
     }
     await route.fulfill({
       json: {
-        id: 115,
+        id: materialId,
         title: "地铁通勤英语 · 第一站",
         summary: "地铁上也能学的三分钟英语。",
         cover_url: "/static/images/image-loading.svg",
-        topics: [{ id: 32, topic_code: "commute-micro-english" }],
+        topics: [{ id: commuteTopicId, topic_code: "commute-micro-english" }],
         access_state: "available",
         preview_lesson_count: 2,
         template: { code: "commute", version: 1, renderer: "commute.v1" },
@@ -246,7 +253,7 @@ test("the learning-material entry also uses the commute lesson screen", async ({
     });
   });
 
-  await page.goto("/learning-materials/115");
+  await page.goto(`/learning-materials/${materialId}`);
   await lessonRequested;
   await expect(page.locator(".commute-course-app")).toBeVisible();
   await expect(page.locator(".commute-course-loading")).toContainText(
@@ -267,13 +274,13 @@ test("the learning-material phonics entry keeps the original phonics layout", as
   await login(page);
   let requestedLessonContent = false;
   const phonicsLesson = {
-    id: 2935,
+    id: mockOpaqueId("phonics-material-lesson-2935"),
     title: "a + 辅音 + e",
     summary: "学习长元音 a 的常见拼读规律。",
     template: { code: "phonics", version: 1, renderer: "phonics.v1" },
     access_state: "available",
     source_content: {
-      id: 1,
+      id: mockOpaqueId("phonics-source-1"),
       title: "a + 辅音 + e",
       subtitle: "第一讲 · 长元音 a",
       pattern_text: "a + 辅音 + e → /eɪ/",
@@ -285,14 +292,15 @@ test("the learning-material phonics entry keeps the original phonics layout", as
       quiz_answer: "cake",
     },
   };
-  await page.route("**/api/learning/materials/116**", async (route) => {
+  const materialId = mockOpaqueId("phonics-material-116");
+  await page.route(`**/api/learning/materials/${materialId}**`, async (route) => {
     const url = new URL(route.request().url());
     const includesContent =
       url.searchParams.get("include_lesson_content") === "true";
     requestedLessonContent ||= includesContent;
     await route.fulfill({
       json: {
-        id: 116,
+        id: materialId,
         title: "自然拼读课程",
         summary: "从字母音开始练习拼读规律。",
         access_state: "available",
@@ -310,7 +318,7 @@ test("the learning-material phonics entry keeps the original phonics layout", as
     });
   });
 
-  await page.goto("/learning-materials/116");
+  await page.goto(`/learning-materials/${materialId}`);
   await expect(page.locator(".study-phonics")).toBeVisible();
   await expect(page.locator(".phonics-hero")).toBeVisible();
   await expect(page.locator(".lesson-card")).toBeVisible();

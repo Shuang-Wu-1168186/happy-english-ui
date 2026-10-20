@@ -4,7 +4,7 @@ import { BackButton } from "../components/BackButton";
 import { HomeNavigation } from "../components/Layout";
 import { PrivateZoneFavorite } from "../components/PrivateZoneFavorite";
 import { Speak } from "../components/study/Speech";
-import { api, asset, entries, value } from "../lib/api";
+import { api, asset, entries, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 import { DialogueCourseClassroom } from "./DialogueCourseClassroom";
 import { CommuteCourseClassroom } from "./CommuteCourseClassroom";
@@ -35,7 +35,7 @@ function contentFor(lesson: Entry | undefined): Entry | null {
   if (renderPayload && typeof renderPayload === "object" && !Array.isArray(renderPayload)) {
     const rendered = (renderPayload as Entry).content;
     if (Array.isArray(rendered))
-      return { id: Number(lesson?.id || 0), items: rendered };
+      return { id: lesson?.id || "local-content", items: rendered };
     if (rendered && typeof rendered === "object") return rendered as Entry;
   }
   const source = lesson?.source_content;
@@ -43,7 +43,7 @@ function contentFor(lesson: Entry | undefined): Entry | null {
     return source as Entry;
   const content = lesson?.content;
   if (Array.isArray(content))
-    return { id: Number(lesson?.id || 0), items: content };
+    return { id: lesson?.id || "local-content", items: content };
   if (content && typeof content === "object") return content as Entry;
   return null;
 }
@@ -87,7 +87,7 @@ function canSpeak(text: string) {
 function objectEntry(value: unknown): Entry {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Entry)
-    : { id: 0 };
+    : { id: "local-empty" };
 }
 
 function sourceUnitFor(lesson: Entry): number | null {
@@ -500,9 +500,9 @@ function LessonIllustration({ lesson }: { lesson: Entry }) {
 
 export function CourseClassroom() {
   const { courseId = "" } = useParams();
-  const id = Number(courseId);
+  const id = courseId;
   const [course, setCourse] = useState<Entry | null>(null);
-  const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null);
+  const [selectedLessonId, setSelectedLessonId] = useState<Entry["id"] | null>(null);
   const [selectedOriginalUnit, setSelectedOriginalUnit] = useState<number | "all">(
     "all",
   );
@@ -511,7 +511,7 @@ export function CourseClassroom() {
 
   useEffect(() => {
     let active = true;
-    if (!Number.isInteger(id) || id < 1) {
+    if (!id) {
       setError("课程地址无效。");
       return () => {
         active = false;
@@ -616,7 +616,7 @@ export function CourseClassroom() {
           onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
           previewCount={previewCount}
         />
-        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+        <PrivateZoneFavorite resourceId={idValue(course)} resourceType="course" />
       </>
     );
 
@@ -639,7 +639,7 @@ export function CourseClassroom() {
           onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
           previewCount={previewCount}
         />
-        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+        <PrivateZoneFavorite resourceId={idValue(course)} resourceType="course" />
       </>
     );
 
@@ -657,7 +657,7 @@ export function CourseClassroom() {
           onSelectLesson={(lesson) => setSelectedLessonId(lesson.id)}
           previewCount={previewCount}
         />
-        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+        <PrivateZoneFavorite resourceId={idValue(course)} resourceType="course" />
       </>
     );
 
@@ -676,7 +676,7 @@ export function CourseClassroom() {
           previewCount={previewCount}
           resource={activeOriginalCourseResource}
         />
-        <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+        <PrivateZoneFavorite resourceId={idValue(course)} resourceType="course" />
       </>
     );
 
@@ -861,7 +861,7 @@ export function CourseClassroom() {
         )}
       </main>
 
-      <PrivateZoneFavorite resourceId={Number(course.id)} resourceType="course" />
+      <PrivateZoneFavorite resourceId={idValue(course)} resourceType="course" />
 
       {lockedLesson && (
         <div className="course-upgrade-backdrop" role="presentation">

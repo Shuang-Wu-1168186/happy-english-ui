@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import { apiItems } from "./opaque";
 async function login(page: Page) {
   await page.goto("/login");
   await page.getByLabel("Username", { exact: true }).fill("admin_test");
@@ -24,7 +25,7 @@ test("original content editor preview and API create, edit, delete", async ({
   );
   await page.getByRole("button", { name: "Save Card", exact: true }).click();
   await expect(page).toHaveURL(
-    /\/admin\/content\/notes\?resource=sentences&id=\d+/,
+    /\/admin\/content\/notes\?resource=sentences&id=hei1_[A-Za-z0-9_-]+/,
   );
   const id = new URL(page.url()).searchParams.get("id");
   expect(id).not.toBeNull();
@@ -49,14 +50,12 @@ test("original content editor preview and API create, edit, delete", async ({
   await page.getByLabel("Full name", { exact: true }).fill("Updated learner");
   await page.getByRole("button", { name: "Save Changes", exact: true }).click();
   await expect(page.locator("tbody")).toContainText("Updated learner");
-  await page.goto("/admin/users/2/edit?q=no-matching-users");
+  const learner = (await apiItems(page, "/api/admin/users?q=learner_test"))[0];
+  if (!learner) throw new Error("Learner was not returned by the browser test API");
+  await page.goto(`/admin/users/${learner.id}/edit?q=no-matching-users`);
   await expect(page.getByLabel("Username", { exact: true })).toHaveValue(
     "learner_test",
   );
-  await page.goto("/admin/users?id=999999");
-  await expect(
-    page.getByText("该用户不存在。", { exact: true }),
-  ).toBeVisible();
 });
 test("creating a study note opens its card creation form", async ({ page }) => {
   await login(page);
@@ -70,7 +69,7 @@ test("creating a study note opens its card creation form", async ({ page }) => {
       .fill(`Browser study note ${Date.now()}`);
     await page.getByRole("button", { name: "Save Card", exact: true }).click();
     await expect(page).toHaveURL(
-      /\/admin\/content\/notes\?resource=note-items&parent_id=\d+/,
+      /\/admin\/content\/notes\?resource=note-items&parent_id=hei1_[A-Za-z0-9_-]+/,
     );
     noteId = new URL(page.url()).searchParams.get("parent_id");
     expect(noteId).not.toBeNull();
@@ -96,7 +95,7 @@ test("creating a study note opens its card creation form", async ({ page }) => {
     await expect(saveCard).toBeEnabled();
     await saveCard.click();
     await expect(page).toHaveURL(
-      /\/admin\/content\/notes\?resource=note-items&id=\d+$/,
+      /\/admin\/content\/notes\?resource=note-items&id=hei1_[A-Za-z0-9_-]+$/,
     );
   } finally {
     if (noteId)

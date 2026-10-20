@@ -12,8 +12,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { api, entries, value } from "../lib/api";
-import type { Entry, Page } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
+import type { ApiId, Entry, Page } from "../lib/api";
 
 type CourseFilters = {
   q: string;
@@ -28,7 +28,7 @@ type MaterialPickerFilters = {
 };
 
 type CourseForm = {
-  materialIds: number[];
+  materialIds: ApiId[];
   courseCode: string;
   title: string;
   titleEn: string;
@@ -45,7 +45,7 @@ type CourseForm = {
 type EditorState = { course: Entry | null };
 
 type MaterialDropTarget = {
-  materialId: number;
+  materialId: ApiId;
   insertAfter: boolean;
 };
 
@@ -81,7 +81,7 @@ function isEnabled(raw: unknown) {
 function idsFrom(entry: Entry, key: string) {
   const raw = entry[key];
   if (!Array.isArray(raw)) return [];
-  return raw.map(numberValue).filter((id) => id > 0);
+  return raw.filter((id): id is ApiId => typeof id === "string");
 }
 
 function courseForm(course: Entry): CourseForm {
@@ -120,11 +120,11 @@ function coursePayload(form: CourseForm) {
   };
 }
 
-function materialNames(course: Entry, materials: Map<number, Entry>) {
+function materialNames(course: Entry, materials: Map<ApiId, Entry>) {
   const linkedMaterials = entries(course, "materials");
   if (linkedMaterials.length) {
     return linkedMaterials.map(
-      (material) => value(material, "title") || `教材 #${material.id}`,
+      (material) => value(material, "title") || `教材 #${idValue(material)}`,
     );
   }
   return idsFrom(course, "material_ids").map(
@@ -164,14 +164,19 @@ export function CourseDevelopment() {
   const [pickerTotal, setPickerTotal] = useState(0);
   const [pickerLoading, setPickerLoading] = useState(false);
   const [pickerError, setPickerError] = useState("");
-  const [draggedMaterialId, setDraggedMaterialId] = useState<number | null>(
+  const [draggedMaterialId, setDraggedMaterialId] = useState<ApiId | null>(
     null,
   );
   const [materialDropTarget, setMaterialDropTarget] =
     useState<MaterialDropTarget | null>(null);
 
   const materialById = useMemo(
-    () => new Map(materials.map((material) => [material.id, material])),
+    () =>
+      new Map(
+        materials
+          .map((material) => [idValue(material), material] as const)
+          .filter(([materialId]) => Boolean(materialId)),
+      ),
     [materials],
   );
   const loadReferenceData = useCallback(async () => {
@@ -232,9 +237,14 @@ export function CourseDevelopment() {
       setPickerTotal(numberValue(response.total));
       setMaterials((current) => {
         const byId = new Map(
-          current.map((material) => [material.id, material]),
+          current
+            .map((material) => [idValue(material), material] as const)
+            .filter(([materialId]) => Boolean(materialId)),
         );
-        items.forEach((material) => byId.set(material.id, material));
+        items.forEach((material) => {
+          const materialId = idValue(material);
+          if (materialId) byId.set(materialId, material);
+        });
         return [...byId.values()];
       });
     },
@@ -330,7 +340,7 @@ export function CourseDevelopment() {
     setForm((current) => ({ ...current, [key]: fieldValue }));
   }
 
-  function addMaterial(materialId: number) {
+  function addMaterial(materialId: ApiId) {
     setForm((current) =>
       current.materialIds.includes(materialId)
         ? current
@@ -341,14 +351,14 @@ export function CourseDevelopment() {
     );
   }
 
-  function removeMaterial(materialId: number) {
+  function removeMaterial(materialId: ApiId) {
     setForm((current) => ({
       ...current,
       materialIds: current.materialIds.filter((id) => id !== materialId),
     }));
   }
 
-  function moveMaterial(materialId: number, direction: -1 | 1) {
+  function moveMaterial(materialId: ApiId, direction: -1 | 1) {
     setForm((current) => {
       const index = current.materialIds.indexOf(materialId);
       const nextIndex = index + direction;
@@ -369,8 +379,8 @@ export function CourseDevelopment() {
   }
 
   function moveMaterialTo(
-    materialId: number,
-    targetMaterialId: number,
+    materialId: ApiId,
+    targetMaterialId: ApiId,
     insertAfter: boolean,
   ) {
     if (materialId === targetMaterialId) return;
@@ -387,7 +397,7 @@ export function CourseDevelopment() {
 
   function startMaterialDrag(
     event: DragEvent<HTMLLIElement>,
-    materialId: number,
+    materialId: ApiId,
   ) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", String(materialId));
@@ -396,7 +406,7 @@ export function CourseDevelopment() {
 
   function previewMaterialDrop(
     event: DragEvent<HTMLLIElement>,
-    materialId: number,
+    materialId: ApiId,
   ) {
     event.preventDefault();
     if (draggedMaterialId === null || draggedMaterialId === materialId) return;
@@ -409,15 +419,13 @@ export function CourseDevelopment() {
 
   function dropMaterial(
     event: DragEvent<HTMLLIElement>,
-    targetMaterialId: number,
+    targetMaterialId: ApiId,
   ) {
     event.preventDefault();
-    const transferredMaterialId = Number(
-      event.dataTransfer.getData("text/plain"),
-    );
+    const transferredMaterialId = event.dataTransfer.getData("text/plain");
     const materialId = draggedMaterialId ?? transferredMaterialId;
     const bounds = event.currentTarget.getBoundingClientRect();
-    if (Number.isFinite(materialId)) {
+    if (materialId) {
       moveMaterialTo(
         materialId,
         targetMaterialId,
@@ -451,8 +459,9 @@ export function CourseDevelopment() {
     setError("");
     try {
       const editingCourse = editor?.course;
+      const editingCourseId = idValue(editingCourse);
       await api<Entry>(
-        `/admin/learning/courses${editingCourse ? `/${editingCourse.id}` : ""}`,
+        `/admin/learning/courses${editingCourse ? `/${editingCourseId}` : ""}`,
         editingCourse ? "PUT" : "POST",
         coursePayload(form),
       );
@@ -476,7 +485,7 @@ export function CourseDevelopment() {
     setNotice("");
     try {
       await api<Entry>(
-        `/admin/learning/courses/${course.id}`,
+        `/admin/learning/courses/${idValue(course)}`,
         "PUT",
         coursePayload(nextForm),
       );
@@ -492,7 +501,7 @@ export function CourseDevelopment() {
     setError("");
     setNotice("");
     try {
-      await api(`/admin/learning/courses/${course.id}`, "DELETE");
+      await api(`/admin/learning/courses/${idValue(course)}`, "DELETE");
       setNotice("课程已删除。");
       if (courses.length === 1 && page > 1) {
         setPage(page - 1);
@@ -1074,26 +1083,27 @@ export function CourseDevelopment() {
                       className="course-selected-materials"
                     >
                       {selectedMaterials.map((material, index) => {
+                        const materialId = idValue(material);
                         const dropBefore =
-                          materialDropTarget?.materialId === material.id &&
+                          materialDropTarget?.materialId === materialId &&
                           !materialDropTarget.insertAfter;
                         const dropAfter =
-                          materialDropTarget?.materialId === material.id &&
+                          materialDropTarget?.materialId === materialId &&
                           materialDropTarget.insertAfter;
                         return (
                           <li
-                            aria-label={`${value(material, "title") || `教材 #${material.id}`}，第 ${index + 1} 位`}
-                            className={`${draggedMaterialId === material.id ? "is-dragging" : ""}${dropBefore ? " is-drop-before" : ""}${dropAfter ? " is-drop-after" : ""}`}
+                            aria-label={`${value(material, "title") || `教材 #${materialId}`}，第 ${index + 1} 位`}
+                            className={`${draggedMaterialId === materialId ? "is-dragging" : ""}${dropBefore ? " is-drop-before" : ""}${dropAfter ? " is-drop-after" : ""}`}
                             draggable
-                            key={material.id}
+                            key={materialId}
                             onDragEnd={finishMaterialDrag}
                             onDragOver={(event) =>
-                              previewMaterialDrop(event, material.id)
+                              previewMaterialDrop(event, materialId)
                             }
                             onDragStart={(event) =>
-                              startMaterialDrag(event, material.id)
+                              startMaterialDrag(event, materialId)
                             }
-                            onDrop={(event) => dropMaterial(event, material.id)}
+                            onDrop={(event) => dropMaterial(event, materialId)}
                           >
                             <span
                               aria-hidden="true"
@@ -1108,7 +1118,7 @@ export function CourseDevelopment() {
                             <span>
                               <strong>
                                 {value(material, "title") ||
-                                  `教材 #${material.id}`}
+                                  `教材 #${materialId}`}
                               </strong>
                               <small>
                                 {value(material, "material_code") ||
@@ -1119,7 +1129,7 @@ export function CourseDevelopment() {
                               <button
                                 aria-label="上移教材"
                                 disabled={index === 0}
-                                onClick={() => moveMaterial(material.id, -1)}
+                                onClick={() => moveMaterial(materialId, -1)}
                                 onPointerDown={(event) =>
                                   event.stopPropagation()
                                 }
@@ -1132,7 +1142,7 @@ export function CourseDevelopment() {
                                 disabled={
                                   index === selectedMaterials.length - 1
                                 }
-                                onClick={() => moveMaterial(material.id, 1)}
+                                onClick={() => moveMaterial(materialId, 1)}
                                 onPointerDown={(event) =>
                                   event.stopPropagation()
                                 }
@@ -1142,7 +1152,7 @@ export function CourseDevelopment() {
                               </button>
                               <button
                                 className="is-remove"
-                                onClick={() => removeMaterial(material.id)}
+                                onClick={() => removeMaterial(materialId)}
                                 onPointerDown={(event) =>
                                   event.stopPropagation()
                                 }
@@ -1162,13 +1172,14 @@ export function CourseDevelopment() {
                   )}
                   <div className="course-material-options">
                     {pickerMaterials.map((material) => {
-                      const selected = form.materialIds.includes(material.id);
+                      const materialId = idValue(material);
+                      const selected = form.materialIds.includes(materialId);
                       return (
                         <button
                           className={selected ? "is-selected" : ""}
                           disabled={selected}
-                          key={material.id}
-                          onClick={() => addMaterial(material.id)}
+                          key={materialId}
+                          onClick={() => addMaterial(materialId)}
                           type="button"
                         >
                           <span>

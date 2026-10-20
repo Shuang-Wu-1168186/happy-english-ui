@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import type { DragEvent, FormEvent } from "react";
 import { GripVertical, Plus, Trash2, X } from "lucide-react";
-import { api, entries, value } from "../lib/api";
-import type { Entry, Page } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
+import type { ApiId, Entry, Page } from "../lib/api";
 
 type TopicForm = {
   module_id: string;
@@ -22,7 +22,7 @@ type TopicFilters = {
 };
 
 type CourseDropTarget = {
-  courseId: number;
+  courseId: ApiId;
   insertAfter: boolean;
 };
 
@@ -98,17 +98,17 @@ export function TopicManagement() {
   const [orderedCourses, setOrderedCourses] = useState<Entry[]>([]);
   const [courseOrderLoading, setCourseOrderLoading] = useState(false);
   const [courseOrderSaving, setCourseOrderSaving] = useState(false);
-  const [courseRemovingId, setCourseRemovingId] = useState<number | null>(null);
+  const [courseRemovingId, setCourseRemovingId] = useState<ApiId | null>(null);
   const [courseOrderError, setCourseOrderError] = useState("");
   const [courseAssociationOpen, setCourseAssociationOpen] = useState(false);
   const [availableCourses, setAvailableCourses] = useState<Entry[]>([]);
-  const [selectedCourseIds, setSelectedCourseIds] = useState<number[]>([]);
+  const [selectedCourseIds, setSelectedCourseIds] = useState<ApiId[]>([]);
   const [courseAssociationQuery, setCourseAssociationQuery] = useState("");
   const [courseAssociationLoading, setCourseAssociationLoading] =
     useState(false);
   const [courseAssociationSaving, setCourseAssociationSaving] = useState(false);
   const [courseAssociationError, setCourseAssociationError] = useState("");
-  const [draggedCourseId, setDraggedCourseId] = useState<number | null>(null);
+  const [draggedCourseId, setDraggedCourseId] = useState<ApiId | null>(null);
   const [courseDropTarget, setCourseDropTarget] =
     useState<CourseDropTarget | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,7 +195,7 @@ export function TopicManagement() {
 
   function createTopic() {
     setEditing(null);
-    setForm({ ...blankForm(), module_id: String(modules[0]?.id || "") });
+    setForm({ ...blankForm(), module_id: idValue(modules[0]) });
     setEditorOpen(true);
     setError("");
     setMessage("");
@@ -224,7 +224,7 @@ export function TopicManagement() {
     setError("");
     setMessage("");
     try {
-      const detail = await api<Entry>(`/admin/learning-topics/${topic.id}`);
+      const detail = await api<Entry>(`/admin/learning-topics/${idValue(topic)}`);
       setOrderingTopic(detail);
       setOrderedCourses(entries(detail, "courses"));
     } catch (reason) {
@@ -270,10 +270,10 @@ export function TopicManagement() {
       const result = await api<Page>(
         "/admin/learning-courses?page=1&page_size=100",
       );
-      const currentIds = new Set(orderedCourses.map((course) => course.id));
+      const currentIds = new Set(orderedCourses.map((course) => idValue(course)));
       setAvailableCourses(
         (Array.isArray(result.items) ? result.items : []).filter(
-          (course) => !currentIds.has(course.id),
+          (course) => !currentIds.has(idValue(course)),
         ),
       );
     } catch (reason) {
@@ -292,7 +292,7 @@ export function TopicManagement() {
     setCourseAssociationError("");
   }
 
-  function toggleCourseAssociation(courseId: number) {
+  function toggleCourseAssociation(courseId: ApiId) {
     setSelectedCourseIds((current) =>
       current.includes(courseId)
         ? current.filter((id) => id !== courseId)
@@ -301,17 +301,17 @@ export function TopicManagement() {
   }
 
   function moveCourseTo(
-    courseId: number,
-    targetCourseId: number,
+    courseId: ApiId,
+    targetCourseId: ApiId,
     insertAfter: boolean,
   ) {
     if (courseId === targetCourseId) return;
     setOrderedCourses((current) => {
-      const moving = current.find((course) => course.id === courseId);
+      const moving = current.find((course) => idValue(course) === courseId);
       if (!moving) return current;
-      const next = current.filter((course) => course.id !== courseId);
+      const next = current.filter((course) => idValue(course) !== courseId);
       const targetIndex = next.findIndex(
-        (course) => course.id === targetCourseId,
+        (course) => idValue(course) === targetCourseId,
       );
       if (targetIndex < 0) return current;
       next.splice(targetIndex + (insertAfter ? 1 : 0), 0, moving);
@@ -319,7 +319,7 @@ export function TopicManagement() {
     });
   }
 
-  function startCourseDrag(event: DragEvent<HTMLLIElement>, courseId: number) {
+  function startCourseDrag(event: DragEvent<HTMLLIElement>, courseId: ApiId) {
     if (courseOrderSaving || courseRemovingId !== null) {
       event.preventDefault();
       return;
@@ -331,7 +331,7 @@ export function TopicManagement() {
 
   function previewCourseDrop(
     event: DragEvent<HTMLLIElement>,
-    courseId: number,
+    courseId: ApiId,
   ) {
     event.preventDefault();
     if (
@@ -348,14 +348,12 @@ export function TopicManagement() {
     });
   }
 
-  function dropCourse(event: DragEvent<HTMLLIElement>, targetCourseId: number) {
+  function dropCourse(event: DragEvent<HTMLLIElement>, targetCourseId: ApiId) {
     event.preventDefault();
-    const transferredCourseId = Number(
-      event.dataTransfer.getData("text/plain"),
-    );
+    const transferredCourseId = event.dataTransfer.getData("text/plain");
     const courseId = draggedCourseId ?? transferredCourseId;
     const bounds = event.currentTarget.getBoundingClientRect();
-    if (Number.isFinite(courseId)) {
+    if (courseId) {
       moveCourseTo(
         courseId,
         targetCourseId,
@@ -378,9 +376,9 @@ export function TopicManagement() {
     setCourseOrderError("");
     try {
       await api(
-        `/admin/learning-topics/${orderingTopic.id}/course-order`,
+        `/admin/learning-topics/${idValue(orderingTopic)}/course-order`,
         "PUT",
-        { course_ids: orderedCourses.map((course) => course.id) },
+        { course_ids: orderedCourses.map((course) => idValue(course)) },
       );
       closeCourseOrder(true);
       setMessage("专题内课程顺序已保存。");
@@ -402,15 +400,16 @@ export function TopicManagement() {
       )
     )
       return;
-    setCourseRemovingId(course.id);
+    const courseId = idValue(course);
+    setCourseRemovingId(courseId);
     setCourseOrderError("");
     try {
       await api(
-        `/admin/learning-topics/${orderingTopic.id}/courses/${course.id}`,
+        `/admin/learning-topics/${idValue(orderingTopic)}/courses/${courseId}`,
         "DELETE",
       );
       setOrderedCourses((current) =>
-        current.filter((item) => item.id !== course.id),
+        current.filter((item) => idValue(item) !== courseId),
       );
       setDraggedCourseId(null);
       setCourseDropTarget(null);
@@ -430,7 +429,7 @@ export function TopicManagement() {
     setCourseAssociationError("");
     try {
       const result = await api<{ items: Entry[] }>(
-        `/admin/learning-topics/${orderingTopic.id}/courses`,
+        `/admin/learning-topics/${idValue(orderingTopic)}/courses`,
         "POST",
         { course_ids: selectedCourseIds },
       );
@@ -462,13 +461,13 @@ export function TopicManagement() {
     try {
       await api(
         editing
-          ? `/admin/learning/topics/${editing.id}`
+          ? `/admin/learning/topics/${idValue(editing)}`
           : "/admin/learning/topics",
         editing ? "PUT" : "POST",
         {
           ...form,
           topic_code: topicCode,
-          module_id: Number(form.module_id),
+          module_id: form.module_id,
           sort_order: Number(form.sort_order || 0),
           is_published: form.is_published ? 1 : 0,
         },
@@ -486,7 +485,7 @@ export function TopicManagement() {
   async function togglePublication(topic: Entry) {
     const published = value(topic, "is_published") === "1";
     try {
-      await api(`/admin/learning/topics/${topic.id}/publication`, "PUT", {
+      await api(`/admin/learning/topics/${idValue(topic)}/publication`, "PUT", {
         is_published: published ? 0 : 1,
       });
       setMessage(published ? "专题已下架。" : "专题已发布。");
@@ -504,9 +503,9 @@ export function TopicManagement() {
     )
       return;
     try {
-      await api(`/admin/learning/topics/${topic.id}`, "DELETE");
+      await api(`/admin/learning/topics/${idValue(topic)}`, "DELETE");
       setMessage("专题已删除。");
-      if (editing?.id === topic.id) closeEditor();
+      if (idValue(editing) === idValue(topic)) closeEditor();
       await loadTopics(topics.length === 1 && page > 1 ? page - 1 : page);
     } catch (reason) {
       setError((reason as Error).message);
@@ -515,7 +514,7 @@ export function TopicManagement() {
 
   const moduleName = (id: unknown) =>
     value(
-      modules.find((item) => item.id === Number(id)),
+      modules.find((item) => idValue(item) === String(id)),
       "name",
     ) || `学习区域 #${id}`;
 
@@ -1087,19 +1086,21 @@ export function TopicManagement() {
                             field.toLowerCase().includes(search),
                           );
                         })
-                        .map((course) => (
+                        .map((course) => {
+                          const courseId = idValue(course);
+                          return (
                           <label
                             className={
-                              selectedCourseIds.includes(course.id)
+                              selectedCourseIds.includes(courseId)
                                 ? "is-selected"
                                 : ""
                             }
-                            key={course.id}
+                            key={courseId}
                           >
                             <input
-                              checked={selectedCourseIds.includes(course.id)}
+                              checked={selectedCourseIds.includes(courseId)}
                               onChange={() =>
-                                toggleCourseAssociation(course.id)
+                                toggleCourseAssociation(courseId)
                               }
                               type="checkbox"
                             />
@@ -1113,7 +1114,8 @@ export function TopicManagement() {
                               </small>
                             </span>
                           </label>
-                        ))}
+                          );
+                        })}
                     </div>
                   ) : (
                     <p className="topic-course-association-empty">
@@ -1151,32 +1153,33 @@ export function TopicManagement() {
                   className="topic-course-order-list"
                 >
                   {orderedCourses.map((course, index) => {
+                    const courseId = idValue(course);
                     const dropBefore =
-                      courseDropTarget?.courseId === course.id &&
+                      courseDropTarget?.courseId === courseId &&
                       !courseDropTarget.insertAfter;
                     const dropAfter =
-                      courseDropTarget?.courseId === course.id &&
+                      courseDropTarget?.courseId === courseId &&
                       courseDropTarget.insertAfter;
                     const display = courseOrderDisplay(course);
                     const courseTitle = value(course, "title") || display.title;
-                    const removing = courseRemovingId === course.id;
+                    const removing = courseRemovingId === courseId;
                     return (
                       <li
                         aria-label={`${display.title}，第 ${index + 1} 位`}
-                        className={`topic-course-order-item${draggedCourseId === course.id ? " is-dragging" : ""}${dropBefore ? " is-drop-before" : ""}${dropAfter ? " is-drop-after" : ""}`}
-                        data-course-id={course.id}
+                        className={`topic-course-order-item${draggedCourseId === courseId ? " is-dragging" : ""}${dropBefore ? " is-drop-before" : ""}${dropAfter ? " is-drop-after" : ""}`}
+                        data-course-id={courseId}
                         draggable={
                           !courseOrderSaving && courseRemovingId === null
                         }
-                        key={course.id}
+                        key={courseId}
                         onDragEnd={finishCourseDrag}
                         onDragOver={(event) =>
-                          previewCourseDrop(event, course.id)
+                          previewCourseDrop(event, courseId)
                         }
                         onDragStart={(event) =>
-                          startCourseDrag(event, course.id)
+                          startCourseDrag(event, courseId)
                         }
-                        onDrop={(event) => dropCourse(event, course.id)}
+                        onDrop={(event) => dropCourse(event, courseId)}
                       >
                         <span
                           aria-hidden="true"

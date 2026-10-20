@@ -4,7 +4,7 @@ import { Kids } from "../components/study/Kids";
 import { MathCards } from "../components/study/Math";
 import { Phonics } from "../components/study/Phonics";
 import { Textbook } from "../components/study/Textbook";
-import { value } from "../lib/api";
+import { idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 
 type Props = {
@@ -72,9 +72,9 @@ function lockedCourseItem(
   const titleEn = value(lesson, "title_en");
   const summary = value(lesson, "summary");
   const base = {
-    // Source records use positive IDs. A negative ID keeps a metadata-only
-    // locked entry distinct without exposing its source record ID.
-    id: -lesson.id,
+    // Renderer-only metadata has its own namespace and never reuses a server
+    // identifier as a numeric value.
+    id: `local-locked-${String(lesson.id)}`,
     title,
     title_en: titleEn,
     summary,
@@ -317,9 +317,9 @@ export function OriginalCourseClassroom({
   );
   const activeContentId =
     resource === "phonics" ? activeLesson.id : sourceContent(activeLesson)?.id;
-  const topicId = Number(course.topic_id);
+  const topicId = idValue(course, "topic_id");
   const backTo =
-    Number.isInteger(topicId) && topicId > 0
+    topicId
       ? `/course-topics/${topicId}`
       : fallbackPath(resource);
   const componentKey = `${resource}-${activeContentId || "first"}-${items.length}`;
