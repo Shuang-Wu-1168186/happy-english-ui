@@ -51,7 +51,8 @@ test("original content editor preview and API create, edit, delete", async ({
   await page.getByRole("button", { name: "Save Changes", exact: true }).click();
   await expect(page.locator("tbody")).toContainText("Updated learner");
   const learner = (await apiItems(page, "/api/admin/users?q=learner_test"))[0];
-  if (!learner) throw new Error("Learner was not returned by the browser test API");
+  if (!learner)
+    throw new Error("Learner was not returned by the browser test API");
   await page.goto(`/admin/users/${learner.id}/edit?q=no-matching-users`);
   await expect(page.getByLabel("Username", { exact: true })).toHaveValue(
     "learner_test",
@@ -117,6 +118,51 @@ test("administrators can review login monitoring", async ({ page }) => {
   ).toBeVisible();
   await expect(page.locator("tbody")).toContainText("admin_test");
   await expect(page.locator("tbody")).toContainText("成功");
+});
+test("an expired admin session returns to login and keeps the requested page", async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto("/admin/users");
+  await expect(
+    page.getByRole("heading", { name: "用户管理", exact: true }),
+  ).toBeVisible();
+  const session = await (await page.request.get("/api/auth/session")).json();
+  const sessionCookie = (await page.context().cookies()).find(
+    (cookie) => cookie.name === "happyenglish_session",
+  );
+  if (!sessionCookie)
+    throw new Error("Expected an authenticated browser session cookie.");
+  const revoke = await page.request.post("/api/auth/logout", {
+    headers: {
+      "X-CSRF-Token": session.csrf_token,
+    },
+  });
+  expect(revoke.ok()).toBeTruthy();
+  const revokedSession = await (
+    await page.request.get("/api/auth/session")
+  ).json();
+  expect(revokedSession.user).toBeNull();
+  // Keep the stale browser cookie so the next in-page request receives the
+  // same 401 a user sees after their server-side session has been revoked.
+  await page.context().addCookies([sessionCookie]);
+
+  await page.getByLabel("搜索姓名、用户名或邮箱").fill("admin");
+  await page.getByRole("button", { name: "查询", exact: true }).click();
+  await expect(page).toHaveURL(
+    /\/login\?next=%2Fadmin%2Fusers%3Fq%3Dadmin%26role%3D%26status%3D$/,
+  );
+  await expect(
+    page.getByRole("heading", { name: "Login to your account", exact: true }),
+  ).toBeVisible();
+
+  await page.getByLabel("Username", { exact: true }).fill("admin_test");
+  await page.getByLabel("Password", { exact: true }).fill("Testing123!");
+  await page.getByRole("button", { name: "Login", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/users\?q=admin&role=&status=$/);
+  await expect(
+    page.getByRole("heading", { name: "用户管理", exact: true }),
+  ).toBeVisible();
 });
 test("signup, profile and password retain API flows", async ({ page }) => {
   await page.goto("/signup");

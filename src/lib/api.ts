@@ -27,6 +27,31 @@ export type Page = {
 };
 const base = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 let csrf = "";
+
+class SessionExpiredError extends Error {
+  constructor() {
+    super("登录状态已失效，请重新登录。");
+  }
+}
+
+function redirectToLogin() {
+  if (typeof window === "undefined") return;
+  const { hash, pathname, search } = window.location;
+  if (pathname === "/login" || pathname === "/signup") return;
+  const params = new URLSearchParams({ next: `${pathname}${search}${hash}` });
+  window.location.replace(`/login?${params.toString()}`);
+}
+
+function expireSession(): never {
+  csrf = "";
+  redirectToLogin();
+  throw new SessionExpiredError();
+}
+
+function isSignInRequest(path: string) {
+  return path === "/auth/login" || path === "/auth/miniprogram/login";
+}
+
 export const asset = (path: string) =>
   path.startsWith("/static/") ? `${base}${path}` : path;
 export const value = (entry: Entry | null | undefined, key: string) =>
@@ -89,24 +114,29 @@ export async function request(path: string, options: RequestInit = {}) {
       response.status === 403 &&
       requiresCsrf &&
       path !== "/auth/session" &&
-      (await response
-        .clone()
-        .json()
-        .catch(() => null))?.detail ===
-        "Session expired. Refresh the page and try again.";
+      (
+        await response
+          .clone()
+          .json()
+          .catch(() => null)
+      )?.detail === "Session expired. Refresh the page and try again.";
     if (failedWithExpiredSession) {
       const sessionResponse = await fetch(`${base}/api/auth/session`, {
         credentials: "include",
       });
+      if (sessionResponse.status === 401) expireSession();
       if (sessionResponse.ok) {
         const session = (await sessionResponse.json()) as Partial<Session>;
+        if (!session.user) expireSession();
         if (typeof session.csrf_token === "string") csrf = session.csrf_token;
         response = await send();
       }
     }
-  } catch {
+  } catch (error) {
+    if (error instanceof SessionExpiredError) throw error;
     throw new Error("无法连接服务，请检查后端是否已启动。");
   }
+  if (response.status === 401 && !isSignInRequest(path)) expireSession();
   if (!response.ok) {
     const data = await response
       .json()

@@ -49,6 +49,7 @@ import {
 
 function Protected({ admin = false }: { admin?: boolean }) {
   const { user, loading, error } = useAuth();
+  const location = useLocation();
   if (loading) return <div className="empty">正在打开学习空间…</div>;
   if (error)
     return (
@@ -59,7 +60,12 @@ function Protected({ admin = false }: { admin?: boolean }) {
         <button onClick={() => window.location.reload()}>重新连接</button>
       </div>
     );
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    const params = new URLSearchParams({
+      next: `${location.pathname}${location.search}${location.hash}`,
+    });
+    return <Navigate to={`/login?${params.toString()}`} replace />;
+  }
   if (admin && user.role !== "admin") return <Navigate to="/" replace />;
   return <Outlet />;
 }
@@ -208,7 +214,10 @@ export default function App() {
                 <Route path="users/:id/edit" element={<UserEditRedirect />} />
                 <Route path="login-monitor" element={<LoginMonitor />} />
                 <Route path="membership" element={<MembershipManagement />} />
-                <Route path="private-zone" element={<PrivateZoneManagement />} />
+                <Route
+                  path="private-zone"
+                  element={<PrivateZoneManagement />}
+                />
               </Route>
             </Route>
           </Route>

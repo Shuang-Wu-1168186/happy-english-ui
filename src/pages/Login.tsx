@@ -3,9 +3,26 @@ import type { FormEvent } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 import { api } from "../lib/api";
+
+function safeNextPath(search: string) {
+  const next = new URLSearchParams(search).get("next");
+  if (!next || !next.startsWith("/")) return "/";
+  const target = new URL(next, window.location.origin);
+  if (
+    target.origin !== window.location.origin ||
+    target.pathname === "/login" ||
+    target.pathname === "/signup"
+  ) {
+    return "/";
+  }
+  return `${target.pathname}${target.search}${target.hash}`;
+}
+
 export function Login() {
   const auth = useAuth();
-  const signup = useLocation().pathname === "/signup";
+  const location = useLocation();
+  const signup = location.pathname === "/signup";
+  const nextPath = safeNextPath(location.search);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   useLayoutEffect(() => {
@@ -15,7 +32,7 @@ export function Login() {
       document.body.className = "";
     };
   }, []);
-  if (auth.user) return <Navigate to="/" replace />;
+  if (auth.user) return <Navigate to={nextPath} replace />;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
