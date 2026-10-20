@@ -6,6 +6,7 @@ import {
   CommuteCourseClassroom,
   CommuteCourseLoading,
 } from "./CommuteCourseClassroom";
+import { LessonBody } from "./CourseClassroom";
 import { OriginalCourseClassroom } from "./OriginalCourseClassroom";
 import { HomeNavigation } from "../components/Layout";
 import { MaterialTemplateRenderer } from "../components/material-templates/MaterialTemplateRenderer";
@@ -29,7 +30,9 @@ function usesPhonicsLayout(material: Entry | null | undefined) {
   );
   return (
     availableLessons.length > 0 &&
-    availableLessons.every((lesson) => read(lesson, "source_resource") === "phonics")
+    availableLessons.every(
+      (lesson) => read(lesson, "source_resource") === "phonics",
+    )
   );
 }
 
@@ -41,8 +44,14 @@ function usesTextbookLayout(material: Entry | null | undefined) {
   );
   return (
     availableLessons.length > 0 &&
-    availableLessons.every((lesson) => read(lesson, "source_resource") === "textbook")
+    availableLessons.every(
+      (lesson) => read(lesson, "source_resource") === "textbook",
+    )
   );
+}
+
+function usesWordlyWiseLayout(material: Entry | null | undefined) {
+  return /^wordlywise-3000(?:-|$)/i.test(read(material, "material_code"));
 }
 
 export function MaterialLessons() {
@@ -73,7 +82,9 @@ export function MaterialLessons() {
       try {
         const summary = await api<Entry>(`/learning/materials/${id}`);
         const isPhonics = usesPhonicsLayout(summary);
-        const needsSourceLayout = isPhonics || usesTextbookLayout(summary);
+        const isWordlyWise = usesWordlyWiseLayout(summary);
+        const needsSourceLayout =
+          isPhonics || usesTextbookLayout(summary) || isWordlyWise;
         const result = needsSourceLayout
           ? await api<Entry>(
               `/learning/materials/${id}?include_lesson_content=true`,
@@ -86,7 +97,7 @@ export function MaterialLessons() {
         setMaterial(result);
         setLessons(nextLessons);
         setActiveLesson(initialLesson);
-        setActiveDetail(isPhonics ? initialLesson : null);
+        setActiveDetail(isPhonics || isWordlyWise ? initialLesson : null);
       } catch (requestError) {
         if (active) setError((requestError as Error).message);
       }
@@ -133,7 +144,8 @@ export function MaterialLessons() {
       material &&
       firstAvailable &&
       !usesPhonicsLayout(material) &&
-      !usesTextbookLayout(material)
+      !usesTextbookLayout(material) &&
+      !usesWordlyWiseLayout(material)
     )
       void loadLesson(firstAvailable);
     // The initial lesson is loaded once after the material metadata arrives.
@@ -145,6 +157,11 @@ export function MaterialLessons() {
   const previewCount = Number(material?.preview_lesson_count || 2);
   const hasLockedLessons = lessons.some((lesson) => isLocked(lesson));
   const firstAvailableLesson = lessons.find((lesson) => !isLocked(lesson));
+  const isWordlyWise = usesWordlyWiseLayout(material);
+  const activeLessonNumber = Math.max(
+    1,
+    lessons.findIndex((lesson) => lesson.id === activeDetail?.id) + 1,
+  );
 
   if (
     !error &&
@@ -166,7 +183,10 @@ export function MaterialLessons() {
           onSelectLesson={(lesson) => void loadLesson(lesson)}
           previewCount={previewCount}
         />
-        <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />
+        <PrivateZoneFavorite
+          resourceId={Number(material.id)}
+          resourceType="material"
+        />
       </>
     );
   }
@@ -186,7 +206,10 @@ export function MaterialLessons() {
           previewCount={previewCount}
           resource="phonics"
         />
-        <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />
+        <PrivateZoneFavorite
+          resourceId={Number(material.id)}
+          resourceType="material"
+        />
       </>
     );
 
@@ -205,7 +228,10 @@ export function MaterialLessons() {
           previewCount={previewCount}
           resource="textbook"
         />
-        <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />
+        <PrivateZoneFavorite
+          resourceId={Number(material.id)}
+          resourceType="material"
+        />
       </>
     );
 
@@ -289,32 +315,48 @@ export function MaterialLessons() {
                 </div>
               </nav>
               <article
-                className={`material-learning-content${activeTemplate.code === "dialogue" ? " study-dialogue" : ""}`}
+                className={`material-learning-content${activeTemplate.code === "dialogue" ? " study-dialogue" : ""}${isWordlyWise ? " course-lesson-content material-learning-content--wordly-wise" : ""}`}
               >
                 {lessonLoading && !activeDetail ? (
                   <p className="course-content-empty">正在打开词条课件…</p>
-                ) : (
-                  activeDetail ? (
+                ) : activeDetail ? (
+                  isWordlyWise ? (
+                    <>
+                      <p className="course-lesson-kicker">
+                        LESSON {String(activeLessonNumber).padStart(2, "0")}
+                      </p>
+                      <h2>
+                        {read(activeDetail, "title_en") ||
+                          read(activeDetail, "title")}
+                      </h2>
+                      <LessonBody lesson={activeDetail} wordlyWise />
+                    </>
+                  ) : (
                     <MaterialTemplateRenderer
                       lesson={activeDetail}
                       material={material}
                     />
-                  ) : (
-                    <p className="course-content-empty">
-                      {activeLesson
-                        ? "该词条暂时没有可展示的课件。"
-                        : hasLockedLessons
-                          ? "该教材需要会员解锁后才能学习。"
-                          : "该教材暂时没有词条。"}
-                    </p>
                   )
+                ) : (
+                  <p className="course-content-empty">
+                    {activeLesson
+                      ? "该词条暂时没有可展示的课件。"
+                      : hasLockedLessons
+                        ? "该教材需要会员解锁后才能学习。"
+                        : "该教材暂时没有词条。"}
+                  </p>
                 )}
               </article>
             </section>
           </>
         )}
       </main>
-      {material && <PrivateZoneFavorite resourceId={Number(material.id)} resourceType="material" />}
+      {material && (
+        <PrivateZoneFavorite
+          resourceId={Number(material.id)}
+          resourceType="material"
+        />
+      )}
       {lockedLesson && (
         <div className="course-upgrade-backdrop" role="presentation">
           <section
