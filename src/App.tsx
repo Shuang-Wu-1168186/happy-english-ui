@@ -91,6 +91,7 @@ export default function App() {
               <Route path="foundation" element={<Foundation />} />
               <Route path="daily-speaking" element={<DailySpeaking />} />
               <Route path="workplace" element={<Navigate replace to="/" />} />
+              <Route path="learning" element={<Navigate replace to="/" />} />
               <Route path="courses/:courseId" element={<CourseClassroom />} />
               <Route
                 path="learning-materials/:materialId"
