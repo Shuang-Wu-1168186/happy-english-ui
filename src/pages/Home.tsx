@@ -437,7 +437,6 @@ export function Home() {
   };
   const moduleTabs: Array<{ type: ModuleType; label: string }> = [
     { type: "level", label: "分级课程" },
-    { type: "training", label: "训练专区" },
     { type: "resource", label: "其他入口" },
   ];
 
