@@ -38,15 +38,19 @@ function MaterialCards({ materials }: { materials: Entry[] }) {
       {materials.map((material) => {
         const title = value(material, "title") || "未命名教材";
         const summary = value(material, "summary") || "点击查看词条";
-        const card = <>
-          <span className="course-catalog-icon" aria-hidden="true">
-            📚
-          </span>
-          <span className="course-catalog-kicker">教材</span>
-          <strong>{title}</strong>
-          <small>{summary}</small>
-          <span className="course-catalog-open">查看词条 <b>→</b></span>
-        </>;
+        const card = (
+          <>
+            <span className="course-catalog-icon" aria-hidden="true">
+              📚
+            </span>
+            <span className="course-catalog-kicker">教材</span>
+            <strong>{title}</strong>
+            <small>{summary}</small>
+            <span className="course-catalog-open">
+              查看词条 <b>→</b>
+            </span>
+          </>
+        );
         return (
           <Link
             className="course-catalog-card"
@@ -128,7 +132,7 @@ export function CourseModuleCatalog() {
       return;
     }
     let active = true;
-    api<Entry>(`/learning/modules/${id}`)
+    api<Entry>(`/learning/web/modules/${id}`)
       .then((result) => active && setModule(result))
       .catch((requestError: Error) => active && setError(requestError.message));
     return () => {
@@ -136,7 +140,10 @@ export function CourseModuleCatalog() {
     };
   }, [id]);
 
-  const topics = useMemo(() => (module ? entries(module, "topics") : []), [module]);
+  const topics = useMemo(
+    () => (module ? entries(module, "topics") : []),
+    [module],
+  );
   const isPrivateZone = value(module, "module_code") === "private-zone";
   if (error)
     return (
@@ -158,7 +165,9 @@ export function CourseModuleCatalog() {
       <section className="course-catalog-hero">
         <p>LEARNING AREA</p>
         <h1>{value(module, "name")}</h1>
-        <span>{value(module, "description") || "选择一个专题，再进入教材课程。"}</span>
+        <span>
+          {value(module, "description") || "选择一个专题，再进入教材课程。"}
+        </span>
       </section>
       <section aria-labelledby="module-topics-title">
         <div className="course-catalog-heading">
@@ -184,7 +193,7 @@ export function CourseModuleCatalog() {
                   {value(topic, "description") ||
                     (isPersonalNotesTopic(topic)
                       ? "查看你的笔记和复习卡片"
-                    : "查看专题内的教材")}
+                      : "查看专题内的教材")}
                 </small>
                 <span className="course-catalog-open">
                   {isPersonalNotesTopic(topic) ? "打开笔记" : "查看教材"}{" "}

@@ -345,7 +345,9 @@ export function Home() {
         legacyProgress,
         review,
       ] = await Promise.all([
-        api<CatalogResponse>("/learning/modules").catch(() => ({ items: [] })),
+        api<CatalogResponse>("/learning/web/modules").catch(() => ({
+          items: [],
+        })),
         api<CatalogResponse>("/learning/progress").catch(() => ({ items: [] })),
         api<Entry | null>("/learning/progress/continue").catch(() => null),
         api<StudyTimeSummary>(

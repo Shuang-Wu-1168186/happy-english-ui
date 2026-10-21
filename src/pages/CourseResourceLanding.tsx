@@ -2,10 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { api, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
-import {
-  courseLandingPath,
-  usesOriginalStudyPage,
-} from "../lib/course-routes";
+import { courseLandingPath, usesOriginalStudyPage } from "../lib/course-routes";
 
 type CatalogResponse = { items?: Entry[] };
 
@@ -19,7 +16,7 @@ export function CourseResourceLanding() {
   useEffect(() => {
     if (originalStudyPath) return;
     let active = true;
-    api<CatalogResponse>("/learning/modules")
+    api<CatalogResponse>("/learning/web/modules")
       .then((result) => {
         if (!active) return;
         const module = (result.items || []).find(

@@ -71,12 +71,14 @@ export function TopicZone({ config }: { config: TopicZoneConfig }) {
     let current = true;
     async function loadTopics() {
       try {
-        const modules = await api<CatalogResponse>("/learning/modules");
+        const modules = await api<CatalogResponse>("/learning/web/modules");
         const module = (modules.items || []).find(
           (item) => value(item, "module_code") === config.moduleCode,
         );
         if (!module) return;
-        const detail = await api<Entry>(`/learning/modules/${idValue(module)}`);
+        const detail = await api<Entry>(
+          `/learning/web/modules/${idValue(module)}`,
+        );
         const catalogTopics = Array.isArray(detail.topics)
           ? (detail.topics as Entry[])
           : [];
