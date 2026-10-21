@@ -9,7 +9,7 @@ import { useAuth } from "../lib/auth-context";
 type CatalogResponse = { items?: Entry[] };
 type StudyTimeSummary = { total_active_seconds?: number; days?: Entry[] };
 type ReviewResponse = { items?: Entry[] };
-type ModuleType = "level" | "training" | "resource";
+type ModuleType = "level" | "resource";
 
 type LearningArea = {
   id: string;
@@ -219,11 +219,9 @@ function areaFromCatalog(entry: Entry, index: number): LearningArea {
   const code = read(entry, "module_code") || fallback.code;
   const rawModuleType = read(entry, "module_type");
   const moduleType: ModuleType =
-    rawModuleType === "training" || rawModuleType === "resource"
-      ? rawModuleType
-      : code === "private-zone"
-        ? "resource"
-        : "level";
+    rawModuleType === "resource" || code === "private-zone"
+      ? "resource"
+      : "level";
   const resource = read(entry, "route_key") || fallback.resource;
   const catalogId = idValue(entry);
   return {
