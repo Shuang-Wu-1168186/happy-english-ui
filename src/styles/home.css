@@ -370,10 +370,54 @@
   box-shadow: 0 0 0 3px rgba(121, 138, 229, 0.15);
 }
 
+.module-type-tabs {
+  display: inline-flex;
+  width: fit-content;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #e1e7ed;
+  border-radius: 13px;
+  background: #f4f7f5;
+}
+
+.module-type-tabs button {
+  min-width: 92px;
+  padding: 9px 15px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #7a8791;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.module-type-tabs button:hover,
+.module-type-tabs button.is-active {
+  background: #1f9d82;
+  color: #fff;
+  box-shadow: 0 7px 14px rgba(31, 157, 130, 0.18);
+}
+
 .area-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 15px;
+}
+
+.module-resource-strip {
+  display: grid;
+  gap: 10px;
+  margin-top: 3px;
+}
+
+.module-resource-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.module-resource-grid .learning-area-card {
+  min-height: 170px;
 }
 
 .learning-area-card {
@@ -1915,6 +1959,16 @@
   .home-search,
   .home-search input {
     width: 100%;
+  }
+
+  .module-type-tabs {
+    width: 100%;
+  }
+
+  .module-type-tabs button {
+    flex: 1;
+    min-width: 0;
+    padding-inline: 8px;
   }
 
   .review-grid,

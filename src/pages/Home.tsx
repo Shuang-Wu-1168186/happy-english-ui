@@ -9,6 +9,7 @@ import { useAuth } from "../lib/auth-context";
 type CatalogResponse = { items?: Entry[] };
 type StudyTimeSummary = { total_active_seconds?: number; days?: Entry[] };
 type ReviewResponse = { items?: Entry[] };
+type ModuleType = "level" | "training" | "resource";
 
 type LearningArea = {
   id: string;
@@ -18,6 +19,7 @@ type LearningArea = {
   description: string;
   icon: string;
   color: string;
+  moduleType: ModuleType;
   resource: string;
   path: string;
 };
@@ -55,6 +57,7 @@ const fallbackAreas: LearningArea[] = [
     description: "从自然拼读开始，建立英文发音和阅读的第一步。",
     icon: "🔤",
     color: "#249b7e",
+    moduleType: "level",
     resource: "phonics",
     path: "/foundation",
   },
@@ -66,6 +69,7 @@ const fallbackAreas: LearningArea[] = [
     description: "通过真实生活场景的日常口语对话，逐步建立表达能力。",
     icon: "💬",
     color: "#e65d80",
+    moduleType: "level",
     resource: "dialogues",
     path: "/daily-speaking",
   },
@@ -77,6 +81,7 @@ const fallbackAreas: LearningArea[] = [
     description: "课程正在筹备中。",
     icon: "📘",
     color: "#4f8dd8",
+    moduleType: "level",
     resource: "intermediate",
     path: "/learning",
   },
@@ -88,6 +93,7 @@ const fallbackAreas: LearningArea[] = [
     description: "课程正在筹备中。",
     icon: "🚀",
     color: "#8b5cf6",
+    moduleType: "level",
     resource: "advanced",
     path: "/learning",
   },
@@ -99,6 +105,7 @@ const fallbackAreas: LearningArea[] = [
     description: "课程正在筹备中。",
     icon: "🏅",
     color: "#d69a2d",
+    moduleType: "level",
     resource: "higher",
     path: "/learning",
   },
@@ -110,6 +117,7 @@ const fallbackAreas: LearningArea[] = [
     description: "收藏课程、常用学习入口和个人笔记，都放在这里。",
     icon: "✦",
     color: "#64748b",
+    moduleType: "resource",
     resource: "private",
     path: "/private-zone",
   },
@@ -209,6 +217,13 @@ function areaFromCatalog(entry: Entry, index: number): LearningArea {
     fallbackAreas.find((area) => area.code === read(entry, "module_code")) ||
     fallbackAreas[index % fallbackAreas.length];
   const code = read(entry, "module_code") || fallback.code;
+  const rawModuleType = read(entry, "module_type");
+  const moduleType: ModuleType =
+    rawModuleType === "training" || rawModuleType === "resource"
+      ? rawModuleType
+      : code === "private-zone"
+        ? "resource"
+        : "level";
   const resource = read(entry, "route_key") || fallback.resource;
   const catalogId = idValue(entry);
   return {
@@ -222,6 +237,7 @@ function areaFromCatalog(entry: Entry, index: number): LearningArea {
         : read(entry, "description") || fallback.description,
     icon: read(entry, "icon") || fallback.icon,
     color: read(entry, "color") || fallback.color,
+    moduleType,
     resource,
     path:
       code === "beginner-english"
@@ -238,7 +254,9 @@ function areaFromCatalog(entry: Entry, index: number): LearningArea {
 
 function withPrivateZone(areas: LearningArea[]) {
   if (areas.some((area) => area.code === "private-zone")) return areas;
-  const privateZone = fallbackAreas.find((area) => area.code === "private-zone");
+  const privateZone = fallbackAreas.find(
+    (area) => area.code === "private-zone",
+  );
   return privateZone ? [...areas, privateZone] : areas;
 }
 
@@ -300,6 +318,7 @@ const defaultContinue: ContinueCard = {
 export function Home() {
   const { user } = useAuth();
   const [query, setQuery] = useState("");
+  const [moduleType, setModuleType] = useState<ModuleType>("level");
   const [loading, setLoading] = useState(true);
   const [areas, setAreas] = useState(fallbackAreas);
   const [courses, setCourses] = useState(starterCourses);
@@ -356,7 +375,9 @@ export function Home() {
       );
       const seconds = Number(todaySummary?.active_seconds || 0);
 
-      setAreas(withPrivateZone(catalogAreas.length ? catalogAreas : fallbackAreas));
+      setAreas(
+        withPrivateZone(catalogAreas.length ? catalogAreas : fallbackAreas),
+      );
       setCourses(catalogCourses.length ? catalogCourses : starterCourses);
       setContinueCard(
         continueFromCourse(resume) ||
@@ -379,12 +400,27 @@ export function Home() {
   const normalizedQuery = query.trim().toLowerCase();
   const visibleAreas = useMemo(
     () =>
-      areas.filter((area) =>
-        `${area.title} ${area.english} ${area.description}`
-          .toLowerCase()
-          .includes(normalizedQuery),
+      areas.filter(
+        (area) =>
+          area.moduleType === moduleType &&
+          `${area.title} ${area.english} ${area.description}`
+            .toLowerCase()
+            .includes(normalizedQuery),
       ),
-    [areas, normalizedQuery],
+    [areas, moduleType, normalizedQuery],
+  );
+  const visibleResourceAreas = useMemo(
+    () =>
+      moduleType === "resource"
+        ? []
+        : areas.filter(
+            (area) =>
+              area.moduleType === "resource" &&
+              `${area.title} ${area.english} ${area.description}`
+                .toLowerCase()
+                .includes(normalizedQuery),
+          ),
+    [areas, moduleType, normalizedQuery],
   );
   const visibleCourses = useMemo(
     () =>
@@ -399,6 +435,11 @@ export function Home() {
   const toggleReview = (id: string) => {
     setRevealedReviews((current) => ({ ...current, [id]: !current[id] }));
   };
+  const moduleTabs: Array<{ type: ModuleType; label: string }> = [
+    { type: "level", label: "分级课程" },
+    { type: "training", label: "训练专区" },
+    { type: "resource", label: "其他入口" },
+  ];
 
   return (
     <div className="study-home">
@@ -501,6 +542,24 @@ export function Home() {
               />
             </label>
           </div>
+          <div
+            className="module-type-tabs"
+            role="tablist"
+            aria-label="学习内容类型"
+          >
+            {moduleTabs.map((tab) => (
+              <button
+                className={moduleType === tab.type ? "is-active" : ""}
+                key={tab.type}
+                type="button"
+                role="tab"
+                aria-selected={moduleType === tab.type}
+                onClick={() => setModuleType(tab.type)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
           <div className="area-grid module-groups" aria-busy={loading}>
             {visibleAreas.map((area) => (
               <Link
@@ -520,11 +579,37 @@ export function Home() {
               </Link>
             ))}
           </div>
-          {!visibleAreas.length && !visibleCourses.length && (
-            <p className="home-empty">
-              没有找到匹配的学习内容，换一个关键词试试。
-            </p>
-          )}
+          {visibleResourceAreas.length ? (
+            <div className="module-resource-strip">
+              <p className="section-kicker">常用入口</p>
+              <div className="area-grid module-resource-grid">
+                {visibleResourceAreas.map((area) => (
+                  <Link
+                    className="learning-area-card module-card"
+                    to={area.path}
+                    key={area.id}
+                  >
+                    <span className="area-icon" style={{ color: area.color }}>
+                      {area.icon}
+                    </span>
+                    <span className="area-english">{area.english}</span>
+                    <strong>{area.title}</strong>
+                    <small>{area.description}</small>
+                    <span className="area-open">
+                      进入学习 <b>→</b>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {!visibleAreas.length &&
+            !visibleResourceAreas.length &&
+            !visibleCourses.length && (
+              <p className="home-empty">
+                这个专区暂时还没有内容，换一个类型或关键词试试。
+              </p>
+            )}
         </section>
 
         <section
