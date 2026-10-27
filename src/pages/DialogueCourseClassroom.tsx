@@ -4,7 +4,7 @@ import {
   DialogueLessonContent,
   dialogueSections,
 } from "../components/study/Dialogue";
-import { idValue, value } from "../lib/api";
+import { asset, idValue, value } from "../lib/api";
 import type { Entry } from "../lib/api";
 
 type Props = {
@@ -42,6 +42,10 @@ export function DialogueCourseClassroom({
 }: Props) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const isMinecraftAdventure = /^minecraft-english-adventure/i.test(
+    value(course, "course_code"),
+  );
+  const illustrationUrl = value(activeLesson, "illustration_url");
   const sections = useMemo(() => dialogueSections(items), [items]);
   const topicId = idValue(course, "topic_id");
   const fallbackTo =
@@ -55,7 +59,9 @@ export function DialogueCourseClassroom({
   );
 
   return (
-    <div className="study-dialogue course-dialogue-classroom">
+    <div
+      className={`study-dialogue course-dialogue-classroom${isMinecraftAdventure ? " course-dialogue-classroom--minecraft" : ""}`}
+    >
       <main className="dialogue-page">
         <header className="dialogue-topbar">
           <Link
@@ -69,11 +75,17 @@ export function DialogueCourseClassroom({
           >
             ←
           </Link>
-          <strong>Happy English · 日常口语对话</strong>
+          <strong>
+            Happy English · {isMinecraftAdventure ? "游戏英语冒险" : "日常口语对话"}
+          </strong>
           <span />
         </header>
         <section className="dialogue-hero">
-          <p>DAILY SPOKEN DIALOGUES</p>
+          <p>
+            {isMinecraftAdventure
+              ? "MINECRAFT ENGLISH ADVENTURE"
+              : "DAILY SPOKEN DIALOGUES"}
+          </p>
           <h1>{value(course, "title")}</h1>
           <div>
             {lessonTitle(activeLesson)} ·{" "}
@@ -84,7 +96,18 @@ export function DialogueCourseClassroom({
               前 {previewCount} 课可试看 · 升级会员即可解锁后续课程
             </aside>
           )}
-          <i aria-hidden="true">🛍️</i>
+          {illustrationUrl && (
+            <img
+              className="dialogue-hero-illustration"
+              src={asset(illustrationUrl)}
+              alt={`${lessonTitle(activeLesson)} 配图`}
+            />
+          )}
+          {!illustrationUrl && (
+            <i aria-hidden="true">
+              {isMinecraftAdventure ? "⛏️" : "🛍️"}
+            </i>
+          )}
         </section>
         <section className="dialogue-layout">
           <aside className="dialogue-nav">

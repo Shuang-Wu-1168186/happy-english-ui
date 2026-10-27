@@ -32,6 +32,26 @@ function initial(value: string | null) {
   return (value || "访").trim().slice(0, 1).toUpperCase();
 }
 
+function formatDateInput(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function dateDaysAgo(days: number) {
+  const value = new Date();
+  value.setDate(value.getDate() - days);
+  return formatDateInput(value);
+}
+
+const quickDateRanges = [
+  { label: "今天", daysAgo: 0 },
+  { label: "三天内", daysAgo: 2 },
+  { label: "一周内", daysAgo: 6 },
+  { label: "一个月内", daysAgo: 29 },
+];
+
 export function LoginMonitor() {
   const [params, setParams] = useSearchParams();
   const requestedPage = Number(params.get("page"));
@@ -88,6 +108,15 @@ export function LoginMonitor() {
 
   function changePage(next: number) {
     setParams({ ...Object.fromEntries(params), page: String(next) });
+  }
+
+  function applyQuickDateRange(daysAgo: number) {
+    setParams({
+      ...Object.fromEntries(params),
+      start_date: dateDaysAgo(daysAgo),
+      end_date: formatDateInput(new Date()),
+      page: "1",
+    });
   }
 
   return (
@@ -237,6 +266,33 @@ export function LoginMonitor() {
                   name="end_date"
                   type="date"
                 />
+              </div>
+              <div className="col-12 admin-date-quick-filter">
+                <div className="admin-date-quick-filter-label">
+                  <span>修改时间</span>
+                  <small>快捷查询</small>
+                </div>
+                <div
+                  className="admin-date-quick-filter-options"
+                  role="group"
+                  aria-label="修改时间快捷查询"
+                >
+                  {quickDateRanges.map((range) => {
+                    const active =
+                      startDate === dateDaysAgo(range.daysAgo) &&
+                      endDate === formatDateInput(new Date());
+                    return (
+                      <button
+                        className={`admin-date-quick-filter-button${active ? " is-active" : ""}`}
+                        key={range.label}
+                        onClick={() => applyQuickDateRange(range.daysAgo)}
+                        type="button"
+                      >
+                        {range.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </form>
           </div>

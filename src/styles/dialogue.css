@@ -76,6 +76,34 @@
   font-style: normal;
   filter: drop-shadow(0 12px 8px #18327535);
 }
+.study-dialogue .dialogue-hero-illustration {
+  position: absolute;
+  right: 24px;
+  bottom: 14px;
+  z-index: 1;
+  width: min(34%, 340px);
+  max-height: 170px;
+  border: 4px solid rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 16px 28px rgba(24, 50, 117, 0.25);
+}
+.study-dialogue.course-dialogue-classroom--minecraft .dialogue-hero-illustration {
+  right: 32px;
+  bottom: 20px;
+  width: min(37%, 380px);
+  max-height: 190px;
+  border-color: rgba(236, 255, 219, 0.85);
+}
+.study-dialogue.course-dialogue-classroom--minecraft .dialogue-hero {
+  background: linear-gradient(115deg, #245b4b, #3a9b65 56%, #76b84c);
+  box-shadow: 0 18px 38px #245b4b38;
+}
+.study-dialogue.course-dialogue-classroom--minecraft .dialogue-hero i {
+  right: 52px;
+  bottom: -10px;
+  font-size: 8.5rem;
+}
 .study-dialogue .dialogue-layout {
   display: grid;
   grid-template-columns: 250px minmax(0, 1fr);
@@ -254,6 +282,31 @@
   border: 1px solid var(--line);
   border-radius: 18px;
   background: #fff;
+}
+.study-dialogue .lesson-item-illustration {
+  display: block;
+  width: 100%;
+  height: 112px;
+  margin-bottom: 13px;
+  border-radius: 13px;
+  background: #eaf5ff;
+  object-fit: cover;
+}
+.study-dialogue .dialogue-line .lesson-item-illustration {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  width: 92px;
+  height: 58px;
+  margin: 0;
+  border-radius: 9px;
+}
+.study-dialogue .dialogue-line:has(> .lesson-item-illustration) {
+  padding-left: 120px;
+}
+.study-dialogue .prompt-card .lesson-item-illustration {
+  height: 96px;
+  margin-bottom: 10px;
 }
 .study-dialogue .vocabulary-card h3,
 .study-dialogue .prompt-card h3 {
@@ -476,6 +529,12 @@
     right: 15px;
     font-size: 6rem;
   }
+  .study-dialogue .dialogue-hero-illustration {
+    right: 18px;
+    bottom: 14px;
+    width: 42%;
+    max-height: 115px;
+  }
   .study-dialogue .dialogue-layout {
     grid-template-columns: 1fr;
   }
@@ -513,6 +572,13 @@
     grid-template-columns: 50px minmax(0, 1fr);
     gap: 9px;
     padding-left: 10px;
+  }
+  .study-dialogue .dialogue-line:has(> .lesson-item-illustration) {
+    padding-left: 98px;
+  }
+  .study-dialogue .dialogue-line .lesson-item-illustration {
+    width: 72px;
+    height: 48px;
   }
   .study-dialogue .lesson-content {
     border-radius: 20px;

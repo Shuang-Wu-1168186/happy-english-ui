@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { value } from "../../lib/api";
+import { asset, value } from "../../lib/api";
 import type { Entry } from "../../lib/api";
 import { Speak } from "./Speech";
 
@@ -84,6 +84,13 @@ export function DialogueLessonContent({ items }: { items: Entry[] }) {
                 const examples = vocabularyExamples(item);
                 return (
                   <article className="vocabulary-card" key={item.id}>
+                    {value(item, "image_url") && (
+                      <img
+                        className="lesson-item-illustration"
+                        src={asset(value(item, "image_url"))}
+                        alt={`${value(item, "item_title")} 配图`}
+                      />
+                    )}
                     <div>
                       <h3>{value(item, "item_title")}</h3>
                       {Boolean(item.pronunciation) && (
@@ -124,6 +131,13 @@ export function DialogueLessonContent({ items }: { items: Entry[] }) {
             >
               {section.items.map((item) => (
                 <article className="dialogue-line" key={item.id}>
+                  {value(item, "image_url") && (
+                    <img
+                      className="lesson-item-illustration"
+                      src={asset(value(item, "image_url"))}
+                      alt="句子配图"
+                    />
+                  )}
                   <div className="speaker">{value(item, "speaker")}</div>
                   <div className="line-copy">
                     <p lang="en">{value(item, "english_text")}</p>
@@ -141,6 +155,13 @@ export function DialogueLessonContent({ items }: { items: Entry[] }) {
             <div className="prompt-grid">
               {section.items.map((item, itemIndex) => (
                 <article className="prompt-card" key={item.id}>
+                  {value(item, "image_url") && (
+                    <img
+                      className="lesson-item-illustration"
+                      src={asset(value(item, "image_url"))}
+                      alt={`${value(item, "item_title")} 配图`}
+                    />
+                  )}
                   <span>{itemIndex + 1}</span>
                   <h3>{value(item, "item_title")}</h3>
                   <p lang="en">{value(item, "english_text")}</p>

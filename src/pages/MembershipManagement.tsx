@@ -141,14 +141,33 @@ function pathWithQuery(path: string, values: QueryValues) {
 
 function displayTime(raw: unknown) {
   const text = String(raw || "");
-  return text ? text.replace("T", " ").replace(/\.\d+/, "").replace("Z", "") : "—";
+  if (!text) return "—";
+  const date = parseApiDate(text);
+  if (!date) return text.replace("T", " ").replace(/\.\d+/, "").replace("Z", "");
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function parseApiDate(raw: string) {
+  const text = /(?:Z|[+-]\d\d:\d\d)$/.test(raw) ? raw : `${raw}Z`;
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function datetimeInput(raw: unknown, fallback = "") {
   const text = String(raw || "");
-  return text
-    ? text.replace(" ", "T").replace("Z", "").slice(0, 16)
-    : fallback;
+  if (!text) return fallback;
+  const date = parseApiDate(text);
+  if (!date) return text.replace(" ", "T").replace("Z", "").slice(0, 16);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+function serializeDateTimeInput(raw: unknown) {
+  const text = String(raw || "");
+  if (!text) return "";
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
 }
 
 function currentDatetimeInput() {
@@ -2133,8 +2152,8 @@ function UserMembershipsPanel({
         membership_plan_id: String(form.get("membership_plan_id") || ""),
         status: String(form.get("status") || "active"),
         source: String(form.get("source") || "manual"),
-        starts_at: String(form.get("starts_at") || ""),
-        ends_at: String(form.get("ends_at") || "") || null,
+        starts_at: serializeDateTimeInput(form.get("starts_at")),
+        ends_at: serializeDateTimeInput(form.get("ends_at")) || null,
         auto_renew: form.get("auto_renew") === "on",
         external_reference: String(form.get("external_reference") || ""),
         cancel_reason: String(form.get("cancel_reason") || ""),

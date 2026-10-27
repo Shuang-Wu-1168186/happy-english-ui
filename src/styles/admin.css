@@ -352,7 +352,6 @@ body.admin-app {
     grid-column: 2 / -1;
     justify-content: flex-end;
   }
-
 }
 
 @media (max-width: 560px) {
@@ -436,8 +435,12 @@ body.admin-app {
   font-weight: 750;
   line-height: 1;
   white-space: nowrap;
-  transition: color 150ms ease, border-color 150ms ease, background 150ms ease,
-    box-shadow 150ms ease, transform 150ms ease;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
 }
 
 .admin-app .membership-filter-action:hover {
@@ -1665,6 +1668,70 @@ body.admin-app {
 .admin-app .admin-filter-reset:hover {
   color: #304fbd;
   text-decoration: underline;
+}
+
+.admin-app .admin-date-quick-filter {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 1px;
+  padding-top: 2px;
+}
+
+.admin-app .admin-date-quick-filter-label {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
+.admin-app .admin-date-quick-filter-label span {
+  color: #516078;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.admin-app .admin-date-quick-filter-label small {
+  color: #8995a8;
+  font-size: 0.73rem;
+}
+
+.admin-app .admin-date-quick-filter-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-app .admin-date-quick-filter-button {
+  min-height: 32px;
+  padding: 0 13px;
+  border: 1px solid #d7e0ed;
+  border-radius: 8px;
+  color: #586980;
+  background: #fff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.admin-app .admin-date-quick-filter-button:hover,
+.admin-app .admin-date-quick-filter-button:focus-visible {
+  border-color: #9fb2e9;
+  color: #304fbd;
+  background: #f5f7ff;
+  outline: 0;
+}
+
+.admin-app .admin-date-quick-filter-button.is-active {
+  border-color: #304fbd;
+  color: #fff;
+  background: #304fbd;
+  box-shadow: 0 4px 10px rgba(48, 79, 189, 0.16);
 }
 
 .admin-app .admin-data-card {
@@ -2968,6 +3035,12 @@ body.admin-app {
 
   .admin-app .admin-filter-panel-title span {
     line-height: 1.5;
+  }
+
+  .admin-app .admin-date-quick-filter {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .admin-app .admin-form-page-header {

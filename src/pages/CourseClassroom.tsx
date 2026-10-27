@@ -11,7 +11,10 @@ import { CommuteCourseClassroom } from "./CommuteCourseClassroom";
 import { InterviewCourseClassroom } from "./InterviewCourseClassroom";
 import { OriginalCourseClassroom } from "./OriginalCourseClassroom";
 import { PutAsideStyleCourseware } from "../components/courseware/PutAsideStyleCourseware";
-import { MaterialTemplateRenderer } from "../components/material-templates/MaterialTemplateRenderer";
+import {
+  dialogueItemsFromLesson,
+  MaterialTemplateRenderer,
+} from "../components/material-templates/MaterialTemplateRenderer";
 import { resolveMaterialTemplate } from "../lib/material-templates";
 
 type OriginalCourseResource =
@@ -58,7 +61,8 @@ function contentItems(content: Entry) {
 
 function dialogueItems(lesson: Entry | undefined) {
   const content = contentFor(lesson);
-  return content ? entries(content, "items") : [];
+  const directItems = content ? entries(content, "items") : [];
+  return directItems.length ? directItems : dialogueItemsFromLesson(lesson);
 }
 
 function originalCourseResourceForTemplate(

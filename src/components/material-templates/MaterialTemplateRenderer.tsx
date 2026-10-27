@@ -93,6 +93,7 @@ function dialogueItem(
       "summary",
     ]),
     pronunciation: firstText(values, ["pronunciation"]),
+    image_url: firstText(values, ["image_url", "image"]),
     explanation: firstText(values, ["explanation", "guidance"]),
     // Structured lessons store each example as { english, chinese }. Keep that
     // shape intact so the study view can render both lines instead of coercing
@@ -189,6 +190,12 @@ function legacyDialogueItems(content: Entry | null) {
     );
   }
   return result;
+}
+
+// CourseClassroom uses the same renderer data as the embedded lesson view so
+// structured dialogue lessons can open in the full dialogue classroom too.
+export function dialogueItemsFromLesson(lesson: Entry | null | undefined) {
+  return legacyDialogueItems(lesson ? contentOf(lesson) : null);
 }
 
 function StructuredLessonContent({ content }: { content: Entry | null }) {
