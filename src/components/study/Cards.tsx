@@ -1086,11 +1086,7 @@ export function NoteCollections({ items }: { items: Entry[] }) {
             <NoteCollection
               key={item.id}
               item={item}
-              progress={progress.find(
-                (p) =>
-                  idValue(p, "parent_id") === idValue(item) &&
-                  p.content_type === "english_note",
-              )}
+              progress={progressForNote(progress, item)}
             />
           ))}
         </section>
@@ -1145,8 +1141,22 @@ function NoteSearchForm({ query }: { query: string }) {
 export function NoteSearchResults({ items }: { items: Entry[] }) {
   return <OriginalCards items={items} resource="note-items" searchResults />;
 }
+
+function progressForNote(progress: Entry[], note: Entry) {
+  const noteId = idValue(note);
+  if (!noteId) return undefined;
+  return progress.find(
+    (entry) =>
+      value(entry, "content_type") === "english_note" &&
+      idValue(entry, "parent_id") === noteId &&
+      Boolean(idValue(entry, "item_id")),
+  );
+}
+
 function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
-  const detail = useStudyItem("notes", idValue(item));
+  const noteId = idValue(item);
+  const resumeItemId = idValue(progress, "item_id");
+  const detail = useStudyItem("notes", noteId);
   return (
     <article className="note-card">
       <div className="note-top">
@@ -1176,15 +1186,15 @@ function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
           )}
         </div>
         <div className="note-actions">
-          {progress && (
+          {progress && resumeItemId && (
             <Link
               className="btn secondary"
-              to={`/learn/note-items/${progress.item_id}`}
+              to={`/learn/note-items/${resumeItemId}`}
             >
               Continue Study
             </Link>
           )}
-          <Link className="btn primary" to={`/learn/notes/${idValue(item)}`}>
+          <Link className="btn primary" to={`/learn/notes/${noteId}`}>
             Open Cards
           </Link>
         </div>

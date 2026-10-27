@@ -58,7 +58,13 @@ export const value = (entry: Entry | null | undefined, key: string) =>
   entry?.[key] == null ? "" : String(entry[key]);
 export const idValue = (entry: Entry | null | undefined, key = "id"): ApiId => {
   const raw = entry?.[key];
-  return typeof raw === "string" ? raw : "";
+  if (typeof raw === "string") return raw;
+  // Keep older API deployments working while the public API transitions to
+  // opaque string identifiers. Zero remains the legacy parent sentinel and
+  // is handled by the caller where needed.
+  return typeof raw === "number" && Number.isFinite(raw) && raw > 0
+    ? String(raw)
+    : "";
 };
 export const entries = (entry: Entry, key: string): Entry[] =>
   Array.isArray(entry[key]) ? (entry[key] as Entry[]) : [];
