@@ -770,6 +770,46 @@ test("study note collections retain the resume action with legacy numeric IDs", 
     noteCard.getByRole("link", { name: "Open Cards", exact: true }),
   ).toHaveAttribute("href", "/learn/notes/15");
 });
+test("study note collections always offer a start-or-continue action", async ({
+  page,
+}) => {
+  const note = {
+    id: 16,
+    note_date: "2026-08-26",
+    title: "English Vocabulary Notes",
+    summary: "English vocabulary and phrase notes.",
+    share_status: 0,
+  };
+  await page.route("**/api/content/notes**", async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === "/api/content/notes") {
+      await route.fulfill({
+        json: { items: [note], page: 1, total_pages: 1, total: 1 },
+      });
+      return;
+    }
+    if (pathname === "/api/content/notes/16") {
+      await route.fulfill({
+        json: { ...note, items: [{ id: 1139, note_id: 16 }] },
+      });
+      return;
+    }
+    await route.fallback();
+  });
+  await page.route("**/api/progress", async (route) => {
+    await route.fulfill({ json: [] });
+  });
+
+  await login(page);
+  await page.goto("/learn/notes");
+  const noteCard = page.locator(".note-card", {
+    hasText: "English Vocabulary Notes",
+  });
+  await expect(noteCard.getByText("1 cards", { exact: true })).toBeVisible();
+  await expect(
+    noteCard.getByRole("link", { name: "Continue Study", exact: true }),
+  ).toHaveAttribute("href", "/learn/notes/16");
+});
 test("study note cards record a manual encounter frequency", async ({ page }) => {
   await login(page);
   const noteItemId = await firstApiItemId(page, "/api/content/note-items");

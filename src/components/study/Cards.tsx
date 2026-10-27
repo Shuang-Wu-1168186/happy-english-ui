@@ -1156,6 +1156,10 @@ function progressForNote(progress: Entry[], note: Entry) {
 function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
   const noteId = idValue(item);
   const resumeItemId = idValue(progress, "item_id");
+  const openPath = `/learn/notes/${noteId}`;
+  const continuePath = resumeItemId
+    ? `/learn/note-items/${resumeItemId}`
+    : openPath;
   const detail = useStudyItem("notes", noteId);
   return (
     <article className="note-card">
@@ -1186,15 +1190,15 @@ function NoteCollection({ item, progress }: { item: Entry; progress?: Entry }) {
           )}
         </div>
         <div className="note-actions">
-          {progress && resumeItemId && (
+          {noteId && (
             <Link
               className="btn secondary"
-              to={`/learn/note-items/${resumeItemId}`}
+              to={continuePath}
             >
               Continue Study
             </Link>
           )}
-          <Link className="btn primary" to={`/learn/notes/${noteId}`}>
+          <Link className="btn primary" to={openPath}>
             Open Cards
           </Link>
         </div>
