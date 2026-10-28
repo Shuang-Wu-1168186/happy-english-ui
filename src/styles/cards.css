@@ -216,6 +216,67 @@
   flex-wrap: wrap;
 }
 
+.study-cards .note-language-control {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  min-width: 0;
+}
+
+.study-cards .note-register-marker {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.study-cards .note-register-marker-label {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.study-cards .note-register-marker-btn {
+  min-height: 27px;
+  padding: 4px 8px;
+  border: 1px solid #cfd8e8;
+  border-radius: 999px;
+  background: #fff;
+  color: #556277;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.study-cards .note-register-marker-btn:hover:not(:disabled) {
+  border-color: #7ba7df;
+  background: #edf5ff;
+  color: #1f5caa;
+}
+
+.study-cards .note-register-marker-btn.is-selected {
+  border-color: #286ebd;
+  background: #286ebd;
+  color: #fff;
+}
+
+.study-cards .note-register-marker-btn:disabled {
+  cursor: default;
+}
+
+.study-cards .note-register-marker-btn.is-selected:disabled {
+  opacity: 1;
+}
+
+.study-cards .note-register-marker-error {
+  color: #b42318;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: right;
+}
+
 .study-cards .note-language-register,
 .study-cards .note-language-scene {
   display: inline-flex;

@@ -834,6 +834,42 @@ test("study note cards record a manual encounter frequency", async ({ page }) =>
     `已记录 ${currentCount + 1} 次`,
   );
 });
+test("administrators can tag a browsed note card by language register", async ({
+  page,
+}) => {
+  await login(page);
+  const noteItemId = await firstApiItemId(page, "/api/content/note-items");
+  await page.goto(`/learn/notes/${noteItemId}`);
+
+  const marker = page.getByRole("group", { name: "笔记卡片语体标记" });
+  await expect(marker).toBeVisible();
+  const daily = marker.getByRole("button", { name: "标记为日常口语" });
+  const formal = marker.getByRole("button", { name: "标记为稍微正式" });
+  const currentIsDaily =
+    (await daily.getAttribute("aria-pressed")) === "true";
+  const target = currentIsDaily ? formal : daily;
+  const expectedRegister = currentIsDaily ? "formal_spoken" : "common_spoken";
+  const expectedLabel = currentIsDaily ? "稍微正式" : "日常口语";
+  const response = page.waitForResponse((candidate) => {
+    const url = new URL(candidate.url());
+    return (
+      url.pathname ===
+        `/api/content/note-items/${noteItemId}/language-register` &&
+      candidate.request().method() === "PATCH" &&
+      candidate.status() === 200
+    );
+  });
+
+  await target.click();
+  await expect((await response).json()).resolves.toMatchObject({
+    language_register: expectedRegister,
+    classification_source: "manual",
+  });
+  await expect(target).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".note-language-register")).toHaveText(
+    expectedLabel,
+  );
+});
 test("original study layouts and page flip survive navigation", async ({
   page,
 }) => {

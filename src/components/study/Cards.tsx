@@ -180,8 +180,13 @@ function NoteImage({ item }: { item: Entry }) {
     </>
   );
 }
-function NoteLanguageTags({ item }: { item: Entry }) {
-  const languageRegister = value(item, "language_register");
+function NoteLanguageTags({
+  item,
+  languageRegister = value(item, "language_register"),
+}: {
+  item: Entry;
+  languageRegister?: string;
+}) {
   const registerLabel = NOTE_REGISTER_LABELS[languageRegister];
   const scenarios = noteScenarioCodes(item.usage_scenarios)
     .map((code) => NOTE_SCENARIO_LABELS[code])
@@ -197,6 +202,78 @@ function NoteLanguageTags({ item }: { item: Entry }) {
           {scenario}
         </span>
       ))}
+    </div>
+  );
+}
+const NOTE_CARD_REGISTER_OPTIONS = ["common_spoken", "formal_spoken"] as const;
+
+function NoteLanguageControl({ item }: { item: Entry }) {
+  const { user } = useAuth();
+  const itemId = idValue(item);
+  const itemLanguageRegister = value(item, "language_register");
+  const [languageRegister, setLanguageRegister] = useState(
+    itemLanguageRegister,
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const tags = (
+    <NoteLanguageTags item={item} languageRegister={languageRegister} />
+  );
+  if (user?.role !== "admin") return tags;
+
+  async function mark(register: (typeof NOTE_CARD_REGISTER_OPTIONS)[number]) {
+    if (!itemId || saving || register === languageRegister) return;
+    setSaving(true);
+    setError("");
+    try {
+      const updated = await api<Entry>(
+        `/content/note-items/${itemId}/language-register`,
+        "PATCH",
+        { language_register: register },
+      );
+      setLanguageRegister(value(updated, "language_register") || register);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "标记失败，请稍后重试。",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="note-language-control">
+      {tags}
+      <div
+        aria-label="笔记卡片语体标记"
+        className="note-register-marker"
+        role="group"
+      >
+        <span className="note-register-marker-label">标记为</span>
+        {NOTE_CARD_REGISTER_OPTIONS.map((register) => {
+          const label = NOTE_REGISTER_LABELS[register];
+          const selected = languageRegister === register;
+          return (
+            <button
+              aria-label={`标记为${label}`}
+              aria-pressed={selected}
+              className={`note-register-marker-btn${selected ? " is-selected" : ""}`}
+              disabled={saving || selected}
+              key={register}
+              onClick={() => void mark(register)}
+              type="button"
+            >
+              {selected && saving ? "保存中…" : label}
+            </button>
+          );
+        })}
+      </div>
+      {error && (
+        <span className="note-register-marker-error" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }
@@ -310,7 +387,7 @@ function SentenceBody({
             value(item, "item_type") ||
             "note"}
         </span>
-        {note && <NoteLanguageTags item={item} />}
+        {note && <NoteLanguageControl item={item} key={idValue(item)} />}
         {onDelete && (
           <AdminDeleteButton
             item={item}

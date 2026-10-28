@@ -1,6 +1,6 @@
 export const NOTE_REGISTER_LABELS: Record<string, string> = {
-  common_spoken: "常用口语",
-  formal_spoken: "正式口语",
+  common_spoken: "日常口语",
+  formal_spoken: "稍微正式",
   written: "书面语",
   mixed: "多语体对照",
   neutral: "中性表达",
