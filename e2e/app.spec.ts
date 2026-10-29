@@ -952,7 +952,7 @@ test("original study layouts and page flip survive navigation", async ({
   await expect(page.locator(".module-groups")).toBeVisible();
   expect(errors).toEqual([]);
 });
-test("old note links retain forward and backward page flips", async ({
+test("note links restore progress and retain forward and backward page flips", async ({
   page,
 }) => {
   await login(page);
@@ -1008,24 +1008,51 @@ test("old note links retain forward and backward page flips", async ({
         .filter({ hasText: "Daily practice" })
         .getByText("3 cards", { exact: true }),
     ).toBeVisible();
-    await page.goto(`/learn/note-items/${item.id}`);
+    const stored = await page.request.post("/api/progress", {
+      headers,
+      data: {
+        content_type: "english_note",
+        parent_id: noteId,
+        item_id: item.id,
+        completed: false,
+      },
+    });
+    expect(stored.ok()).toBeTruthy();
+    const resumedSave = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname === "/api/progress" &&
+        response.request().method() === "POST" &&
+        response.status() === 200
+      );
+    });
+    await page.goto(`/learn/notes/${noteId}`);
+    await expect(page).toHaveURL(new RegExp(`/learn/note-items/${item.id}`));
     await expect(page.locator(".counter-btn")).toHaveText("3 / 3");
     await expect(
       page.getByRole("heading", { name: "Second note", exact: true }),
     ).toBeVisible();
+    expect((await resumedSave).request().postDataJSON()).toMatchObject({
+      parent_id: noteId,
+      item_id: item.id,
+    });
     await page.goto(`/english/note-cards?note_id=${noteId}`);
-    await expect(page).toHaveURL(new RegExp(`/learn/notes/${noteId}`));
+    await expect(page).toHaveURL(new RegExp(`/learn/note-items/${item.id}`));
     const next = page.getByRole("button", { name: "Next card", exact: true });
     const previous = page.getByRole("button", {
       name: "Previous card",
       exact: true,
     });
+    await expect(next).toBeDisabled();
+    await previous.click();
+    await expect(page.locator(".counter-btn")).toHaveText("2 / 3");
+    await previous.click();
+    await expect(page.locator(".counter-btn")).toHaveText("1 / 3");
     await expect(previous).toBeDisabled();
     await next.click();
     await expect(page.locator(".counter-btn")).toHaveText("2 / 3");
     await next.click();
     await expect(page.locator(".counter-btn")).toHaveText("3 / 3");
-    await expect(next).toBeDisabled();
     await expect(
       page.getByRole("heading", { name: "Second note", exact: true }),
     ).toBeVisible();

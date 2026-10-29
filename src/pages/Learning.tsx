@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { useStudyCatalog, useStudyItem } from "../lib/study";
-import { entries, idValue } from "../lib/api";
-import type { ApiId } from "../lib/api";
+import { api, entries, idValue, value } from "../lib/api";
+import type { ApiId, Entry } from "../lib/api";
 import { Kids } from "../components/study/Kids";
 import { Phonics } from "../components/study/Phonics";
 import { Textbook } from "../components/study/Textbook";
@@ -55,9 +56,47 @@ function Message({ error }: { error?: string }) {
   );
 }
 
+function useNoteResumeItem(noteId: ApiId, enabled: boolean) {
+  const [resume, setResume] = useState<{
+    noteId: ApiId;
+    itemId: ApiId;
+    loading: boolean;
+  }>({ noteId, itemId: "", loading: enabled });
+  useEffect(() => {
+    if (!enabled) return;
+    let active = true;
+    api<Entry[]>("/progress")
+      .then((progress) => {
+        if (!active) return;
+        const saved = progress.find(
+          (entry) =>
+            value(entry, "content_type") === "english_note" &&
+            idValue(entry, "parent_id") === noteId,
+        );
+        setResume({ noteId, itemId: idValue(saved, "item_id"), loading: false });
+      })
+      .catch(() => {
+        if (active) setResume({ noteId, itemId: "", loading: false });
+      });
+    return () => {
+      active = false;
+    };
+  }, [enabled, noteId]);
+  return enabled && resume.noteId === noteId
+    ? resume
+    : { noteId, itemId: "", loading: enabled };
+}
+
 function NoteDetail({ id, initialId }: { id: ApiId; initialId?: ApiId }) {
   const result = useStudyItem("notes", id);
+  const resume = useNoteResumeItem(id, !initialId);
   if (!result?.item) return <Message error={result?.error} />;
+  if (resume.loading) return <Message />;
+  const hasSavedCard = entries(result.item, "items").some(
+    (item) => idValue(item) === resume.itemId,
+  );
+  if (!initialId && resume.itemId && hasSavedCard)
+    return <Navigate replace to={`/learn/note-items/${resume.itemId}`} />;
   return (
     <OriginalCards
       items={entries(result.item, "items")}
