@@ -84,10 +84,7 @@ function favoritePath(item: FavoriteItem) {
   if (resourceType === "course") return "/courses/" + resourceId;
   if (resourceType === "material") return "/learning-materials/" + resourceId;
   if (resourceType === "note") return "/learn/notes/" + resourceId;
-  if (resourceType === "note_item") {
-    const noteId = idValue(resource, "note_id");
-    return noteId ? "/learn/notes/" + noteId : "/learn/note-items/" + resourceId;
-  }
+  if (resourceType === "note_item") return "/learn/note-items/" + resourceId;
   return "";
 }
 
@@ -107,7 +104,7 @@ function favoriteActionLabel(item: FavoriteItem) {
     material: "打开教材",
     course: "打开课程",
     note: "打开笔记",
-    note_item: "打开笔记",
+    note_item: "打开卡片",
   }[resourceType] || "查看内容";
 }
 

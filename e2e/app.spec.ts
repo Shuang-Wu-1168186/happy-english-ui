@@ -45,7 +45,7 @@ test("homepage reveals a recently learned phrase", async ({ page }) => {
         items: [
           {
             id: reviewId,
-            resource: "notes",
+            resource: "note-items",
             item_id: noteItemId,
             label: "日常短语",
             prompt: "Thank you.",
@@ -68,7 +68,7 @@ test("homepage reveals a recently learned phrase", async ({ page }) => {
   await expect(page.getByText("谢谢。", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /回到内容/ })).toHaveAttribute(
     "href",
-    `/learn/notes/${noteItemId}`,
+    `/learn/note-items/${noteItemId}`,
   );
 });
 test("foundation learning opens its opaque phonics topic", async ({
@@ -127,6 +127,8 @@ test("daily speaking opens its opaque dialogue topic", async ({
 test("private zone keeps its home entry while favorites remain below family learning", async ({ page }) => {
   const materialId = mockOpaqueId("material-77");
   const courseId = mockOpaqueId("course-88");
+  const noteId = mockOpaqueId("note-51");
+  const noteItemId = mockOpaqueId("note-item-52");
   const kidsCardId = mockOpaqueId("kids-card-1");
   const mathCardId = mockOpaqueId("math-card-1");
   const textbookTemplate = { code: "textbook", version: 1, renderer: "textbook.v1" };
@@ -253,6 +255,20 @@ test("private zone keeps its home entry while favorites remain below family lear
               resource_type: "material",
               title: "小学英语教材 · Guoguo 对话",
               summary: "从第一课开始学习。",
+            },
+            access: { access_state: "available" },
+          },
+          {
+            id: mockOpaqueId("private-item-92"),
+            resource_type: "note_item",
+            resource_id: noteItemId,
+            source: { scope_type: "personal", label: "个人" },
+            resource: {
+              id: noteItemId,
+              note_id: noteId,
+              resource_type: "note_item",
+              item_title: "Would you like a coffee?",
+              english_text: "Would you like a coffee?",
             },
             access: { access_state: "available" },
           },
@@ -392,6 +408,15 @@ test("private zone keeps its home entry while favorites remain below family lear
   await expect(
     favorite.getByRole("link", { name: "打开 小学英语教材 · Guoguo 对话" }),
   ).toHaveAttribute("href", `/learning-materials/${materialId}`);
+  const noteFavorite = page
+    .locator(".my-space-favorite-card")
+    .filter({ hasText: "Would you like a coffee?" });
+  await expect(
+    noteFavorite.getByRole("link", { name: "打开 Would you like a coffee?" }),
+  ).toHaveAttribute("href", `/learn/note-items/${noteItemId}`);
+  await expect(
+    noteFavorite.getByRole("link", { name: /打开卡片/ }),
+  ).toHaveAttribute("href", `/learn/note-items/${noteItemId}`);
   await page.goto("/private-zone");
   await expect(page).toHaveURL(/\/private-zone$/);
   await expect(
@@ -817,7 +842,7 @@ test("study note cards record a manual encounter frequency", async ({ page }) =>
     await page.request.get(`/api/content/note-items/${noteItemId}`)
   ).json();
   const currentCount = Number(before.frequency_count || 0);
-  await page.goto(`/learn/notes/${noteItemId}`);
+  await page.goto(`/learn/note-items/${noteItemId}`);
   const frequencyButton = page.getByRole("button", { name: /记录遇到一次/ });
   await expect(frequencyButton).toBeVisible();
   const frequencyResponse = page.waitForResponse((response) => {
@@ -839,7 +864,7 @@ test("administrators can tag a browsed note card by language register", async ({
 }) => {
   await login(page);
   const noteItemId = await firstApiItemId(page, "/api/content/note-items");
-  await page.goto(`/learn/notes/${noteItemId}`);
+  await page.goto(`/learn/note-items/${noteItemId}`);
 
   const marker = page.getByRole("group", { name: "笔记卡片语体标记" });
   await expect(marker).toBeVisible();
@@ -905,7 +930,7 @@ test("original study layouts and page flip survive navigation", async ({
     "filter",
     "none",
   );
-  await page.goto(`/learn/notes/${noteItemId}`);
+  await page.goto(`/learn/note-items/${noteItemId}`);
   await expect(page.locator(".dictation-input")).toBeVisible();
   await page.locator(".dictation-input").fill("Good morning");
   await page.getByRole("button", { name: "检查", exact: true }).click();
@@ -982,6 +1007,11 @@ test("old note links retain forward and backward page flips", async ({
         .locator(".note-card")
         .filter({ hasText: "Daily practice" })
         .getByText("3 cards", { exact: true }),
+    ).toBeVisible();
+    await page.goto(`/learn/note-items/${item.id}`);
+    await expect(page.locator(".counter-btn")).toHaveText("3 / 3");
+    await expect(
+      page.getByRole("heading", { name: "Second note", exact: true }),
     ).toBeVisible();
     await page.goto(`/english/note-cards?note_id=${noteId}`);
     await expect(page).toHaveURL(new RegExp(`/learn/notes/${noteId}`));

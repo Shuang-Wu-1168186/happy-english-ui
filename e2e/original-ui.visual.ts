@@ -31,7 +31,7 @@ for (const [name, [path, ready]] of Object.entries({
       await expect(page.locator(".home-dashboard")).toBeVisible();
       const destination =
         name === "note-items"
-          ? `/learn/notes/${await firstApiItemId(page, "/api/content/note-items")}`
+          ? `/learn/note-items/${await firstApiItemId(page, "/api/content/note-items")}`
           : path;
       await page.goto(destination);
     }
