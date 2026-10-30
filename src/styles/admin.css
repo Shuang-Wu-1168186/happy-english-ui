@@ -3,6 +3,307 @@ body.admin-app {
   color: #172033;
 }
 
+.admin-app .behavior-report {
+  margin: 22px 0;
+}
+
+.admin-app .behavior-chart {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.admin-app .behavior-chart .recharts-text {
+  font-family: inherit;
+}
+
+.admin-app .behavior-chart .recharts-default-tooltip {
+  border: 1px solid #e4e1f1 !important;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(57, 52, 104, 0.1);
+}
+
+.admin-app .behavior-report-heading,
+.admin-app .behavior-report-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.admin-app .behavior-report-heading {
+  padding: 24px 26px;
+  border: 1px solid #e3e1f2;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(120deg, #f9f8ff, #fff);
+}
+
+.admin-app .behavior-report-heading p,
+.admin-app .behavior-report-card-heading p {
+  margin: 0;
+  color: #837bb4;
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.admin-app .behavior-report-heading h2,
+.admin-app .behavior-report-card-heading h3 {
+  margin: 6px 0 0;
+  color: #302b4e;
+}
+
+.admin-app .behavior-report-heading h2 {
+  font-size: 1.4rem;
+}
+
+.admin-app .behavior-report-heading > div:first-child > span {
+  display: block;
+  margin-top: 8px;
+  color: #77728c;
+  font-size: 0.82rem;
+}
+
+.admin-app .behavior-report-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.admin-app .behavior-report-kpis span {
+  padding: 9px 12px;
+  border: 1px solid #e5e2f5;
+  border-radius: 10px;
+  color: #77728c;
+  background: #fff;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.admin-app .behavior-report-kpis strong {
+  margin-left: 4px;
+  color: #51479e;
+}
+
+.admin-app .behavior-report-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.admin-app .behavior-report-card {
+  min-width: 0;
+  padding: 21px;
+  border: 1px solid #e8e6f2;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 7px 22px rgba(57, 52, 104, 0.04);
+}
+
+.admin-app .behavior-report-card-heading h3 {
+  font-size: 1.08rem;
+}
+
+.admin-app .behavior-report-card-heading small {
+  color: #928da3;
+  font-size: 0.73rem;
+}
+
+.admin-app .behavior-active-user-list {
+  display: grid;
+  max-height: 340px;
+  gap: 8px;
+  margin-top: 18px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.admin-app .behavior-active-user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #eceaf5;
+  border-radius: 10px;
+  background: #fbfaff;
+  color: #5e5872;
+  font-size: 0.78rem;
+}
+
+.admin-app .behavior-active-user-item strong {
+  overflow: hidden;
+  color: #443b85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-app .behavior-active-user-item span {
+  flex: 0 0 auto;
+  color: #8a8497;
+  font-size: 0.72rem;
+}
+
+.admin-app .behavior-bars,
+.admin-app .behavior-latency-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.admin-app .behavior-bar-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-app .behavior-bar-label,
+.admin-app .behavior-latency-label span {
+  overflow: hidden;
+  color: #504b63;
+  font-size: 0.77rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-app .behavior-bar-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #efedf8;
+}
+
+.admin-app .behavior-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8578cf, #5f53ae);
+}
+
+.admin-app .behavior-bar-row > strong,
+.admin-app .behavior-latency-row > strong {
+  color: #4d4670;
+  font-size: 0.76rem;
+  text-align: right;
+}
+
+.admin-app .behavior-latency-legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 15px;
+  color: #807b90;
+  font-size: 0.7rem;
+}
+
+.admin-app .behavior-latency-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.admin-app .behavior-latency-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.admin-app .behavior-latency-legend .is-p90,
+.admin-app .behavior-latency-bars .is-p90 { background: #75a9e8; }
+.admin-app .behavior-latency-legend .is-p95,
+.admin-app .behavior-latency-bars .is-p95 { background: #b18be0; }
+.admin-app .behavior-latency-legend .is-p99,
+.admin-app .behavior-latency-bars .is-p99 { background: #e58b9e; }
+
+.admin-app .behavior-latency-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.3fr) minmax(80px, 1fr) 70px;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-app .behavior-latency-label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-app .behavior-latency-label b,
+.admin-app .behavior-report-table b {
+  color: #5b50a9;
+  font-size: 0.68rem;
+}
+
+.admin-app .behavior-latency-bars {
+  display: grid;
+  gap: 3px;
+}
+
+.admin-app .behavior-latency-bars span {
+  display: block;
+  height: 4px;
+  min-width: 3px;
+  border-radius: 99px;
+}
+
+.admin-app .behavior-report-empty {
+  margin: 20px 0 0;
+  color: #8a8497;
+  font-size: 0.8rem;
+}
+
+.admin-app .behavior-report-timezone {
+  display: block;
+  margin-top: 10px;
+  color: #8a8497;
+  font-size: 0.73rem;
+}
+
+.admin-app .behavior-report-tables {
+  margin-top: 15px;
+}
+
+.admin-app .behavior-report-table {
+  margin-top: 18px;
+  color: #5b566b;
+  font-size: 0.76rem;
+}
+
+.admin-app .behavior-report-table th {
+  color: #8a8499;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.admin-app .behavior-report-table td,
+.admin-app .behavior-report-table th {
+  padding: 10px 8px;
+  vertical-align: middle;
+}
+
+@media (max-width: 800px) {
+  .admin-app .behavior-report-heading,
+  .admin-app .behavior-report-card-heading {
+    display: grid;
+  }
+
+  .admin-app .behavior-report-kpis {
+    justify-content: flex-start;
+  }
+
+  .admin-app .behavior-report-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-app .behavior-latency-row {
+    grid-template-columns: minmax(110px, 1.2fr) minmax(80px, 1fr) 64px;
+  }
+}
+
 .private-zone-admin,
 .private-zone-admin-public,
 .private-zone-admin-shortcuts,
@@ -1804,7 +2105,8 @@ body.admin-app {
 }
 
 .admin-app .admin-users-table,
-.admin-app .admin-login-table {
+.admin-app .admin-login-table,
+.admin-app .admin-behavior-table {
   table-layout: fixed;
   width: 100%;
 }
@@ -1859,6 +2161,38 @@ body.admin-app {
 
 .admin-app .admin-login-table th:nth-child(6) {
   width: 33%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(1) {
+  width: 15%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(2) {
+  width: 10%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(3) {
+  width: 8%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(4) {
+  width: 24%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(5) {
+  width: 8%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(6) {
+  width: 9%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(7) {
+  width: 12%;
+}
+
+.admin-app .admin-behavior-table th:nth-child(8) {
+  width: 14%;
 }
 
 .admin-app .admin-data-table thead th {
@@ -1988,6 +2322,44 @@ body.admin-app {
 .admin-app .admin-result-pill.is-failed {
   color: #b4233c;
   background: #ffeaee;
+}
+
+.admin-app .admin-result-pill.is-warning {
+  color: #9a5b0b;
+  background: #fff2d9;
+}
+
+.admin-app .admin-result-pill.is-neutral {
+  color: #5f6f86;
+  background: #eef2f7;
+}
+
+.admin-app .admin-method-pill {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1px solid #d8e1ef;
+  border-radius: 6px;
+  color: #48619d;
+  background: #f5f7ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.71rem;
+  font-weight: 800;
+}
+
+.admin-app .admin-behavior-path,
+.admin-app .admin-request-id {
+  overflow: hidden;
+  color: #405171 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.76rem !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-app .admin-request-id {
+  color: #718096 !important;
 }
 
 .admin-app .admin-table-actions {

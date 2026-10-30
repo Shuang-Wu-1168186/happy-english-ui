@@ -1,4 +1,13 @@
-import { ArrowRight, Award, BookOpen, Settings2, ShieldCheck, Users } from "lucide-react";
+import {
+  Activity,
+  Gauge,
+  ArrowRight,
+  Award,
+  BookOpen,
+  Settings2,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const shortcuts = [
@@ -32,6 +41,22 @@ const shortcuts = [
     description: "查看成功和失败的登录记录、IP 地址与登录时间。",
     action: "查看登录记录",
     icon: ShieldCheck,
+    tone: "security",
+  },
+  {
+    to: "/admin/user-behavior",
+    title: "用户行为查询",
+    description: "按用户和接口查询应用请求日志，了解访问路径与响应情况。",
+    action: "查询用户行为",
+    icon: Activity,
+    tone: "security",
+  },
+  {
+    to: "/admin/request-latency",
+    title: "接口耗时报表",
+    description: "查看真实用户请求的 P90、P95、P99 接口耗时分布。",
+    action: "查看接口耗时",
+    icon: Gauge,
     tone: "security",
   },
   {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Speak } from "../components/study/Speech";
 import { api, asset, entries, idValue, value } from "../lib/api";
@@ -184,11 +184,15 @@ export function NoteCoursePreview() {
   const [noteReloadKey, setNoteReloadKey] = useState(0);
   const [failedNoteId, setFailedNoteId] = useState<ApiId | null>(null);
   const [error, setError] = useState("");
+  const noteDetails = useRef(new Map<ApiId, Entry>());
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError("");
     setFailedNoteId(null);
+    noteDetails.current.clear();
+    setSelectedNote(null);
+    setSelectedCardId(null);
     setNoteReloadKey((current) => current + 1);
     try {
       const nextNotes = await loadAllNotes();
@@ -210,28 +214,36 @@ export function NoteCoursePreview() {
   }, [refresh]);
 
   useEffect(() => {
-    let active = true;
     if (!selectedNoteId)
-      return () => {
-        active = false;
-      };
+      return undefined;
 
-    api<Entry>(`/content/notes/${selectedNoteId}`)
+    const cachedNote = noteDetails.current.get(selectedNoteId);
+    if (cachedNote) {
+      setSelectedNote(cachedNote);
+      setSelectedCardId(idValue(entries(cachedNote, "items")[0]) || null);
+      setFailedNoteId(null);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+
+    api<Entry>(`/content/notes/${selectedNoteId}`, "GET", undefined, {
+      signal: controller.signal,
+    })
       .then((note) => {
-        if (!active) return;
+        if (controller.signal.aborted) return;
+        noteDetails.current.set(selectedNoteId, note);
         setSelectedNote(note);
         setSelectedCardId(idValue(entries(note, "items")[0]) || null);
         setFailedNoteId(null);
       })
       .catch((reason: Error) => {
-        if (!active) return;
+        if (reason.name === "AbortError") return;
         setError(reason.message);
         setFailedNoteId(selectedNoteId);
       });
 
-    return () => {
-      active = false;
-    };
+    return () => controller.abort();
   }, [noteReloadKey, selectedNoteId]);
 
   const cards = useMemo(
@@ -264,7 +276,7 @@ export function NoteCoursePreview() {
     const noteId = idValue(note);
     if (!noteId || noteId === selectedNoteId) return;
     setSelectedNoteId(noteId);
-    setSelectedNote(null);
+    setSelectedNote(noteDetails.current.get(noteId) || null);
     setSelectedCardId(null);
     setFailedNoteId(null);
     setError("");

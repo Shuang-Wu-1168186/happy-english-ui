@@ -3,6 +3,8 @@ import {
   BookOpen,
   BookCopy,
   Award,
+  Activity,
+  Gauge,
   ChevronRight,
   Eye,
   FilePenLine,
@@ -23,6 +25,8 @@ const navigation = [
   { to: "/admin/membership", label: "会员管理", icon: Award },
   { to: "/admin/users", label: "用户管理", icon: Users },
   { to: "/admin/login-monitor", label: "登录监控", icon: ShieldCheck },
+  { to: "/admin/user-behavior", label: "用户行为查询", icon: Activity },
+  { to: "/admin/request-latency", label: "接口耗时报表", icon: Gauge },
 ];
 
 const contentNavigation = [

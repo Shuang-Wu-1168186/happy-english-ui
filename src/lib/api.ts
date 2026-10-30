@@ -140,6 +140,7 @@ export async function request(path: string, options: RequestInit = {}) {
     }
   } catch (error) {
     if (error instanceof SessionExpiredError) throw error;
+    if ((error as { name?: string })?.name === "AbortError") throw error;
     throw new Error("无法连接服务，请检查后端是否已启动。");
   }
   if (response.status === 401 && !isSignInRequest(path)) expireSession();
@@ -155,10 +156,13 @@ export async function api<T>(
   path: string,
   method = "GET",
   body?: unknown,
+  requestOptions: RequestInit = {},
 ): Promise<T> {
   const response = await request(path, {
+    ...requestOptions,
     method,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body:
+      body === undefined ? requestOptions.body : JSON.stringify(body),
   });
   if (response.status === 204) return undefined as T;
   const data = await response.json();

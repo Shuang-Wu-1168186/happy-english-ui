@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Link,
@@ -24,6 +25,16 @@ import { Profile } from "./pages/Profile";
 import { Manage } from "./pages/Manage";
 import { Users } from "./pages/Users";
 import { LoginMonitor } from "./pages/LoginMonitor";
+const UserBehaviorMonitor = lazy(() =>
+  import("./pages/UserBehaviorMonitor").then((module) => ({
+    default: module.UserBehaviorMonitor,
+  })),
+);
+const RequestLatencyReport = lazy(() =>
+  import("./pages/RequestLatencyReport").then((module) => ({
+    default: module.RequestLatencyReport,
+  })),
+);
 import { AdminLayout } from "./components/AdminLayout";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { NoteCoursePreview } from "./pages/NoteCoursePreview";
@@ -213,6 +224,22 @@ export default function App() {
                 />
                 <Route path="users/:id/edit" element={<UserEditRedirect />} />
                 <Route path="login-monitor" element={<LoginMonitor />} />
+                <Route
+                  path="user-behavior"
+                  element={
+                    <Suspense fallback={<div className="empty">正在加载用户行为报表…</div>}>
+                      <UserBehaviorMonitor />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="request-latency"
+                  element={
+                    <Suspense fallback={<div className="empty">正在加载接口耗时报表…</div>}>
+                      <RequestLatencyReport />
+                    </Suspense>
+                  }
+                />
                 <Route path="membership" element={<MembershipManagement />} />
                 <Route
                   path="private-zone"
