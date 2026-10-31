@@ -21,6 +21,47 @@ function managementPath(resource: string, id?: ApiId) {
   return `/admin/content/notes?${params.toString()}`;
 }
 
+async function normalizeImageForUpload(file: File) {
+  const sourceUrl = URL.createObjectURL(file);
+  const image = new Image();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () =>
+        reject(
+          new Error(
+            "浏览器无法读取这张图片，请重新导出为 PNG、JPG 或 WebP 后重试。",
+          ),
+        );
+      image.src = sourceUrl;
+    });
+    const { naturalWidth: width, naturalHeight: height } = image;
+    if (!width || !height || width * height > 25_000_000)
+      throw new Error("图片尺寸过大，请选择不超过 2500 万像素的图片。");
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("浏览器无法处理这张图片，请重试。");
+    context.drawImage(image, 0, 0, width, height);
+    const blob = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (result) =>
+          result
+            ? resolve(result)
+            : reject(new Error("浏览器无法转换这张图片，请重试。")),
+        "image/webp",
+        0.92,
+      ),
+    );
+    const baseName = file.name.replace(/\.[^/.]+$/, "").trim() || "image";
+    return new File([blob], `${baseName}.webp`, { type: "image/webp" });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 export function Manage({ defaultResource = "" }: { defaultResource?: string }) {
   const [params] = useSearchParams();
   return (
@@ -164,10 +205,13 @@ function Editor({
   }
   async function upload(file?: File) {
     if (!file) return;
-    setBusyMessage("正在上传图片…");
+    setBusyMessage("正在处理并上传图片…");
+    setError("");
+    setMessage("");
     try {
+      const normalizedImage = await normalizeImageForUpload(file);
       const f = new FormData();
-      f.append("file", file);
+      f.append("file", normalizedImage);
       const r = await (
         await request("/uploads", { method: "POST", body: f })
       ).json();
@@ -605,7 +649,10 @@ function Editor({
                           id="image-upload"
                           type="file"
                           accept="image/*"
-                          onChange={(e) => upload(e.target.files?.[0])}
+                          onChange={(e) => {
+                            void upload(e.target.files?.[0]);
+                            e.currentTarget.value = "";
+                          }}
                         />
                         <div className="field-help">
                           笔记卡片必须上传图片，或填写下方图片地址后才能保存。

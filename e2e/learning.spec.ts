@@ -60,6 +60,29 @@ test("original content editor preview and API create, edit, delete", async ({
 });
 test("creating a study note opens its card creation form", async ({ page }) => {
   await login(page);
+  await page.addInitScript(() => {
+    const nativeFetch = window.fetch;
+    window.fetch = (input, init) => {
+      const requestUrl =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      if (
+        requestUrl.endsWith("/api/uploads") &&
+        init?.body instanceof FormData
+      ) {
+        const file = init.body.get("file");
+        if (file instanceof File)
+          sessionStorage.setItem(
+            "browser-upload",
+            JSON.stringify({ name: file.name, type: file.type }),
+          );
+      }
+      return nativeFetch(input, init);
+    };
+  });
   const session = await (await page.request.get("/api/auth/session")).json();
   const headers = { "X-CSRF-Token": session.csrf_token };
   let noteId: string | null = null;
@@ -90,9 +113,22 @@ test("creating a study note opens its card creation form", async ({ page }) => {
     await page
       .getByLabel("Chinese Text", { exact: true })
       .fill("笔记需要一张图片。");
+    const uploadResponse = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/uploads" &&
+        response.request().method() === "POST",
+    );
     await page
-      .getByLabel("Example Image URL", { exact: true })
-      .fill("/static/uploads/browser-note.webp");
+      .getByLabel("Example Image Upload", { exact: true })
+      .setInputFiles("e2e/reference/note-items.png");
+    const response = await uploadResponse;
+    expect(response.status()).toBe(201);
+    await expect
+      .poll(() => page.evaluate(() => sessionStorage.getItem("browser-upload")))
+      .toBe('{"name":"note-items.webp","type":"image/webp"}');
+    await expect(
+      page.getByLabel("Example Image URL", { exact: true }),
+    ).toHaveValue(/\/static\/uploads\/[a-f0-9]+\.webp$/);
     await expect(saveCard).toBeEnabled();
     await saveCard.click();
     await expect(page).toHaveURL(
