@@ -235,6 +235,27 @@ test("private zone keeps its home entry while favorites remain below family lear
             description: "打开原有的数学知识卡和练习。",
             icon: "➗",
           },
+          {
+            id: mockOpaqueId("shortcut-21"),
+            title: "日常句子",
+            target_url: "/learn/sentences",
+            description: "练习真实日常场景中的常用英语句子。",
+            icon: "💬",
+          },
+          {
+            id: mockOpaqueId("shortcut-22"),
+            title: "专业词汇",
+            target_url: "/learn/vocabulary",
+            description: "学习工作和生活中的常用专业词汇。",
+            icon: "🧩",
+          },
+          {
+            id: mockOpaqueId("shortcut-23"),
+            title: "面试英语",
+            target_url: "/learn/interviews",
+            description: "练习常见面试问题和回答。",
+            icon: "💼",
+          },
         ],
         recent_personal_notes: [
           {
@@ -386,12 +407,26 @@ test("private zone keeps its home entry while favorites remain below family lear
   await expect(page.getByRole("tab", { name: /Unit 1/ })).toBeVisible();
   await page.getByRole("tab", { name: /Lesson 2/ }).click();
   await expect(page.getByText("Did you travel this summer holiday?", { exact: true })).toBeVisible();
-  await page.goto("/learn/kids-cards");
+  await page.goto("/private-zone");
+  await page.getByRole("link", { name: /小学英语单词/ }).click();
   await expect(page).toHaveURL(/\/learn\/kids-cards$/);
   await expect(page.getByRole("heading", { name: "northeast", exact: true })).toBeVisible();
-  await page.goto("/learn/math-cards");
+  await page.goto("/private-zone");
+  await page.getByRole("link", { name: /数学练习/ }).click();
   await expect(page).toHaveURL(/\/learn\/math-cards$/);
   await expect(page.getByRole("heading", { name: "数学知识点卡", exact: true })).toBeVisible();
+  await page.goto("/private-zone");
+  await page.getByRole("link", { name: /日常句子/ }).click();
+  await expect(page).toHaveURL(/\/learn\/sentences$/);
+  await expect(page.locator(".card").first()).toBeVisible();
+  await page.goto("/private-zone");
+  await page.getByRole("link", { name: /专业词汇/ }).click();
+  await expect(page).toHaveURL(/\/learn\/vocabulary$/);
+  await expect(page.locator(".card").first()).toBeVisible();
+  await page.goto("/private-zone");
+  await page.getByRole("link", { name: /面试英语/ }).click();
+  await expect(page).toHaveURL(/\/learn\/interviews$/);
+  await expect(page.locator(".interview-card").first()).toBeVisible();
   await page.goto("/private-zone");
   await page.getByRole("link", { name: /收藏课程/ }).click();
   await expect(page).toHaveURL(/\/private-zone\/favorite-courses$/);
@@ -708,13 +743,16 @@ test("interview question entry remains available from the admin menu", async ({
   ).toBeVisible();
   await expect(page.getByLabel("Question", { exact: true })).toBeVisible();
 });
-test("legacy daily-card route redirects to the course catalogue", async ({
+test("daily-sentence route opens the learner study screen", async ({
   page,
 }) => {
   await login(page);
   await page.goto("/learn/sentences");
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator(".learning-area-card")).toHaveCount(6);
+  await expect(page).toHaveURL(/\/learn\/sentences$/);
+  await expect(page.locator(".card").first()).toBeVisible();
+  await page.goto("/course-resources/sentences");
+  await expect(page).toHaveURL(/\/learn\/sentences$/);
+  await expect(page.locator(".card").first()).toBeVisible();
 });
 test("study note search includes card text", async ({ page }) => {
   await login(page);
